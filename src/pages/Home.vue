@@ -21,7 +21,7 @@
 			</div>
 		</div>
         <div class="task-board">
-            <h2>全部功能</h2>
+            <h2>任务看板</h2>
             <div class="subproject-list-box">
                 <div class="subproject-list" v-for="(item,index) in cleaningManagementList" 
                     :key="index"
@@ -56,7 +56,6 @@
     import {
 	    userSignOut
     } from '@/api/login.js' 
-    import { queryNewCount } from '@/api/escortManagement.js'
     import { removeAllLocalStorage } from "@/common/js/utils";
     import {
         mapGetters,
@@ -73,21 +72,20 @@
                 overlayShow: false,
                 quitInfoShow: false,
                 messageNumber: 0,
-                windowTimer: null,
                 currentMessageNumber: 0,
                 isShowMessageNumber: false,
                 isTimeoutContinue: true,
                 cleaningManagementList: [
                     {
-                        name: '巡更任务',
+                        name: '设备巡检',
                         imgUrl: require("@/common/images/home/task-list.png")
                     },
                     {
-                        name: '事件登记',
+                        name: '设备点检',
                         imgUrl: require("@/common/images/home/event-registration.png")
                     },
                     {
-                        name: '排班管理',
+                        name: '设备管理',
                         imgUrl: require("@/common/images/home/workforce-management.png")
                     },
                     {
@@ -101,20 +99,16 @@
         },
 
         beforeDestroy () {
-            if (this.windowTimer) {
-                clearInterval(this.windowTimer)
-            }
         },
 
         mounted() {
-            // 轮询是否有当前登录用户参与任务集下新的留言
-            if (!this.windowTimer) {
-                this.windowTimer = window.setInterval(() => {
-                    if (this.isTimeoutContinue) {
-                        setTimeout(this.queryNewMessage, 0)
-                    }
-                }, 3000);
-                this.changeGlobalTimer(this.windowTimer)
+            // 二维码回调方法绑定到window下面,提供给外部调用
+            let me = this;
+            window['scanQRcodeCallback'] = (code) => {
+                me.scanQRcodeCallback(code);
+            };
+            window['scanQRcodeCallbackCanceled'] = () => {
+                me.scanQRcodeCallbackCanceled();
             }
         },
 
@@ -145,7 +139,6 @@
         methods: {
             ...mapMutations([
                 "changeChooseProject",
-                'changeGlobalTimer',
                 'changeIsEnterGuestBookPageFromHomePage',
                 'changeLastMessageNumber',
                 'changeOverDueWay'
@@ -192,56 +185,20 @@
 
             },
 
-            // 查询是否有当前登录用户参与任务集下新的留言
-            queryNewMessage () {
-                this.isTimeoutContinue = false;
-                queryNewCount({userId: this.workerId, system:6, proId: this.proId}).then((res) => {
-                    if (res && res.data.code == 200) {
-                        this.isTimeoutContinue = true;
-                        // 实时总留言数量
-                        this.currentMessageNumber = res.data.data;
-                        if (res.data.data > 0) {
-                            // 有新增留言
-                            if (this.lastMessageNumber != null && (this.lastMessageNumber != res.data.data)) {
-                                // 重置是否从首页进入过留言页
-                                this.changeIsEnterGuestBookPageFromHomePage(false);
-                                // 显示新的留言数量
-                                this.messageNumber = (res.data.data - this.lastMessageNumber) >= 0 ? (res.data.data - this.lastMessageNumber) : 0;
-                                this.isShowMessageNumber = this.messageNumber > 0 ? true : false
-                            } else {
-                              // 记录留言数量没变化前的留言数量
-                              this.changeLastMessageNumber(res.data.data);
-                              // 去过留言簿页就默认读过留言
-                               if (this.isEnterGuestBookPageFromHomePage) {
-                                   this.isShowMessageNumber = false
-                               } else {
-                                   this.messageNumber = (res.data.data - this.lastMessageNumber) >= 0 ? (res.data.data - this.lastMessageNumber) : 0
-                                   this.isShowMessageNumber = this.messageNumber > 0 ? true : false
-                               }
-                            }
-                        } else {
-                            this.isShowMessageNumber = false
-                        }
-                    }
-                })
-                .catch((err) => {
-                    this.$dialog.alert({
-                        message: `${err}`,
-                        closeOnPopstate: true
-                    }).then(() => {
-                    })
-                })
-            },
-
             // 头像点击事件
             userInfoEvent () {
                 this.$router.push({path: '/myInfo'})
             },
+            
+            // 扫描二维码方法
+            scanQRCode () {
+                window.android.scanQRcode()
+            },
 
             // 巡查任务点击事件
             patrolTaskEvent (item, index) {
-                if (item.name == '巡更任务') {
-                    this.$router.push({path: '/patrolTasklist'})
+                if (item.name == '设备巡检') {
+                    this.$router.push({path: '/equipmentPatrolDetails'})
                 } else if (item.name == '事件登记') {
                     this.$router.push({path: '/eventList'})
                 } else if (item.name == '调度管理') {
@@ -250,6 +207,31 @@
                     this.changeLastMessageNumber(this.currentMessageNumber);
                     this.$router.push({path: '/guestBook'})
                 }
+            },
+
+            // 摄像头扫码后的回调
+            scanQRcodeCallback(code) {
+                if (code) {
+                    let codeData = code.split('|');
+                    try {
+                
+                    } catch (err) {
+                        this.$toast({
+                            message: `${err}`,
+                            type: 'fail'
+                        })
+                    }  
+                } else {
+                    this.$dialog.alert({
+                        message: '当前没有扫描到任何信息,请重新扫描'
+                    }).then(() => {
+                        this.scanQRCode()
+                    })
+                }
+            },
+
+            // 摄像头取消扫码后的回调
+            scanQRcodeCallbackCanceled () {
             }
         }
     }

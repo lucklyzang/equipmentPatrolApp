@@ -12,10 +12,10 @@ const PatrolTaskElectronicSignaturePage = () =>
     import ('@/pages/patrolTask/PatrolTaskElectronicSignaturePage')
 const EventRegisterElectronicSignaturePage = () =>
     import ('@/pages/eventPage/EventRegisterElectronicSignaturePage')
-const PatrolTasklist = () =>
-    import ('@/pages/patrolTask/PatrolTasklist')
-const WorkOrderDetails = () =>
-    import ('@/pages/patrolTask/WorkOrderDetails')
+const EquipmentPatrolDetails = () =>
+    import ('@/pages/patrolTask/EquipmentPatrolDetails')
+const EquipmentChecklist = () =>
+    import ('@/pages/patrolTask/EquipmentChecklist')
 const ProblemRecord = () =>
     import ('@/pages/patrolTask/ProblemRecord')
 const AreaPatrolDetails = () =>
@@ -67,14 +67,14 @@ let baseRoute = [{
         component: MyInfo
     },
     {
-        path: '/patrolTasklist',
-        name: 'patrolTasklist',
-        component: PatrolTasklist
+        path: '/equipmentPatrolDetails',
+        name: 'equipmentPatrolDetails',
+        component: EquipmentPatrolDetails
     },
     {
-        path: '/workOrderDetails',
-        name: 'workOrderDetails',
-        component: WorkOrderDetails
+        path: '/equipmentChecklist',
+        name: 'equipmentChecklist',
+        component: EquipmentChecklist
     },
     {
         path: '/problemRecord',

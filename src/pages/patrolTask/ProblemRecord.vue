@@ -3,7 +3,7 @@
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{ loadText }}</van-loading>
     <van-overlay :show="overlayShow" />
     <div class="nav">
-        <van-nav-bar title="异常巡查项事件列表" left-text="返回" left-arrow @click-left="onClickLeft" :border="false">
+        <van-nav-bar title="异常检查项事件列表" left-text="返回" left-arrow @click-left="onClickLeft" :border="false">
         </van-nav-bar>
     </div>
     <div class="content">
