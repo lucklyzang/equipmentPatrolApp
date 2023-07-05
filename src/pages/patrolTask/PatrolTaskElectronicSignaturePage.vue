@@ -24,12 +24,10 @@
         </div> 
       </div>
       <div class="content-right">
-        <span>巡</span>
-        <span>更</span>
-        <span>任</span>
-        <span>务</span>
-        <span>完</span>
-        <span>成</span>
+        <span>请</span>
+        <span>在</span>
+        <span>此</span>
+        <span>处</span>
         <span>签</span>
         <span>名</span>
       </div>

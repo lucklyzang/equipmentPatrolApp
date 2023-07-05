@@ -43,17 +43,17 @@
     <!-- 退出提示框   -->
     <div class="quit-info-box">
        <van-dialog v-model="quitInfoShow"  show-cancel-button width="85%"
-          @confirm="quitSure" @cancel="quitCancel" confirm-button-text="退出"
-          cancel-button-text="暂存"
+          @confirm="quitSure" @cancel="quitCancel" confirm-button-text="是"
+          cancel-button-text="否"
         >
           <div class="delete-icon">
             <van-icon name="cross" size="24" @click="quitInfoShow = false" />
           </div>
           <div class="dialog-title">
-            是否退出
+            退出前是否保存?
           </div>
           <div class="dialog-center">
-            退出后表单内容将清空,暂存还是退出?
+            保存的记录可再次点击×进行查看
           </div>
       </van-dialog>
     </div>
@@ -64,21 +64,21 @@
     </div>  
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{loadingText}}</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
-    <!-- 目的建筑 -->
-    <div class="transport-rice-box" v-if="showStructure">
-      <ScrollSelection :columns="structureOption" title="目的建筑" @sure="structureSureEvent" @cancel="structureCancelEvent" @close="structureCloseEvent" />
+    <!-- 异常类型 -->
+    <div class="transport-rice-box" v-if="showAbnormalType">
+      <ScrollSelection :columns="abnormalTypeOption" title="异常类型" @sure="abnormalTypeSureEvent" @cancel="abnormalTypeCancelEvent" @close="abnormalTypeCloseEvent" />
     </div>
-    <!-- 目的科室 -->
-    <div class="transport-rice-box" v-if="showGoalDepartment">
-      <ScrollSelection :columns="goalDepartmentOption" title="目的科室" @sure="goalDepartmentSureEvent" @cancel="goalDepartmentCancelEvent" @close="goalDepartmentCloseEvent" />
+    <!-- 严重程度 -->
+    <div class="transport-rice-box" v-if="showSeverityLevel">
+      <ScrollSelection :columns="severityLevelOption" title="严重程度" @sure="severityLevelSureEvent" @cancel="severityLevelCancelEvent" @close="severityLevelCloseEvent" />
     </div>
-    <!-- 目的房间 -->
-    <div class="transport-rice-box" v-if="showGoalSpaces">
-      <ScrollSelection :columns="goalSpacesOption" title="目的房间" @sure="goalSpacesSureEvent" @cancel="goalSpacesCancelEvent" @close="goalSpacesCloseEvent" />
+    <!-- 设备状态 -->
+    <div class="transport-rice-box" v-if="showEquipmentStatus">
+      <ScrollSelection :columns="equipmentStatusOption" title="设备状态" @sure="equipmentStatusSureEvent" @cancel="equipmentStatusCancelEvent" @close="equipmentStatusCloseEvent" />
     </div>
     <div class="nav">
        <van-nav-bar
-        title="事件记录"
+        title="异常记录"
         left-text="返回"
         :left-arrow="true"
         :placeholder="true"
@@ -96,102 +96,73 @@
 		</div>
       <div class="content-box">
         <div class="message-box">
-         <div class="select-box event-type" v-if="enterEventRegisterPageMessage['patrolItemName'] != '' || registerType == 1">
-            <div class="select-box-left">
-              <span>*</span>
-              <span>巡查项</span>
-            </div>
-            <div class="select-box-right event-type-right">
-              <span>{{ itemName }}</span>
-            </div>
-        </div>
          <div class="select-box event-type">
             <div class="select-box-left">
               <span>*</span>
-              <span>事件类型</span>
+              <span>编号</span>
             </div>
-            <div class="select-box-right">
-              <span>{{ eventType }}</span>
+            <div class="select-box-right event-type-right">
+              <span>{{ number }}</span>
             </div>
+        </div>
+        <div class="select-box event-type">
+          <div class="select-box-left">
+            <span>*</span>
+            <span>检查项类型</span>
           </div>
-          <div class="select-box end-select-box">
-            <div class="select-box-left">
-              <span>*</span>
-              <span>建筑</span>
-            </div>
-            <div class="select-box-right" @click="enterEventRegisterPageMessage['patrolItemName'] != '' || registerType == 1 ? showStructure = false : showStructure = true">
-              <span :class="{'spanStyle':enterEventRegisterPageMessage['patrolItemName'] != '' || registerType == 1}">{{ currentStructure }}</span>
-              <van-icon name="arrow" color="#989999" size="20" />
-            </div>
+          <div class="select-box-right">
+            <span>{{ checkItemType }}</span>
           </div>
-          <div class="select-box end-select-box">
-            <div class="select-box-left">
-              <span>*</span>
-              <span>区域</span>
-            </div>
-            <div class="select-box-right" @click="goalDepartmentClickEvent">
-              <span :class="{'spanStyle':enterEventRegisterPageMessage['patrolItemName'] != '' || registerType == 1}">{{ currentGoalDepartment }}</span>
-              <van-icon name="arrow" color="#989999" size="20" />
-            </div>
+        </div>
+        <div class="select-box event-type">
+          <div class="select-box-left">
+            <span>*</span>
+            <span>检查项</span>
           </div>
-          <div class="select-box end-select-box end-select-box-room">
-            <div class="select-box-left">
-              <span>房间</span>
-            </div>
-            <div class="select-box-right" @click="goalSpacesClickEvent">
-              <span>{{ currentGoalSpaces }}</span>
-              <van-icon name="arrow" color="#989999" size="20" />
-            </div>
+          <div class="select-box-right">
+            <span>{{ checkItem }}</span>
           </div>
-          <div class="details-site problem-overview">
+        </div>
+        <div class="select-box end-select-box">
+          <div class="select-box-left">
+            <span>*</span>
+            <span>记录时间</span>
+          </div>
+          <div class="select-box-right" @click="showFindTime = true">
+            <span>{{ getNowFormatDate(currentFindTime) }}</span>
+            <van-icon name="arrow" color="#989999" size="20" />
+          </div>
+        </div>
+        <div class="select-box end-select-box end-select-box-room">
+          <div class="select-box-left">
+            <span>异常类型</span>
+          </div>
+          <div class="select-box-right" @click="abnormalTypeClickEvent">
+            <span>{{ currentAbnormalType  }}</span>
+            <van-icon name="arrow" color="#989999" size="20" />
+          </div>
+        </div>
+        <div class="select-box end-select-box end-select-box-room">
+          <div class="select-box-left">
+            <span>严重程度</span>
+          </div>
+          <div class="select-box-right" @click="severityLevelClickEvent">
+            <span>{{ currentSeverityLevel  }}</span>
+            <van-icon name="arrow" color="#989999" size="20" />
+          </div>
+        </div>
+        <div class="select-box end-select-box end-select-box-room">
+          <div class="select-box-left">
+            <span>设备状态</span>
+          </div>
+          <div class="select-box-right" @click="equipmentStatusClickEvent">
+            <span>{{ currentEquipmentStatus }}</span>
+            <van-icon name="arrow" color="#989999" size="20" />
+          </div>
+        </div>
+        <div class="transport-type problem-overview">
             <div class="transport-type-left">
-              <span>详细地点</span>
-            </div>
-            <div class="transport-type-right">
-              <van-field
-                v-model="detailsSite"
-                rows="1"
-                maxlength="100"
-                show-word-limit
-                autosize
-                type="textarea"
-                placeholder="请输入"
-              />
-            </div>
-          </div>
-          <div class="select-box end-select-box">
-            <div class="select-box-left">
-              <span>*</span>
-              <span>记录时间</span>
-            </div>
-            <div class="select-box-right" @click="showFindTime = true">
-              <span>{{ getNowFormatDate(currentFindTime) }}</span>
-              <van-icon name="arrow" color="#989999" size="20" />
-            </div>
-          </div>
-          <div class="result-picture">
-                <div>
-                    <span>*</span>
-                    <span>问题拍照</span>
-                </div>
-                <div class="image-list">
-                    <div v-for="(item, index) in problemPicturesList" :key='index'>
-                        <img :src="item" @click="enlareEvent(item)" />
-                        <div class="icon-box" @click="issueDelete(index,item)">
-                            <van-icon
-                            name="delete"
-                            color="#d70000"
-                            />
-                        </div>
-                    </div>
-                    <div @click="issueClickEvent">
-                        <van-icon name="plus" size="30" color="#101010" />
-                    </div>
-                </div>
-         </div>
-          <div class="transport-type problem-overview">
-            <div class="transport-type-left">
-              <span>情况说明</span>
+              <span>异常情况说明</span>
             </div>
             <div class="transport-type-right">
               <van-field
@@ -201,13 +172,29 @@
                 maxlength="200"
                 show-word-limit
                 type="textarea"
-                placeholder="请输入问题描述"
+                placeholder="请输入"
               />
             </div>
           </div>
+          <div class="result-picture">
+            <div class="image-list">
+                <div v-for="(item, index) in problemPicturesList" :key='index'>
+                    <img :src="item" @click="enlareEvent(item)" />
+                    <div class="icon-box" @click="issueDelete(index,item)">
+                        <van-icon
+                        name="delete"
+                        color="#d70000"
+                        />
+                    </div>
+                </div>
+                <div @click="issueClickEvent">
+                    <van-icon name="plus" size="30" color="#101010" />
+                </div>
+            </div>
+         </div>
           <div class="transport-type">
             <div class="transport-type-left">
-              <span>备注</span>
+              <span>意见或建议</span>
             </div>
             <div class="transport-type-right">
               <van-field
@@ -215,7 +202,7 @@
                 rows="3"
                 autosize
                 type="textarea"
-                placeholder="请输入备注"
+                placeholder="请输入"
               />
             </div>
           </div>
@@ -232,16 +219,16 @@
 <script>
 import { mapGetters, mapMutations } from "vuex";
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
-import {userSignOut,getAliyunSign} from '@/api/login.js'
-import { eventregister, querySpace, queryDepartment, queryStructure} from '@/api/escortManagement.js'
-import { setStore,removeAllLocalStorage,compress,deepClone, base64ImgtoFile } from '@/common/js/utils'
+import {getAliyunSign} from '@/api/login.js'
+import { eventregister,queryStructure} from '@/api/escortManagement.js'
+import { compress, base64ImgtoFile } from '@/common/js/utils'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
 import ScrollSelection from "@/components/ScrollSelection";
 import BottomSelect from "@/components/BottomSelect";
 export default {
-  name: "OtherRegister",
+  name: "PatrolAbnormalRecord",
   components: {
     ScrollSelection,
     BottomSelect
@@ -251,9 +238,9 @@ export default {
     return {
       loadingShow: false,
       quitInfoShow: false,
-      registerType: null,
-      itemName: '',
-      eventType: '其他',
+      checkItem: '2#',
+      number: 'q12',
+      checkItemType: '其他',
       showFindTime: false,
       problemPicturesList: [],
       minDate: new Date(2010, 0, 1),
@@ -271,22 +258,21 @@ export default {
       deleteInfoDialogShow: false,
       loadingText: '加载中...',
       problemOverview: '',
-      detailsSite: '',
       taskDescribe: '',
       transportNumberValue: '',
 
-      goalDepartmentOption: [],
-      showGoalDepartment: false,
-      currentGoalDepartment: '请选择',
+      abnormalTypeOption: [],
+      showAbnormalType: false,
+      currentAbnormalType: '请选择',
 
-      goalSpacesOption: [],
-      showGoalSpaces: false,
-      currentGoalSpaces: '请选择',
+      severityLevelOption: [],
+      showSeverityLevel: false,
+      currentSeverityLevel: '请选择',
 
+      equipmentStatusOption: [],
+      showEquipmentStatus: false,
+      currentEquipmentStatus: '请选择',
 
-      structureOption: [],
-      showStructure: false,
-      currentStructure: '请选择',
       overlayShow: false,
       statusBackgroundPng: require("@/common/images/home/status-background.png")
     }
@@ -299,30 +285,14 @@ export default {
       pushHistory();
       that.gotoURL(() => {
         pushHistory();
-        if (that.enterEventRegisterPageMessage['enterRegisterEventPageSource']) {
-          that.$router.push({path: that.enterEventRegisterPageMessage['enterRegisterEventPageSource']})
-        } else {
-          that.$router.push({path: '/eventList'})
-        }
+        that.$router.push({path: '/equipmentChecklist'})
       })
-    };
-    // 如果是从异常巡查项从处进来的，则回显区域名称
-    if (this.enterEventRegisterPageMessage['patrolItemName'] != '') {
-      this.currentGoalDepartment = this.enterEventRegisterPageMessage['depName'];
-      this.itemName = this.enterEventRegisterPageMessage['patrolItemName']
     };
     this.parallelFunction()
   },
 
   beforeRouteEnter(to, from, next) {
     next(vm=>{
-      if (from.path == '/eventList' || from.path == '/problemRecord') {
-        // 判断是否回显暂存数据
-        let temporaryIndex = vm.temporaryStorageOtherRegisterMessage.findIndex((item) => { return item.id == vm.$route.query.eventId});
-        if (temporaryIndex != -1) {
-          vm.echoTemporaryStorageMessage(temporaryIndex)
-        }
-      }
 	  });
     next() 
   },
@@ -331,7 +301,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["userInfo","transportantTaskMessage","ossMessage","departmentCheckList","timeMessage","enterProblemRecordMessage","temporaryStorageOtherRegisterMessage","enterEventRegisterPageMessage"]),
+    ...mapGetters(["userInfo","ossMessage","departmentCheckList","timeMessage","enterProblemRecordMessage"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -344,14 +314,10 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeCatchComponent","changeOverDueWay","changeTimeMessage","changeOssMessage","changeDepartmentCheckList","changetransportTypeMessage","changeTemporaryStorageOtherRegisterMessage"]),
+    ...mapMutations(["changeOverDueWay","changeTimeMessage","changeOssMessage","changeDepartmentCheckList"]),
 
     onClickLeft() {
-       if (this.enterEventRegisterPageMessage['enterRegisterEventPageSource']) {
-        this.$router.push({path: this.enterEventRegisterPageMessage['enterRegisterEventPageSource']})
-      } else {
-        this.$router.push({path: '/eventList'})
-      }
+      this.$router.push({path: '/equipmentChecklist'})
     },
 
     // 任务开始事件弹框确认事件
@@ -399,15 +365,10 @@ export default {
     echoTemporaryStorageMessage (temporaryIndex) {
       let casuallyTemporaryStorageOtherRegisterMessage = this.temporaryStorageOtherRegisterMessage;
       this.currentFindTime = new Date(casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['createTime']);
-      this.currentStructure = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['structureName']  == '' ? '请选择' : casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['structureName'];
-      this.currentGoalDepartment = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['depName']  == '' ? '请选择' : casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['depName'];
-      this.currentGoalSpaces = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName']  == '' ? '请选择' : casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName'];
-      this.detailsSite = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['address'];
+      this.currentAbnormalType = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName']  == '' ? '请选择' : casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['abnormalType'];
       this.problemOverview = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['description'];
       this.taskDescribe = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['remark'];
       this.problemPicturesList = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['images'];
-      this.registerType = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['registerType'];
-      this.itemName = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['itemName'];
       this.checkResultId = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['resultId'] ? casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['resultId'] : ''
     },
 
@@ -600,85 +561,8 @@ export default {
       return currentdate
     },
 
-   // 根据建筑查询科室信息
-    getDepartmentByStructureId (structureId,flag,isInitial) {
-      this.loadingText = '查询中...';
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.goalDepartmentOption = [];
-      queryDepartment({proId:this.proId,struId:structureId,permissions: 'patrol'})
-      .then((res) => {
-        this.loadingText = '';
-        this.loadingShow = false;
-        this.overlayShow = false;
-        if (res && res.data.code == 200) {
-          if (res.data.data.length > 0) {
-            for (let i = 0, len = res.data.data.length; i < len; i++) {
-              this.goalDepartmentOption.push({
-                text: res.data.data[i].name,
-                value: res.data.data[i].id,
-                id: i
-              })
-            };
-            if (isInitial) {
-              if (this.currentGoalDepartment != '请选择') {
-                this.getSpacesByDepartmentId(this.goalDepartmentOption.filter((item) => { return item['text'] == this.currentGoalDepartment})[0]['value'],this.structureOption.filter((item) => { return item['text'] == this.currentStructure})[0]['value'],false)
-              }
-            }  
-          };
-          if (flag) {
-            this.showGoalDepartment = true
-          }
-        }
-      })
-      .catch((err) => {
-        this.loadingText = '';
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.$dialog.alert({
-          message: `${err}`,
-          closeOnPopstate: true
-        }).then(() => {})
-      })
-    },
-
-    // 根据科室查询房间信息
-    getSpacesByDepartmentId (depId,struId,flag) {
-      this.loadingText = '查询中...';
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.goalSpacesOption = [];
-      querySpace({hospitalId:this.proId,struId: struId, depId:depId})
-      .then((res) => {
-        this.loadingText = '';
-        this.loadingShow = false;
-        this.overlayShow = false;
-        if (res && res.data.code == 200) {
-          if (res.data.data.length > 0) {
-            for (let i = 0, len = res.data.data.length; i < len; i++) {
-              this.goalSpacesOption.push({
-                text: res.data.data[i].name,
-                value: res.data.data[i].id,
-                id: i
-              })
-            }
-          };
-          if (flag) {this.showGoalSpaces = true}
-        }
-      })
-      .catch((err) => {
-        this.loadingText = '';
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.$dialog.alert({
-          message: `${err}`,
-          closeOnPopstate: true
-        }).then(() => {})
-      })
-    },
-
     // 并行查询目的建筑
-    parallelFunction (type) {
+    parallelFunction () {
         this.loadingText = '加载中...';
         this.loadingShow = true;
         this.overlayShow = true;
@@ -691,25 +575,6 @@ export default {
             this.structureOption = [];
             let [item1] = res;
             if (item1) {
-              // 目的建筑
-              for (let i = 0, len = item1.length; i < len; i++) {
-                this.structureOption.push({
-                  text: item1[i].name,
-                  value: item1[i].id,
-                  id: i
-                })
-              };
-              // 如果是从异常巡查项从处进来的，则回显建筑名称
-              if (this.enterEventRegisterPageMessage['patrolItemName'] != '') {
-                this.currentStructure = this.structureOption.filter((innerItem) => { return innerItem.value == this.enterEventRegisterPageMessage['structId']})[0]['text']
-              };
-              if (this.currentStructure != '请选择') {
-                if (this.enterEventRegisterPageMessage['patrolItemName'] == '' && this.registerType == 2) {
-                  this.getDepartmentByStructureId(this.structureOption.filter((item) => { return item['text'] == this.currentStructure})[0]['value'],false,true)
-                } else {
-                  this.getDepartmentByStructureId('',false,true)
-                }
-              }
             }
           }
         })
@@ -739,174 +604,90 @@ export default {
         })
       },
 
-    // 目的建筑下拉选择框确认事件
-    structureSureEvent (val) {
-      if (val) {
-        this.currentStructure =  val;
-        this.currentGoalDepartment = '请选择';
-        this.currentGoalSpaces = '请选择';
-        this.goalSpacesOption = [];
-        this.getDepartmentByStructureId(this.structureOption.filter((item) => { return item['text'] == this.currentStructure})[0]['value'],false,false)
-      } else {
-        this.currentStructure = '请选择'
-      };
-      this.showStructure = false
+    // 异常类型列点击事件
+    abnormalTypeClickEvent () {
+      this.showAbnormalType = true
     },
 
-    // 目的建筑下拉选择框取消事件
-    structureCancelEvent () {
-      this.showStructure = false
-    },
-
-    // 目的建筑下拉选择框关闭事件
-    structureCloseEvent () {
-      this.showStructure = false
-    },
-
-    // 目的科室下拉选择框确认事件
-    goalDepartmentSureEvent (val) {
-      if (val) {
-        this.currentGoalDepartment =  val;
-        this.currentGoalSpaces = '请选择';
-        this.getSpacesByDepartmentId(this.goalDepartmentOption.filter((item) => { return item['text'] == this.currentGoalDepartment})[0]['value'],this.structureOption.filter((item) => { return item['text'] == this.currentStructure})[0]['value'],false)
-      } else {
-        this.currentGoalDepartment = '请选择'
-      };
-      this.showGoalDepartment = false
-    },
-
-    // 目的科室列点击事件
-    goalDepartmentClickEvent () {
-      if (this.enterEventRegisterPageMessage['patrolItemName'] != '' || this.registerType == 1) {return};
-      if (this.currentStructure == '请选择') {
-        this.$toast('请选择建筑')
-      } else {
-        this.getDepartmentByStructureId(this.structureOption.filter((item) => { return item['text'] == this.currentStructure})[0]['value'],true,false)
-      }
-    },
-
-    // 目的科室下拉选择框取消事件
-    goalDepartmentCancelEvent () {
-      this.showGoalDepartment = false
-    },
-
-    // 目的科室下拉选择框关闭事件
-    goalDepartmentCloseEvent () {
-      this.showGoalDepartment = false
-    },
-
-    // 目的房间下拉选择框关闭事件
-    goalSpacesCloseEvent () {
-      this.showGoalSpaces = false
-    },
-    
-    // 目的房间列点击事件
-    goalSpacesClickEvent () {
-      if (this.currentGoalDepartment == '请选择') {
-        this.$toast('请选择科室')
-      } else {
-        try {
-          this.getSpacesByDepartmentId(this.goalDepartmentOption.filter((item) => { return item['text'] == this.currentGoalDepartment})[0]['value'],this.structureOption.filter((item) => { return item['text'] == this.currentStructure})[0]['value'],true)
-        } catch (err) {
-          this.$toast(`${err}`)
-        }
-      }
-    },
-
-    // 目的房间下拉选择框确认事件
-    goalSpacesSureEvent (val) {
+    // 异常类型下拉选择框确认事件
+    abnormalTypeSureEvent (val) {
       if (val.length > 0) {
-        this.currentGoalSpaces =  val;
+        this.currentAbnormalType =  val;
       } else {
-        this.currentGoalSpaces = '请选择'
+        this.currentAbnormalType = '请选择'
       };
-      this.showGoalSpaces = false
+      this.showAbnormalType = false
     },
 
-    // 目的房间下拉选择框取消事件
-    goalSpacesCancelEvent () {
-      this.showGoalSpaces = false
+    // 异常类型下拉选择框取消事件
+    abnormalTypeCancelEvent () {
+      this.showAbnormalType = false
     },
 
-      // 下班签退事件
-      signOutEvent () {
-          this.$dialog.alert({
-            message: '确定签退?',
-            closeOnPopstate: true,
-            showCancelButton: true
-          }).then(() => {
-            this.userLoginOut(this.proId, this.userInfo.userName)
-          })
-          .catch(() => {
-          })
-      },
+    // 异常类型下拉选择框关闭事件
+    abnormalTypeCloseEvent () {
+      this.showAbnormalType = false
+    },
 
-      // 用户签退
-      userLoginOut (proId,workerId) {
-        this.changeOverDueWay(true);
-        setStore('storeOverDueWay',true);
-        userSignOut(proId,workerId).then((res) => {
-          if (res && res.data.code == 200) {
-            removeAllLocalStorage();
-            this.changeCatchComponent([]);
-            this.$router.push({path:'/'})
-          } else {
-            this.$dialog.alert({
-              message: `${res.data.msg}`,
-              closeOnPopstate: true
-            }).then(() => {
-            });
-            this.changeOverDueWay(false);
-            setStore('storeOverDueWay',false);
-          }
-        }).
-        catch((err) => {
-          this.changeOverDueWay(false);
-          setStore('storeOverDueWay',false);
-          this.$dialog.alert({
-            message: `${err.message}`,
-            closeOnPopstate: true
-          }).then(() => {
-          });
-        })
-      },
+    // 严重程度列点击事件
+    severityLevelClickEvent () {
+      this.showSeverityLevel = true
+    },
+
+    // 严重程度下拉选择框确认事件
+    severityLevelSureEvent (val) {
+      if (val.length > 0) {
+        this.currentSeverityLevel =  val;
+      } else {
+        this.currentSeverityLevel = '请选择'
+      };
+      this.showSeverityLevel = false
+    },
+
+    // 严重程度下拉选择框取消事件
+    severityLevelCancelEvent () {
+      this.showSeverityLevel = false
+    },
+
+    // 严重程度下拉选择框关闭事件
+    severityLevelCloseEvent () {
+      this.showSeverityLevel = false
+    },
+
+    // 设备状态列点击事件
+    equipmentStatusClickEvent () {
+      this.showEquipmentStatus = true
+    },
+
+    // 设备状态下拉选择框确认事件
+    equipmentStatusSureEvent (val) {
+      if (val.length > 0) {
+        this.currentEquipmentStatus =  val;
+      } else {
+        this.currentEquipmentStatus = '请选择'
+      };
+      this.showEquipmentStatus = false
+    },
+
+    // 设备状态下拉选择框取消事件
+    equipmentStatusCancelEvent () {
+      this.showEquipmentStatus = false
+    },
+
+    // 设备状态下拉选择框关闭事件
+    equipmentStatusCloseEvent () {
+      this.showEquipmentStatus = false
+    },
 
     // 退出事件
     quitEvent () {
       this.quitInfoShow = true
     },
 
-    // 事件类型转换
-    eventTypeTransform (text) {
-      switch(text) {
-        case '工程报修' :
-          return 1
-          break;
-        case '拾金不昧' :
-          return 2
-          break;
-        case '其他' :
-          return 3
-          break;
-      }
-    },
-
-    // 登记类型转换
-    registerTypeTransform (text) {
-      switch(text) {
-        case '巡查' :
-          return 1
-          break;
-        case '其他' :
-          return 2
-          break
-      }
-    },
-
-    // 登记其他事件
+    // 异常事件记录
     async repairsEvent () {
-      if (!this.eventType) {
-        this.$toast('事件类型不能为空');
+      if (!this.checkItemType) {
+        this.$toast('检查项类型不能为空');
         return
       };
       if (this.currentStructure == '请选择') {
@@ -919,10 +700,6 @@ export default {
       };
       if (!this.currentFindTime) {
         this.$toast('记录时间不能为空');
-        return
-      };
-      if (this.problemPicturesList.length == 0) {
-        this.$toast('问题拍照图片不能为空');
         return
       };
       // 上传图片到阿里云服务器
@@ -946,17 +723,12 @@ export default {
       };
       // 创建其他任务
       let temporaryMessage = {
-        eventType: this.eventTypeTransform(this.enterEventRegisterPageMessage['eventType']),
-        registerType: this.registerTypeTransform(this.enterEventRegisterPageMessage['registerType']),
         checkResultId: this.checkResultId ? this.checkResultId : this.enterEventRegisterPageMessage['resultId'],
         findTime: this.getNowFormatDate(this.currentFindTime),
-        structureId: this.structureOption.filter((item) => { return item['text'] == this.currentStructure})[0]['value'],
-        structureName: this.currentStructure,
         depId: this.goalDepartmentOption.filter((item) => { return item['text'] == this.currentGoalDepartment})[0]['value'],
         depName: this.currentGoalDepartment,
         roomId: this.currentGoalSpaces == '请选择' ? '' : this.goalSpacesOption.filter((item) => { return item['text'] == this.currentGoalSpaces})[0]['value'],
         roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
-        address: this.detailsSite,
         description: this.problemOverview,
         remark: this.taskDescribe,
         images: this.imgOnlinePathArr,
@@ -969,22 +741,14 @@ export default {
       this.postGenerateRepairsTask(temporaryMessage)
     },
 
-    // 生成其他任务
+    // 新增设备巡检项异常记录
     postGenerateRepairsTask (data) {
       this.loadingText = '登记中...';
       this.loadingShow = true;
       this.overlayShow = true;
       eventregister(data).then((res) => {
         if (res && res.data.code == 200) {
-          this.$Alert({message:"登记成功",duration:3000,type:'success'});
-          //登记成功后清除该列表暂存信息
-          let casuallyTemporaryStorageOtherRegisterMessage = this.temporaryStorageOtherRegisterMessage.filter((item) => { return item.id != this.$route.query.eventId});
-          this.changeTemporaryStorageOtherRegisterMessage(casuallyTemporaryStorageOtherRegisterMessage)
-          if (this.enterEventRegisterPageMessage['enterRegisterEventPageSource']) {
-            this.$router.push({path: this.enterEventRegisterPageMessage['enterRegisterEventPageSource']})
-          } else {
-            this.$router.push({path: '/eventList'})
-          }
+          this.$Alert({message:"新增成功",duration:3000,type:'success'});
         } else {
           // 防止任务生成失败后，再次生成时造成同一图片重复上传
           this.imgOnlinePathArr = [];
@@ -1013,11 +777,7 @@ export default {
 
     // 确定退出
     quitSure () {
-      if (this.enterEventRegisterPageMessage['enterRegisterEventPageSource']) {
-        this.$router.push({path: this.enterEventRegisterPageMessage['enterRegisterEventPageSource']})
-      } else {
-        this.$router.push({path: '/eventList'})
-      }
+      this.$router.push({path: '/equipmentChecklist'})
     },
 
     // 取消退出(暂存)
@@ -1033,12 +793,9 @@ export default {
           if (temporaryIndex != -1) {
             casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['createTime'] = this.getNowFormatDate(this.currentFindTime);
             casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName'] = this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces;
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['address'] = this.detailsSite;
             casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['description'] = this.problemOverview;
             casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['remark'] = this.taskDescribe;
             casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['images'] = this.problemPicturesList;
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['structureName'] = this.currentStructure == '请选择' ? '' : this.currentStructure;
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['depName'] = this.currentGoalDepartment == '请选择' ? '' : this.currentGoalDepartment;
             casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName'] = this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces
           } else {
             casuallyTemporaryStorageOtherRegisterMessage.push({
@@ -1047,19 +804,13 @@ export default {
               resultId: this.enterEventRegisterPageMessage['resultId'],
               taskId: this.enterEventRegisterPageMessage['taskId'],
               depId: this.enterEventRegisterPageMessage['depId'],
-              eventType: this.eventTypeTransform(this.eventType),
-              registerType: this.registerTypeTransform(this.enterEventRegisterPageMessage['registerType']),
               createTime: this.getNowFormatDate(this.currentFindTime),
               createName: this.userName,
-              structureName: this.currentStructure == '请选择' ? '' : this.currentStructure,
-              depName: this.currentGoalDepartment == '请选择' ? '' : this.currentGoalDepartment,
               roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
-              address: this.detailsSite,
               description: this.problemOverview,
               remark: this.taskDescribe,
               images: this.problemPicturesList,
-              state: -1,
-              itemName: this.enterEventRegisterPageMessage['patrolItemName']
+              state: -1
             })
           }
         } else {
@@ -1069,19 +820,13 @@ export default {
             resultId: this.enterEventRegisterPageMessage['resultId'],
             taskId: this.enterEventRegisterPageMessage['taskId'],
             depId: this.enterEventRegisterPageMessage['depId'],
-            eventType: this.eventTypeTransform(this.eventType),
-            registerType: this.registerTypeTransform(this.enterEventRegisterPageMessage['registerType']),
             createTime: this.getNowFormatDate(this.currentFindTime),
             createName: this.userName,
-            structureName: this.currentStructure == '请选择' ? '' : this.currentStructure,
-            depName: this.currentGoalDepartment == '请选择' ? '' : this.currentGoalDepartment,
             roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
-            address: this.detailsSite,
             description: this.problemOverview,
             remark: this.taskDescribe,
             images: this.problemPicturesList,
-            state: -1,
-            itemName: this.enterEventRegisterPageMessage['patrolItemName']
+            state: -1
           })
       };
       this.changeTemporaryStorageOtherRegisterMessage(casuallyTemporaryStorageOtherRegisterMessage);
@@ -1419,11 +1164,6 @@ export default {
                   box-sizing: border-box
                 }
               }
-            };
-            .event-type-right {
-              span {
-                color: #3B9DF9 !important
-              }
             }
           };
           .select-box {
@@ -1455,7 +1195,7 @@ export default {
               justify-content: flex-end;
               align-items: center;
               display: flex;
-              padding-right: 20px;
+              padding-right: 6px;
               box-sizing: border-box;
               width: 0;
               .spanStyle {
@@ -1561,81 +1301,63 @@ export default {
             flex-direction: column;
             background: #fff;
             justify-content: space-between;
-            >div {
-                font-size: 14px;
-                color: #101010;
-                &:first-child {
-                   width: 100%;
-                   margin-bottom: 8px;
-                    >span {
-                        &:nth-child(1) {
-                        color: red
-                        };
-                        &:nth-child(2) {
-                        color: #9E9E9A;
-                        padding-right: 6px;
-                        box-sizing: border-box
-                        }
-                    }
-                };
-                &:nth-child(2) {
-                    width: 100%;
-                    flex-wrap: wrap;
-                    display: flex;
-                    >div {
-                        width: 23.5%;
-                        height: 70px;
-                        vertical-align: top;
-                        margin-right: 2%;
-                        margin-top: 2%;
-                        position: relative;
-                        &:nth-child(1) {
-                            margin-top: 0;
-                        };
-                        &:nth-child(2) {
-                            margin-top: 0;
-                        };
-                        &:nth-child(3) {
-                            margin-top: 0;
-                        };
-                        &:nth-child(4) {
-                            margin-top: 0;
-                        };
-                        &:nth-child(4n+4) {
-                            margin-right: 0;
-                        };
-                        .icon-box {
-                            position: absolute;
-                            bottom: 0;
-                            right: 0;
-                            display: flex;
-                            width: 100%;
-                            padding: 2px 0;
-                            box-sizing: border-box;
-                            justify-content: center;
-                            align-items: center;
-                            background: #616161;
-                            /deep/ .van-icon {
-                            }  
-                        };
-                        img {
-                            width: 100%;
-                            height: 100%
-                        };
-                        &:last-child {
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            background: #f2f2f2;
-                            /deep/ .van-icon{
-                                position: relative;
-                                top: 0;
-                                right: 0;
-                            }
-                        }
-                    }
-                }
-            }  
+            .image-list {
+              width: 100%;
+              flex-wrap: wrap;
+              display: flex;
+              >div {
+                  width: 23.5%;
+                  height: 70px;
+                  vertical-align: top;
+                  margin-right: 2%;
+                  margin-top: 2%;
+                  position: relative;
+                  &:nth-child(1) {
+                      margin-top: 0;
+                  };
+                  &:nth-child(2) {
+                      margin-top: 0;
+                  };
+                  &:nth-child(3) {
+                      margin-top: 0;
+                  };
+                  &:nth-child(4) {
+                      margin-top: 0;
+                  };
+                  &:nth-child(4n+4) {
+                      margin-right: 0;
+                  };
+                  .icon-box {
+                      position: absolute;
+                      bottom: 0;
+                      right: 0;
+                      display: flex;
+                      width: 100%;
+                      padding: 2px 0;
+                      box-sizing: border-box;
+                      justify-content: center;
+                      align-items: center;
+                      background: #616161;
+                      /deep/ .van-icon {
+                      }  
+                  };
+                  img {
+                      width: 100%;
+                      height: 100%
+                  };
+                  &:last-child {
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      background: #f2f2f2;
+                      /deep/ .van-icon{
+                          position: relative;
+                          top: 0;
+                          right: 0;
+                      }
+                  }
+              }
+            }
           }
         };
         .btn-box {

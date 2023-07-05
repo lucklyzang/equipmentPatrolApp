@@ -58,6 +58,47 @@
                         </div>
                     </div>    
                 </van-tab>
+                <van-tab title="14:00" name="14:00">
+                    <van-empty description="暂无数据" v-if="isShowNoMoreData" />
+                    <div class="backlog-task-list-box">
+                        <div class="backlog-task-list">
+                            <div class="backlog-task-top">
+                                <div class="backlog-task-top-left">
+                                    <span>任务编号</span>
+                                </div>
+                                <div class="backlog-task-top-right" @click="clockInEvent">
+                                    <span>已打卡</span>
+                                </div>
+                            </div>
+                            <div class="backlog-task-content">
+                               <div class="equipment-name-list" @click="equipmentChecklistEvent">
+                                   <div class="equipment-name">
+                                       中央空调 1#
+                                   </div>
+                                   <div class="operation-icon-box">
+                                       <img :src="uploadingFailPng" alt="">
+                                   </div>
+                               </div>
+                               <div class="equipment-name-list">
+                                   <div class="equipment-name">
+                                       中央空调 2#
+                                   </div>
+                                   <div class="operation-icon-box">
+                                       <img :src="uploadingPng" alt="">
+                                   </div>
+                               </div>
+                               <div class="equipment-name-list">
+                                   <div class="equipment-name">
+                                       中央空调 3#
+                                   </div>
+                                   <div class="operation-icon-box">
+                                       <img :src="uploadingSuccessPng" alt="">
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>    
+                </van-tab>
             </van-tabs>
             <div class="complete-btn-box">
                 <div class="complete-btn" @click="completeTaskEvent">完成任务</div>
@@ -89,7 +130,7 @@ export default {
       completetedTaskTimer: 0,
       timeOne: null,
       timeTwo: null,
-      activeName: 'backlogTask',
+      activeName: '14:00',
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       uploadingSuccessPng: require("@/common/images/home/uploading-success.png"),
       uploadingPng: require("@/common/images/home/uploading.png"),
@@ -125,24 +166,18 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","taskType","enterPostMessagePageMessage"])
+    ...mapGetters(["userInfo","taskType"])
   },
 
   methods: {
-    ...mapMutations(["changePatrolTaskListMessage","changeTaskType","changeEnterPostMessagePageMessage"]),
+    ...mapMutations(["changePatrolTaskListMessage","changeTaskType"]),
 
     onClickLeft () {
         this.$router.push({path: '/home'})
     },
 
     onClickRight () {
-        let temporaryEnterPostMessagePageMessage = this.enterPostMessagePageMessage;
-        temporaryEnterPostMessagePageMessage['collect'] = '';
-        temporaryEnterPostMessagePageMessage['workers'] = [];
-        temporaryEnterPostMessagePageMessage['storageRadio'] = false;
-        temporaryEnterPostMessagePageMessage['enterPostMessagePageSource'] = '/patrolTasklist';
-        this.changeEnterPostMessagePageMessage(temporaryEnterPostMessagePageMessage);
-        this.$router.push({path: '/postMessage'})
+        this.$router.push({path: '/historyEquipmPatroLTaskList'})
     },
 
     // 任务集名称点击事件

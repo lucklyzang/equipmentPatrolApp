@@ -15,7 +15,7 @@ export function getDefaultLoginState() {
     }
 };
 
-// 巡更模块store的初始值
+// 设备巡检模块store的初始值
 export function getDefaultPatrolTaskState() {
     return {
         taskType: {}, //任务类型
@@ -29,27 +29,4 @@ export function getDefaultPatrolTaskState() {
         currentElectronicSignature: null, // 工单完成时的签名信息
         originalSignature: null //// 工单完成时原始签名信息
     }
-};
-
-// 事件登记模块store的初始值
-export function getDefaultEventRegisterState() {
-    return {
-        temporaryStorageRepairsRegisterMessage: [], //暂存事件登记(工程报修)信息
-        temporaryStorageOtherRegisterMessage: [], //暂存事件登记(其他)信息
-        temporaryStorageClaimRegisterMessage: [], //暂存事件登记(拾金不昧)信息
-        temporaryStorageHistoryClaimRegisterMessage: [], //暂存历史事件登记(拾金不昧)信息
-        enterEventRegisterPageMessage: {}, // 进入事件登记页的信息
-        moreEventMessage: {}, // 更多信息
-        claimRegisterElectronicSignatureMessage: {receiverSignature:[]} //拾金不昧签名相关信息
-    }
-};
-
-// 留言簿模块store的初始值
-export function getDefaultGuestbookState() {
-    return {
-        enterPostMessagePageMessage: {}, // 进入留言发布页的信息,
-        isEnterGuestBookPageFromHomePage: false, // 是否从首页进入过留言簿页
-        lastMessageNumber: null, //上次留言数量
-        currentScrollTop: 0 // 留言簿列表当前滚动距离
-    }
-};
+}

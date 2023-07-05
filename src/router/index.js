@@ -10,36 +10,16 @@ const MyInfo = () =>
     import ('@/pages/MyInfo')
 const PatrolTaskElectronicSignaturePage = () =>
     import ('@/pages/patrolTask/PatrolTaskElectronicSignaturePage')
-const EventRegisterElectronicSignaturePage = () =>
-    import ('@/pages/eventPage/EventRegisterElectronicSignaturePage')
 const EquipmentPatrolDetails = () =>
     import ('@/pages/patrolTask/EquipmentPatrolDetails')
 const EquipmentChecklist = () =>
     import ('@/pages/patrolTask/EquipmentChecklist')
-const ProblemRecord = () =>
-    import ('@/pages/patrolTask/ProblemRecord')
-const AreaPatrolDetails = () =>
-    import ('@/pages/patrolTask/AreaPatrolDetails')
-const EventList = () =>
-    import ('@/pages/eventPage/EventList')
-const RepairsRegister = () =>
-    import ('@/pages/eventPage/RepairsRegister')
-const OtherRegister = () =>
-    import ('@/pages/eventPage/OtherRegister')
-const ClaimRegister = () =>
-    import ('@/pages/eventPage/ClaimRegister')
-const HistoryClaimRegister = () =>
-    import ('@/pages/eventPage/HistoryClaimRegister')
-const MoreHistoryClaimRegister = () =>
-    import ('@/pages/eventPage/MoreHistoryClaimRegister')
-const HistoryRepairsRegister = () =>
-    import ('@/pages/eventPage/HistoryRepairsRegister')
-const MoreHistoryRepairsRegister = () =>
-    import ('@/pages/eventPage/MoreHistoryRepairsRegister')
-const HistoryOtherRegister = () =>
-    import ('@/pages/eventPage/HistoryOtherRegister')
-const MoreHistoryOtherRegister = () =>
-    import ('@/pages/eventPage/MoreHistoryOtherRegister')
+const PatrolAbnormalCheckItemEventList = () =>
+    import ('@/pages/patrolTask/PatrolAbnormalCheckItemEventList')
+const PatrolAbnormalRecord = () =>
+    import ('@/pages/patrolTask/PatrolAbnormalRecord')
+const HistoryEquipmPatroLTaskList = () =>
+    import ('@/pages/patrolTask/HistoryEquipmPatroLTaskList')
 Vue.use(Router)
 let baseRoute = [{
         path: '/',
@@ -57,11 +37,6 @@ let baseRoute = [{
         component: PatrolTaskElectronicSignaturePage
     },
     {
-        path: '/eventRegisterElectronicSignaturePage',
-        name: 'eventRegisterElectronicSignaturePage',
-        component: EventRegisterElectronicSignaturePage
-    },
-    {
         path: '/myInfo',
         name: 'myInfo',
         component: MyInfo
@@ -77,77 +52,19 @@ let baseRoute = [{
         component: EquipmentChecklist
     },
     {
-        path: '/problemRecord',
-        name: 'problemRecord',
-        component: ProblemRecord
+        path: '/patrolAbnormalCheckItemEventList',
+        name: 'patrolAbnormalCheckItemEventList',
+        component: PatrolAbnormalCheckItemEventList
     },
     {
-        path: '/areaPatrolDetails',
-        name: 'areaPatrolDetails',
-        component: AreaPatrolDetails,
-        meta: {
-            keepAlive: true
-        }
+        path: '/historyEquipmPatroLTaskList',
+        name: 'historyEquipmPatroLTaskList',
+        component: HistoryEquipmPatroLTaskList
     },
     {
-        path: '/eventList',
-        name: 'eventList',
-        component: EventList
-
-    },
-    {
-        path: '/repairsRegister',
-        name: 'repairsRegister',
-        component: RepairsRegister
-
-    },
-    {
-        path: '/otherRegister',
-        name: 'otherRegister',
-        component: OtherRegister
-
-    },
-    {
-        path: '/claimRegister',
-        name: 'claimRegister',
-        component: ClaimRegister
-
-    },
-    {
-        path: '/historyClaimRegister',
-        name: 'historyClaimRegister',
-        component: HistoryClaimRegister
-
-    },
-    {
-        path: '/moreHistoryClaimRegister',
-        name: 'moreHistoryClaimRegister',
-        component: MoreHistoryClaimRegister
-
-    },
-    {
-        path: '/historyRepairsRegister',
-        name: 'historyRepairsRegister',
-        component: HistoryRepairsRegister
-
-    },
-    {
-        path: '/moreHistoryRepairsRegister',
-        name: 'moreHistoryRepairsRegister',
-        component: MoreHistoryRepairsRegister
-
-    },
-    {
-        path: '/historyOtherRegister',
-        name: 'historyOtherRegister',
-        component: HistoryOtherRegister
-
-    },
-    {
-        path: '/moreHistoryOtherRegister',
-        name: 'moreHistoryOtherRegister',
-        component: MoreHistoryOtherRegister
-
+        path: '/patrolAbnormalRecord',
+        name: 'patrolAbnormalRecord',
+        component: PatrolAbnormalRecord
     }
 ];
 let router = new Router({
