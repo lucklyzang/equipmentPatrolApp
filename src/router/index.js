@@ -20,6 +20,34 @@ const PatrolAbnormalRecord = () =>
     import ('@/pages/patrolTask/PatrolAbnormalRecord')
 const HistoryEquipmPatroLTaskList = () =>
     import ('@/pages/patrolTask/HistoryEquipmPatroLTaskList')
+const HistoryEquipmentPatrolDetails = () =>
+    import ('@/pages/patrolTask/HistoryEquipmentPatrolDetails')
+const HistoryEquipmentChecklist = () =>
+    import ('@/pages/patrolTask/HistoryEquipmentChecklist')
+const HistoryPatrolAbnormalCheckItemEventList = () =>
+    import ('@/pages/patrolTask/HistoryPatrolAbnormalCheckItemEventList')
+const HistoryPatrolAbnormalRecord = () =>
+    import ('@/pages/patrolTask/HistoryPatrolAbnormalRecord')
+const EquipmentSpotCheck = () =>
+    import ('@/pages/spotCheckTask/EquipmentSpotCheck')
+const EquipmentSpotCheckTaskDetails = () =>
+    import ('@/pages/spotCheckTask/EquipmentSpotCheckTaskDetails')
+const SpotAbnormalRecord = () =>
+    import ('@/pages/spotCheckTask/SpotAbnormalRecord')
+const SpotAbnormalCheckItemEventList = () =>
+    import ('@/pages/spotCheckTask/SpotAbnormalCheckItemEventList')
+const HistoryEquipmSpotTaskList = () =>
+    import ('@/pages/spotCheckTask/HistoryEquipmSpotTaskList')
+const HistoryEquipmentSpotCheckTaskDetails = () =>
+    import ('@/pages/spotCheckTask/HistoryEquipmentSpotCheckTaskDetails')
+const HistorySpotAbnormalCheckItemEventList = () =>
+    import ('@/pages/spotCheckTask/HistorySpotAbnormalCheckItemEventList')
+const HistorySpotAbnormalRecord = () =>
+    import ('@/pages/spotCheckTask/HistorySpotAbnormalRecord')
+const EquipmentSpotList = () =>
+    import ('@/pages/equipmentSpot/EquipmentSpotList')
+const CreateSpotTask = () =>
+    import ('@/pages/equipmentSpot/CreateSpotTask')
 Vue.use(Router)
 let baseRoute = [{
         path: '/',
@@ -62,9 +90,79 @@ let baseRoute = [{
         component: HistoryEquipmPatroLTaskList
     },
     {
+        path: '/historyEquipmentPatrolDetails',
+        name: 'historyEquipmentPatrolDetails',
+        component: HistoryEquipmentPatrolDetails
+    },
+    {
+        path: '/historyEquipmentChecklist',
+        name: 'historyEquipmentChecklist',
+        component: HistoryEquipmentChecklist
+    },
+    {
+        path: '/historyPatrolAbnormalCheckItemEventList',
+        name: 'historyPatrolAbnormalCheckItemEventList',
+        component: HistoryPatrolAbnormalCheckItemEventList
+    },
+    {
+        path: '/historyPatrolAbnormalRecord',
+        name: 'historyPatrolAbnormalRecord',
+        component: HistoryPatrolAbnormalRecord
+    },
+    {
         path: '/patrolAbnormalRecord',
         name: 'patrolAbnormalRecord',
         component: PatrolAbnormalRecord
+    },
+    {
+        path: '/equipmentSpotCheck',
+        name: 'equipmentSpotCheck',
+        component: EquipmentSpotCheck
+    },
+    {
+        path: '/equipmentSpotCheckTaskDetails',
+        name: 'equipmentSpotCheckTaskDetails',
+        component: EquipmentSpotCheckTaskDetails
+    },
+    {
+        path: '/spotAbnormalRecord',
+        name: 'spotAbnormalRecord',
+        component: SpotAbnormalRecord
+    },
+    {
+        path: '/spotAbnormalCheckItemEventList',
+        name: 'spotAbnormalCheckItemEventList',
+        component: SpotAbnormalCheckItemEventList
+    },
+    {
+        path: '/historyEquipmSpotTaskList',
+        name: 'historyEquipmSpotTaskList',
+        component: HistoryEquipmSpotTaskList
+    },
+    {
+        path: '/historyEquipmentSpotCheckTaskDetails',
+        name: 'historyEquipmentSpotCheckTaskDetails',
+        component: HistoryEquipmentSpotCheckTaskDetails
+    },
+    {
+        path: '/historySpotAbnormalCheckItemEventList',
+        name: 'historySpotAbnormalCheckItemEventList',
+        component: HistorySpotAbnormalCheckItemEventList
+    },
+    {
+        path: '/historySpotAbnormalRecord',
+        name: 'historySpotAbnormalRecord',
+        component: HistorySpotAbnormalRecord
+    },
+    {
+        path: '/equipmentSpotList',
+        name: 'equipmentSpotList',
+        component: EquipmentSpotList
+    },
+    {
+        path: '/createSpotTask',
+        name: 'createSpotTask',
+        component: CreateSpotTask
     }
 ];
 let router = new Router({

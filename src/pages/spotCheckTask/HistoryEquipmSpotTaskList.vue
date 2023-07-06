@@ -24,20 +24,23 @@
               <div class="backlog-task-list">
                   <div class="backlog-task-top">
                       <div class="backlog-task-top-left">
-                          <span>1号楼日常巡检</span>
+                          <span>任务编号: s1212</span>
                       </div>
                       <div class="backlog-task-top-right">
                           <span>已完成</span>
                       </div>
                   </div>
                   <div class="backlog-task-content">
-                      <div class="taskset-name">
-                        <span>日期:</span>
-                        <span>2023-6-12</span>
-                      </div>
-                      <div class="right-arrow-box" @click="taskDetailsEvent()">
+                    <div class="backlog-task-content-left">
+                        <div class="taskset-name">
+                            <span>日期:</span>
+                            <span>2023-6-12</span>
+                        </div>
+                        <div class="status-name">正常!</div>
+                    </div>
+                    <div class="right-arrow-box" @click="taskDetailsEvent()">
                         <van-icon name="arrow" color="#1684FC" size="24" />
-                      </div>
+                    </div>
                   </div>
               </div>
               <van-empty description="暂无数据" v-show="backlogEmptyShow" />
@@ -59,7 +62,7 @@ import { mapGetters, mapMutations } from "vuex";
 import { getEventList } from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 export default {
-  name: "HistoryEquipmPatroLTaskList",
+  name: "HistoryEquipmSpotTaskList",
   components: {
     NavBar
   },
@@ -136,7 +139,7 @@ export default {
 
     // 顶部导航左边点击事件
     onClickLeft () {
-      this.$router.push({path: '/equipmentPatrolDetails'})
+      this.$router.push({path: '/equipmentSpotCheck'})
     },
 
     // 格式化时间
@@ -225,7 +228,7 @@ export default {
 
     // 进入历史巡检任务详情事件
     taskDetailsEvent () {
-      this.$router.push({path: '/historyEquipmentPatrolDetails'})
+      this.$router.push({path: '/historyEquipmentSpotCheckTaskDetails'})
     },
 
     // 获取历史任务列表
@@ -435,13 +438,23 @@ export default {
               };
               .backlog-task-content {
                   display: flex;
+                  height: 70px;
                   justify-content: space-between;
-                  .taskset-name {
-                    line-height: 40px;
-                    word-break: break-all;
-                    height: 40px;
-                    font-size: 14px;
-                    color: #8E9397  
+                  align-items: center;
+                  .backlog-task-content-left {
+                    .taskset-name {
+                        word-break: break-all;
+                        margin-bottom: 10px;
+                        font-size: 14px;
+                        color: #101010  
+                    };
+                    .status-name {
+                        font-size: 14px;
+                        color: green  
+                    };
+                    .statusNameStyle {
+                        color: red !important
+                    }
                   };
                   .right-arrow-box {
                     height: 40px;
