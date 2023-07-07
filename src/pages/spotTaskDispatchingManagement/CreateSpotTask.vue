@@ -1,6 +1,6 @@
 <template>
   <div class="page-box" ref="wrapper">
-    <!-- 发现时间 -->
+    <!-- 开始时间 -->
     <div class="find-time-box">
       <van-popup v-model="showFindTime" position="bottom">
         <van-datetime-picker
@@ -10,7 +10,7 @@
           :max-date="maxDate"
         >
           <template #default>
-            <h3>发现时间</h3>
+            <h3>开始时间</h3>
             <van-icon name="cross" size="25" @click="showFindTime = false" />
           </template>
           <template #columns-bottom>
@@ -22,24 +22,6 @@
         </van-datetime-picker>
       </van-popup>
     </div>
-    <transition name="van-slide-up">
-      <div class="choose-photo-box" v-show="photoBox">
-        <div class="choose-photo">
-          <van-icon name="photo" />
-          <input name="uploadImg1" ref="inputFile" id="demo1" @change="previewFileOne" type="file" accept="image/album"/>从图库中选择
-        </div>
-        <div class="photo-graph">
-          <van-icon name="photograph" />
-          <input name="uploadImg2" id="demo2"  @change="previewFileTwo" type="file" accept="image/camera" capture="camera"/>拍照
-        </div>
-        <div class="photo-cancel" @click="photoCancel">取消</div>
-      </div>
-    </transition>
-    <van-dialog v-model="deleteInfoDialogShow" title="确定删除此图片?" 
-      confirm-button-color="#218FFF" show-cancel-button
-      @confirm="sureDeleteEvent"
-      >
-    </van-dialog>
     <!-- 退出提示框   -->
     <div class="quit-info-box">
        <van-dialog v-model="quitInfoShow"  show-cancel-button width="85%"
@@ -64,17 +46,17 @@
     </div>  
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{loadingText}}</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
-    <!-- 异常类型 -->
-    <div class="transport-rice-box" v-if="showAbnormalType">
-      <ScrollSelection :columns="abnormalTypeOption" title="异常类型" @sure="abnormalTypeSureEvent" @cancel="abnormalTypeCancelEvent" @close="abnormalTypeCloseEvent" />
+    <!-- 规格型号 -->
+    <div class="transport-rice-box" v-if="showSpecification">
+      <ScrollSelection :columns="specificationOption" title="规格型号" @sure="specificationSureEvent" @cancel="specificationCancelEvent" @close="specificationCloseEvent" />
     </div>
-    <!-- 严重程度 -->
-    <div class="transport-rice-box" v-if="showSeverityLevel">
-      <ScrollSelection :columns="severityLevelOption" title="严重程度" @sure="severityLevelSureEvent" @cancel="severityLevelCancelEvent" @close="severityLevelCloseEvent" />
+    <!-- 点检员 -->
+    <div class="transport-rice-box" v-if="showSpotCheckPerson">
+      <ScrollSelection :columns="spotCheckPersonOption" title="点检员" @sure="spotCheckPersonSureEvent" @cancel="spotCheckPersonCancelEvent" @close="spotCheckPersonCloseEvent" />
     </div>
-    <!-- 设备状态 -->
-    <div class="transport-rice-box" v-if="showEquipmentStatus">
-      <ScrollSelection :columns="equipmentStatusOption" title="设备状态" @sure="equipmentStatusSureEvent" @cancel="equipmentStatusCancelEvent" @close="equipmentStatusCloseEvent" />
+    <!-- 设备名称 -->
+    <div class="transport-rice-box" v-if="showEquipmentName">
+      <ScrollSelection :columns="equipmentNameOption" title="设备名称" @sure="equipmentNameSureEvent" @cancel="equipmentNameCancelEvent" @close="equipmentNameCloseEvent" />
     </div>
     <div class="nav">
        <van-nav-bar
@@ -96,68 +78,66 @@
 		</div>
       <div class="content-box">
         <div class="message-box">
-         <div class="select-box event-type">
-            <div class="select-box-left">
-              <span>*</span>
-              <span>编号</span>
-            </div>
-            <div class="select-box-right event-type-right">
-              <span>{{ number }}</span>
-            </div>
-        </div>
-        <div class="select-box event-type">
+        <div class="select-box end-select-box">
           <div class="select-box-left">
             <span>*</span>
-            <span>检查项</span>
+            <span>紧急程度</span>
           </div>
           <div class="select-box-right">
-            <span>{{ checkItem }}</span>
+            <van-radio-group v-model="emergencyDegreeValue" direction="horizontal">
+              <van-radio name="1" checked-color="#289E8E">正常</van-radio>
+              <van-radio name="2" checked-color="#E86F50">紧急</van-radio>
+            </van-radio-group>
           </div>
         </div>
         <div class="select-box end-select-box">
           <div class="select-box-left">
             <span>*</span>
-            <span>记录时间</span>
+            <span>设备名称</span>
+          </div>
+          <div class="select-box-right" @click="equipmentNameClickEvent">
+            <span>{{ currentEquipmentName }}</span>
+            <van-icon name="arrow" color="#989999" size="20" />
+          </div>
+        </div>
+        <div class="select-box end-select-box">
+          <div class="select-box-left">
+            <span>*</span>
+            <span>规格型号</span>
+          </div>
+          <div class="select-box-right" @click="specificationClickEvent">
+            <span>{{ currentSpecification  }}</span>
+            <van-icon name="arrow" color="#989999" size="20" />
+          </div>
+        </div>
+        <div class="select-box end-select-box">
+          <div class="select-box-left">
+            <span>*</span>
+            <span>开始时间</span>
           </div>
           <div class="select-box-right" @click="showFindTime = true">
             <span>{{ getNowFormatDate(currentFindTime) }}</span>
             <van-icon name="arrow" color="#989999" size="20" />
           </div>
         </div>
-        <div class="select-box end-select-box end-select-box-room">
+        <div class="select-box end-select-box">
           <div class="select-box-left">
-            <span>异常类型</span>
+            <span>*</span>
+            <span>点检员</span>
           </div>
-          <div class="select-box-right" @click="abnormalTypeClickEvent">
-            <span>{{ currentAbnormalType  }}</span>
+          <div class="select-box-right" @click="spotCheckPersonClickEvent">
+            <span>{{ currentSpotCheckPerson  }}</span>
             <van-icon name="arrow" color="#989999" size="20" />
           </div>
         </div>
-        <div class="select-box end-select-box end-select-box-room">
-          <div class="select-box-left">
-            <span>严重程度</span>
+        <div class="check-item-box">
+          <div class="check-item-top">
+            <span>*</span>
+            <span>检查项</span>
           </div>
-          <div class="select-box-right" @click="severityLevelClickEvent">
-            <span>{{ currentSeverityLevel  }}</span>
-            <van-icon name="arrow" color="#989999" size="20" />
-          </div>
-        </div>
-        <div class="select-box end-select-box end-select-box-room">
-          <div class="select-box-left">
-            <span>设备状态</span>
-          </div>
-          <div class="select-box-right" @click="equipmentStatusClickEvent">
-            <span>{{ currentEquipmentStatus }}</span>
-            <van-icon name="arrow" color="#989999" size="20" />
-          </div>
-        </div>
-        <div class="transport-type problem-overview">
-            <div class="transport-type-left">
-              <span>异常情况说明</span>
-            </div>
-            <div class="transport-type-right">
-              <van-field
-                v-model="problemOverview"
+          <div class="check-item-bottom">
+             <van-field
+                v-model="checkItemContent"
                 rows="1"
                 autosize
                 maxlength="200"
@@ -165,38 +145,16 @@
                 type="textarea"
                 placeholder="请输入"
               />
-            </div>
+              <van-icon name="add" size="26" color="blue" @click="addCheckItemEvent" />
           </div>
-          <div class="result-picture">
-            <div class="image-list">
-                <div v-for="(item, index) in problemPicturesList" :key='index'>
-                    <img :src="item" @click="enlareEvent(item)" />
-                    <div class="icon-box" @click="issueDelete(index,item)">
-                        <van-icon
-                        name="delete"
-                        color="#d70000"
-                        />
-                    </div>
-                </div>
-                <div @click="issueClickEvent">
-                    <van-icon name="plus" size="30" color="#101010" />
-                </div>
-            </div>
-         </div>
-          <div class="transport-type">
-            <div class="transport-type-left">
-              <span>意见或建议</span>
-            </div>
-            <div class="transport-type-right">
-              <van-field
-                v-model="taskDescribe"
-                rows="3"
-                autosize
-                type="textarea"
-                placeholder="请输入"
-              />
-            </div>
+        </div>
+        <div class="dashed-line"></div>
+        <div class="check-item-list-box">
+          <div class="check-item-list" v-for="(item,index) in checkItemList" :key="index">
+            <img :src="minusPng" alt="" @click="deleteCheckItemEvent(index)">
+            <p>{{ item }}</p>
           </div>
+        </div>
         </div>
         <div class="btn-box">
           <span class="operate-one" @click="quitEvent">退出</span>
@@ -210,10 +168,7 @@
 <script>
 import { mapGetters, mapMutations } from "vuex";
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
-import {getAliyunSign} from '@/api/login.js'
-import { eventregister,queryStructure} from '@/api/escortManagement.js'
-import { compress, base64ImgtoFile } from '@/common/js/utils'
-import axios from 'axios'
+import { queryStructure} from '@/api/escortManagement.js'
 import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
 import ScrollSelection from "@/components/ScrollSelection";
@@ -229,42 +184,39 @@ export default {
     return {
       loadingShow: false,
       quitInfoShow: false,
-      checkItem: '2#',
-      number: 'q12',
       showFindTime: false,
-      problemPicturesList: [],
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 10, 1),
       currentFindTime: new Date(),
+      emergencyDegreeValue: '1',
       currentImgUrl: '',
       photoBox: false,
+      checkItemList: [],
+      checkItemContent: '',
       imgBoxShow: false,
       imgIndex: '',
       checkResultId: '',
-      imgOnlinePathArr: [],
-      imgDeleteUrlArr: [],
-      existOnlineImgPath: [],
-      imgDeleteUrl: '',
       deleteInfoDialogShow: false,
       loadingText: '加载中...',
       problemOverview: '',
       taskDescribe: '',
       transportNumberValue: '',
 
-      abnormalTypeOption: [],
-      showAbnormalType: false,
-      currentAbnormalType: '请选择',
+      specificationOption: [],
+      showSpecification: false,
+      currentSpecification: '请选择',
 
-      severityLevelOption: [],
-      showSeverityLevel: false,
-      currentSeverityLevel: '请选择',
+      spotCheckPersonOption: [],
+      showSpotCheckPerson: false,
+      currentSpotCheckPerson: '请选择',
 
-      equipmentStatusOption: [],
-      showEquipmentStatus: false,
-      currentEquipmentStatus: '请选择',
+      equipmentNameOption: [],
+      showEquipmentName: false,
+      currentEquipmentName: '请选择',
 
       overlayShow: false,
-      statusBackgroundPng: require("@/common/images/home/status-background.png")
+      statusBackgroundPng: require("@/common/images/home/status-background.png"),
+      minusPng: require("@/common/images/home/minus.png")
     }
   },
 
@@ -315,41 +267,6 @@ export default {
       this.showFindTime = false
     },
 
-    // 图片放大事件
-    enlareEvent (item) {
-      this.currentImgUrl = item;
-      this.imgBoxShow = true
-    },
-
-    // 拍照点击
-    issueClickEvent () {
-      if (this.problemPicturesList.length >= 5) {
-        this.$toast('至多只能上传5张图片!');
-        return
-      };
-      this.photoBox = true;
-      this.overlayShow = true
-    },
-
-    // 确定删除提示框确定事件
-    sureDeleteEvent () {
-      this.imgDeleteUrlArr.push(this.imgDeleteUrl);
-      this.problemPicturesList.splice(this.imgIndex, 1);
-      for (let item of this.imgDeleteUrlArr) {
-        let temporaryIndex = this.existOnlineImgPath.indexOf(item);
-        if (temporaryIndex > -1) {
-          this.existOnlineImgPath.splice(this.existOnlineImgPath.indexOf(item),1)
-        }
-      };
-      console.log('sas1',this.problemPicturesList,this.existOnlineImgPath);
-    },
-
-    // 拍照照片删除
-    issueDelete (index,item) {
-      this.deleteInfoDialogShow = true;
-      this.imgIndex = index;
-      this.imgDeleteUrl = item
-    },
 
     // 回显暂存的信息
     echoTemporaryStorageMessage (temporaryIndex) {
@@ -360,170 +277,6 @@ export default {
       this.taskDescribe = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['remark'];
       this.problemPicturesList = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['images'];
       this.checkResultId = casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['resultId'] ? casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['resultId'] : ''
-    },
-
-    // 处理维修任务参与者
-    disposeTaskPresent (item) {
-      if (item.length == 0) { return '请选择'};
-      let temporaryArray = [];
-      for (let innerItem of item) {
-        temporaryArray.push(innerItem.text)
-      };
-      return temporaryArray.join('、')
-    },
-
-    // 获取阿里云签名接口
-    getSign (filePath = '') {
-      return new Promise((resolve, reject) => {
-        getAliyunSign().then((res) => {
-          if (res && res.data.code == 200) {
-            // 存储签名信息
-            this.changeOssMessage(res.data.data);
-            let temporaryTimeInfo = {};
-            temporaryTimeInfo['expire'] = Number(res.data.data.expire);
-            // 存储过期时间信息
-            this.changeTimeMessage(temporaryTimeInfo);
-            if (this.isExpire) {
-              this.uploadImageToOss(filePath)
-            };
-            this.isExpire = false;
-            resolve()
-          } else {
-            this.overlayShow = false;
-            this.loadingShow = false;
-            this.$toast({
-              message: `${res.data.msg}`,
-              type: 'fail'
-            });
-            reject()
-          }
-        })
-        .catch((err) => {
-          this.overlayShow = false;
-          this.loadingShow = false;
-          this.$toast({
-            message: `${err}`,
-            type: 'fail'
-          });
-          reject()
-        })
-      })	
-    },
-    
-    // 上传图片到阿里云服务器
-    uploadImageToOss (filePath) {
-      return new Promise((resolve, reject) => {
-        // OSS地址
-        const aliyunServerURL = this.ossMessage.host;
-        // 存储路径(后台固定位置+随即数+文件格式)
-        const aliyunFileKey = this.ossMessage.dir + new Date().getTime() + Math.floor(Math.random() * 100) + base64ImgtoFile(filePath).name;
-        // 临时AccessKeyID0
-        const OSSAccessKeyId = this.ossMessage.accessid;
-        // 加密策略
-        const policy = this.ossMessage.policy;
-        // 签名
-        const signature = this.ossMessage.signature;
-        let formData = new FormData();
-        formData.append('key',aliyunFileKey);
-        formData.append('policy',policy);
-        formData.append('OSSAccessKeyId',OSSAccessKeyId);
-        formData.append('success_action_status','200');
-        formData.append('Signature',signature);
-        formData.append('file',base64ImgtoFile(filePath));
-        axios({
-          url: aliyunServerURL,
-          method: 'post',
-          data: formData,
-          headers: {'Content-Type': 'multipart/form-data'}
-        }).then((res) => {
-          this.imgOnlinePathArr.push(`${aliyunServerURL}/${aliyunFileKey}`);
-          resolve()
-        })
-        .catch((err) => {
-          this.overlayShow = false;
-          this.loadingShow = false;
-          this.loadingText = '';
-          this.$toast({
-            message: `${err}`,
-            type: 'fail'
-          });
-          reject()
-        })
-      })
-    },
-
-
-    // 图片上传预览
-    previewFileOne() {
-      let file = document.getElementById("demo1").files[0];
-      this.temporaryFile = file;
-      let _this = this;
-      let reader = new FileReader();
-      let isLt2M = file.size/1024/1024 < 16;
-      if (!isLt2M) {
-        this.$dialog.alert({
-          message: '上传图片大小不能超过16MB!',
-          closeOnPopstate: true
-        }).then(() => {
-        });
-        _this.$refs.inputFile.value = null;
-        _this.photoBox = false;
-        _this.overlayShow = false;
-        return
-      };  
-      reader.addEventListener("load", function () {
-        // 压缩图片
-        let result = reader.result;
-        let img = new Image();
-        img.src = result;
-        img.onload = function () {
-          let src = compress(img);
-          _this.problemPicturesList.push(src);
-          _this.photoBox = false;
-          _this.overlayShow = false
-        };
-        _this.$refs.inputFile.value = null;
-      }, false);
-      if (file) {
-        reader.readAsDataURL(file);
-      };
-    },
-
-    //拍照预览
-    previewFileTwo() {
-      let file = document.getElementById("demo2").files[0];
-      let _this = this;
-      let reader = new FileReader();
-      let isLt2M = file.size/1024/1024 < 16;
-      if (!isLt2M) {
-        _this.$dialog.alert({
-          message: '上传图片大小不能超过16MB!',
-          closeOnPopstate: true
-        }).then(() => {
-        });
-        return
-      };  
-      reader.addEventListener("load", function () {
-        // 压缩图片
-        let result = reader.result;
-        let img = new Image();
-        img.src = result;
-        img.onload = function () {
-          let src = compress(img);
-          _this.problemPicturesList.push(src);
-          _this.photoBox = false;
-          _this.overlayShow = false
-        }
-      }, false);
-      if (file) {
-        reader.readAsDataURL(file);
-      };
-    },
-
-    // 拍照取消
-    photoCancel () {
-      this.photoBox = false;
-      this.overlayShow = false
     },
 
     // 格式化时间
@@ -549,6 +302,17 @@ export default {
       };
       currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + ' ' + hour + seperator2 + minutes
       return currentdate
+    },
+
+    // 添加检查项事件
+    addCheckItemEvent () {
+      if (!this.checkItemContent) { return };
+      this.checkItemList.push(this.checkItemContent)
+    },
+
+    // 删除检查项事件
+    deleteCheckItemEvent (index) {
+      this.checkItemList.splice(index,1)
     },
 
     // 并行查询目的建筑
@@ -595,78 +359,78 @@ export default {
       },
 
     // 异常类型列点击事件
-    abnormalTypeClickEvent () {
-      this.showAbnormalType = true
+    specificationClickEvent () {
+      this.showSpecification = true
     },
 
     // 异常类型下拉选择框确认事件
-    abnormalTypeSureEvent (val) {
+    specificationSureEvent (val) {
       if (val.length > 0) {
-        this.currentAbnormalType =  val;
+        this.currentSpecification =  val;
       } else {
-        this.currentAbnormalType = '请选择'
+        this.currentSpecification = '请选择'
       };
-      this.showAbnormalType = false
+      this.showSpecification = false
     },
 
     // 异常类型下拉选择框取消事件
-    abnormalTypeCancelEvent () {
-      this.showAbnormalType = false
+    specificationCancelEvent () {
+      this.showSpecification = false
     },
 
     // 异常类型下拉选择框关闭事件
-    abnormalTypeCloseEvent () {
-      this.showAbnormalType = false
+    specificationCloseEvent () {
+      this.showSpecification = false
     },
 
     // 严重程度列点击事件
-    severityLevelClickEvent () {
-      this.showSeverityLevel = true
+    spotCheckPersonClickEvent () {
+      this.showSpotCheckPerson = true
     },
 
     // 严重程度下拉选择框确认事件
-    severityLevelSureEvent (val) {
+    spotCheckPersonSureEvent (val) {
       if (val.length > 0) {
-        this.currentSeverityLevel =  val;
+        this.currentSpotCheckPerson =  val;
       } else {
-        this.currentSeverityLevel = '请选择'
+        this.currentSpotCheckPerson = '请选择'
       };
-      this.showSeverityLevel = false
+      this.showSpotCheckPerson = false
     },
 
     // 严重程度下拉选择框取消事件
-    severityLevelCancelEvent () {
-      this.showSeverityLevel = false
+    spotCheckPersonCancelEvent () {
+      this.showSpotCheckPerson = false
     },
 
     // 严重程度下拉选择框关闭事件
-    severityLevelCloseEvent () {
-      this.showSeverityLevel = false
+    spotCheckPersonCloseEvent () {
+      this.showSpotCheckPerson = false
     },
 
     // 设备状态列点击事件
-    equipmentStatusClickEvent () {
-      this.showEquipmentStatus = true
+    equipmentNameClickEvent () {
+      this.showEquipmentName = true
     },
 
     // 设备状态下拉选择框确认事件
-    equipmentStatusSureEvent (val) {
+    equipmentNameSureEvent (val) {
       if (val.length > 0) {
-        this.currentEquipmentStatus =  val;
+        this.currentEquipmentName =  val;
       } else {
-        this.currentEquipmentStatus = '请选择'
+        this.currentEquipmentName = '请选择'
       };
-      this.showEquipmentStatus = false
+      this.showEquipmentName = false
     },
 
     // 设备状态下拉选择框取消事件
-    equipmentStatusCancelEvent () {
-      this.showEquipmentStatus = false
+    equipmentNameCancelEvent () {
+      this.showEquipmentName = false
     },
 
     // 设备状态下拉选择框关闭事件
-    equipmentStatusCloseEvent () {
-      this.showEquipmentStatus = false
+    equipmentNameCloseEvent () {
+      this.showEquipmentName = false
     },
 
     // 退出事件
@@ -674,95 +438,12 @@ export default {
       this.quitInfoShow = true
     },
 
-    // 异常事件记录
+    // 创建点检任务
     async repairsEvent () {
-      if (!this.checkItemType) {
-        this.$toast('检查项类型不能为空');
-        return
-      };
-      if (this.currentStructure == '请选择') {
-        this.$toast('建筑不能为空');
-        return
-      };
-      if (this.currentGoalDepartment == '请选择') {
-        this.$toast('区域不能为空');
-        return
-      };
-      if (!this.currentFindTime) {
-        this.$toast('记录时间不能为空');
-        return
-      };
-      // 上传图片到阿里云服务器
-      let temporaryProblemPicturesList = this.problemPicturesList.filter((item) => { return item.indexOf('https://') == -1});
-      this.loadingText ='图片上传中...';
-      this.overlayShow = true;
-      this.loadingShow = true;
-      for (let imgI of temporaryProblemPicturesList) {
-          if (Object.keys(this.timeMessage).length > 0) {
-          // 判断签名信息是否过期
-          if (new Date().getTime()/1000 - this.timeMessage['expire']  >= -30) {
-              await this.getSign();
-              await this.uploadImageToOss(imgI)
-          } else {
-              await this.uploadImageToOss(imgI)
-          }
-          } else {
-          await this.getSign();
-          await this.uploadImageToOss(imgI)
-          }
-      };
       // 创建其他任务
       let temporaryMessage = {
-        checkResultId: this.checkResultId ? this.checkResultId : this.enterEventRegisterPageMessage['resultId'],
-        findTime: this.getNowFormatDate(this.currentFindTime),
-        depId: this.goalDepartmentOption.filter((item) => { return item['text'] == this.currentGoalDepartment})[0]['value'],
-        depName: this.currentGoalDepartment,
-        roomId: this.currentGoalSpaces == '请选择' ? '' : this.goalSpacesOption.filter((item) => { return item['text'] == this.currentGoalSpaces})[0]['value'],
-        roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
-        description: this.problemOverview,
-        remark: this.taskDescribe,
-        images: this.imgOnlinePathArr,
-        system: 6,
-        proId: this.proId,
-        createName: this.userName,
-        createTime: this.getNowFormatDate(new Date()),
-        createId: this.workerId
       };
       this.postGenerateRepairsTask(temporaryMessage)
-    },
-
-    // 新增设备巡检项异常记录
-    postGenerateRepairsTask (data) {
-      this.loadingText = '登记中...';
-      this.loadingShow = true;
-      this.overlayShow = true;
-      eventregister(data).then((res) => {
-        if (res && res.data.code == 200) {
-          this.$Alert({message:"新增成功",duration:3000,type:'success'});
-        } else {
-          // 防止任务生成失败后，再次生成时造成同一图片重复上传
-          this.imgOnlinePathArr = [];
-          this.$dialog.alert({
-            message: `${res.data.msg}`,
-            closeOnPopstate: true
-          }).then(() => {
-          });
-        };
-        this.loadingText = '';
-        this.loadingShow = false;
-        this.overlayShow = false
-      })
-      .catch((err) => {
-        this.imgOnlinePathArr = [];
-        this.$dialog.alert({
-          message: `${err.message}`,
-          closeOnPopstate: true
-        }).then(() => {
-        });
-        this.loadingText = '';
-        this.loadingShow = false;
-        this.overlayShow = false
-      })
     },
 
     // 确定退出
@@ -885,95 +566,6 @@ export default {
         };
         .van-hairline--top::after {
           border-top-width: 0 !important
-        }
-    }
-  };
-  .choose-photo-box {
-    position: fixed;
-    margin: auto;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    z-index: 200000;
-    font-size: 0;
-    > div {
-      width: 100%;
-      text-align: center;
-      font-size: 16px;
-      background: #f6f6f6
-    }
-    .choose-photo {
-      padding: 8px 10px;
-      height: 30px;
-      .bottom-border-1px(#cbcbcb);
-      line-height: 30px;
-      position: relative;
-      cursor: pointer;
-      color: @color-theme;
-      overflow: hidden;
-      display: inline-block;
-      *display: inline;
-      *zoom: 1;
-      /deep/ .van-icon {
-        vertical-align: top;
-        font-size: 20px;
-        display: inline-block;
-        line-height: 30px
-      };
-      input {
-        position: absolute;
-        font-size: 100px;
-        right: 0;
-        top: 0;
-        height: 100%;
-        opacity: 0;
-        filter: alpha(opacity=0);
-        cursor: pointer
-      }
-    };
-    .photo-graph {
-      position: relative;
-      display: inline-block;
-      height: 50px;
-      overflow: hidden;
-      .bottom-border-1px(#cbcbcb);
-      color: @color-theme;
-      text-decoration: none;
-      text-indent: 0;
-      line-height: 50px;
-      /deep/ .van-icon {
-        vertical-align: top;
-        font-size: 20px;
-        display: inline-block;
-        line-height: 50px
-      };
-      input {
-        position: absolute;
-        font-size: 100px;
-        right: 0;
-        height: 100%;
-        top: 0;
-        opacity: 0;
-      }
-    };
-    .photo-cancel {
-      position: relative;
-      display: inline-block;
-      padding: 8px 12px;
-      overflow: hidden;
-      color: @color-theme;
-      text-decoration: none;
-      text-indent: 0;
-      line-height: 30px;
-      font-weight: bold
-    }
-  };
-  .img-dislog-box {
-    .van-dialog {
-        .van-dialog__content {
-            >img {
-                width: 100%
-            }
         }
     }
   };
@@ -1196,6 +788,21 @@ export default {
                 text-align: right;
                 flex: 1;
                 .no-wrap()
+              };
+              /deep/ .van-radio-group {
+                .van-radio--horizontal {
+                  &:nth-child(1) {
+                    .van-radio__label {
+                      color: #289E8E !important
+                    }
+                  };
+                  &:last-child {
+                    margin-right: 4px !important;
+                    .van-radio__label {
+                      color: #E86F50 !important
+                    }
+                  }
+                }
               }
             }
           };
@@ -1207,14 +814,60 @@ export default {
                 };
               }
           };
-          .end-select-box-room {
-            .select-box-left {
+          .check-item-box {
+            width: 100%;
+            padding: 8px 6px;
+            box-sizing: border-box;
+            background: #fff;
+            font-size: 14px;
+            margin-top: 6px;
+            .check-item-top {
+              margin-bottom: 8px;
               >span {
                 &:nth-child(1) {
-                  color: #9E9E9A !important;
+                  color: red
+                };
+                &:nth-child(2) {
+                  color: #9E9E9A;
                   padding-right: 6px;
                   box-sizing: border-box
                 }
+              }
+            };
+            .check-item-bottom {
+              display: flex;
+              /deep/ .van-cell {
+                background: #f5f5f5;
+                flex: 1;
+                margin-right: 2px;
+              }
+            }
+          };
+          .dashed-line {
+            width: 96%;
+            margin: 0 auto;
+            border-top: 1px dashed #c8c8c8;
+          }
+          .check-item-list-box {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+            background: #fff;
+            .check-item-list {
+              display: flex;
+              margin-bottom: 6px;
+              align-items: center;
+              img {
+                width: 20px;
+                margin-right: 4px;
+                vertical-align: middle
+              };
+              p {
+                font-size: 14px;
+                vertical-align: middle;
+                flex: 1;
+                word-break: break-all;
+                color: #101010
               }
             }
           };

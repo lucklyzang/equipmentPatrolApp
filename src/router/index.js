@@ -45,9 +45,11 @@ const HistorySpotAbnormalCheckItemEventList = () =>
 const HistorySpotAbnormalRecord = () =>
     import ('@/pages/spotCheckTask/HistorySpotAbnormalRecord')
 const EquipmentSpotList = () =>
-    import ('@/pages/equipmentSpot/EquipmentSpotList')
+    import ('@/pages/spotTaskDispatchingManagement/EquipmentSpotList')
 const CreateSpotTask = () =>
-    import ('@/pages/equipmentSpot/CreateSpotTask')
+    import ('@/pages/spotTaskDispatchingManagement/CreateSpotTask')
+const EquipmentList = () =>
+    import ('@/pages/equipmentStatusManagement/EquipmentList')
 Vue.use(Router)
 let baseRoute = [{
         path: '/',
@@ -163,6 +165,11 @@ let baseRoute = [{
         path: '/createSpotTask',
         name: 'createSpotTask',
         component: CreateSpotTask
+    },
+    {
+        path: '/equipmentList',
+        name: 'equipmentList',
+        component: EquipmentList
     }
 ];
 let router = new Router({

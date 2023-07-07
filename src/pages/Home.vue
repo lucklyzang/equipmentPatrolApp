@@ -202,7 +202,9 @@
                 } else if (item.name == '设备点检') {
                     this.$router.push({path: '/equipmentSpotCheck'})
                 } else if (item.name == '设备管理') {
-                    this.$router.push({path: '/equipmentSpotList'})
+                    this.$router.push({path: '/equipmentList'})
+                } else if (item.name == '调度管理') {
+                    this.$router.push({path: '/equipmentSpotList'}) 
                 }
             },
 

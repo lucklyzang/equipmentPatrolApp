@@ -32,9 +32,9 @@
         z-index="1000"
         :safe-area-inset-top="true"
         @click-left="onClickLeft"
-        @click="onClickRight"
-    >
-    </van-nav-bar>
+        @click-right="onClickRight"
+      >
+      </van-nav-bar>
     </div>
     <div class="content">
         <div class="content-top-area">
@@ -169,11 +169,12 @@ export default {
   methods: {
     ...mapMutations(["changeOverDueWay"]),
 
-     onClickLeft () {
+    onClickLeft () {
       this.$router.push({ path: "/home"})
     },
 
-    onClickRight  () {
+    onClickRight () {
+      this.$router.push({path: '/historyEquipmSpotTaskList'})
     },
 
     // 获取取消原因列表
