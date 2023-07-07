@@ -27,14 +27,14 @@
                 <span>规格型号</span>
                 <span>当前状态</span>
             </div>
-            <div class="backlog-task-list-box" ref="scrollBacklogTask">
-              <div class="backlog-task-list" :class="{'listNameStyle':currentListNameIndex == index}" v-for="(item,index) in backlogTaskList" :key="index" @click="listNameClickEvent(item,index)">
+            <div class="backlog-task-list-box" ref="equipmentStatusList">
+              <div class="backlog-task-list" :class="{'listNameStyle':currentListNameIndex == index}" v-for="(item,index) in equipmentStatusList" :key="index" @click="listNameClickEvent(item,index)">
                 <span>{{ item.name }}</span>
                 <span>{{ item.model }}</span>
                 <span>{{ item.status }}</span>
               </div>
-              <van-empty description="暂无数据" v-show="backlogEmptyShow" />
-              <div class="no-more-data" v-show="isShowBacklogTaskNoMoreData">没有更多数据了!</div>
+              <van-empty description="暂无数据" v-show="equipmentStatusListEmptyShow" />
+              <div class="no-more-data" v-show="isShowEquipmentStatusNoMoreData">没有更多数据了!</div>
           </div> 
         </div>
     </div>
@@ -117,8 +117,8 @@ export default {
       overlayShow: false,
       dateQueryRangeShow: false,
       dateShow: false,
-      backlogEmptyShow: false,
-      isShowBacklogTaskNoMoreData: false,
+      equipmentStatusListEmptyShow: false,
+      isShowEquipmentStatusNoMoreData: false,
       minDate: new Date(1990, 0, 1),
       maxDate: new Date(2100, 10, 1),
       currentDate: new Date(),
@@ -131,9 +131,9 @@ export default {
       nameValue: '',
       isLoadData: true,
       currentListNameIndex: null,
-      fullBacklogTaskList: [],
-      echoFullBacklogTaskList: [],
-      backlogTaskList: [
+      fullEquipmentStatusList: [],
+      echoFullEquipmentStatusList: [],
+      equipmentStatusList: [
         {
             name: '电梯',
             model: 'LEHY-II',
@@ -337,13 +337,13 @@ export default {
 
     // 事件列表注册滚动事件
     initScrollChange () {
-      let boxBackScroll = this.$refs['scrollBacklogTask'];
+      let boxBackScroll = this.$refs['equipmentStatusList'];
       boxBackScroll.addEventListener('scroll',this.eventListLoadMore,true)
     },
 
     // 设备列表加载事件
     eventListLoadMore () {
-      let boxBackScroll = this.$refs['scrollBacklogTask'];
+      let boxBackScroll = this.$refs['equipmentStatusList'];
       if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
         // 点击筛选确定后，不加载数据
         if (!this.isLoadData) {return};
@@ -353,7 +353,7 @@ export default {
           let totalPage = Math.ceil(this.totalCount/this.pageSize);
           if (this.currentPage >= totalPage) {
           } else {
-            this.isShowBacklogTaskNoMoreData = false;
+            this.isShowEquipmentStatusNoMoreData = false;
             this.currentPage = this.currentPage + 1;
           };
           this.eventTime = 0;
@@ -367,7 +367,7 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.loadText = '加载中';
-      this.backlogEmptyShow = false;
+      this.equipmentStatusListEmptyShow = false;
       this.isShowBacklogTaskNoMoreData = false;
       getEventList({proId:this.userInfo.proIds[0], system: 6, 
         workerId: this.userInfo.id,page, limit:pageSize, name,
@@ -378,12 +378,12 @@ export default {
             this.overlayShow = false;
             this.loadText = '';
             if (res && res.data.code == 200) {
-                  this.backlogTaskList = res.data.data.list;
+                  this.equipmentStatusList = res.data.data.list;
                   this.totalCount = res.data.data.total;
-                  this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList);
-                  this.echoFullBacklogTaskList = this.fullBacklogTaskList;
-                  if (this.fullBacklogTaskList.length == 0) {
-                    this.backlogEmptyShow = true
+                  this.fullEquipmentStatusList = this.fullEquipmentStatusList.concat(this.equipmentStatusList);
+                  this.echoFullEquipmentStatusList = this.fullEquipmentStatusList;
+                  if (this.fullEquipmentStatusList.length == 0) {
+                    this.equipmentStatusListEmptyShow = true
                   }
             } else {
               this.$toast({
