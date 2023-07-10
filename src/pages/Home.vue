@@ -276,8 +276,7 @@
                     box-sizing: border-box;
                     > span {
                         color: #101010;
-                        font-size: 18px;
-                        font-weight: bold
+                        font-size: 20px
                     };
                     img {
                         vertical-align: top;
@@ -296,14 +295,14 @@
                     };
                     .van-dialog__cancel {
                         height: 40px;
-                        color: #e22626;
-                        border: 1px solid #e22626;
+                        color: #E86F50;
+                        border: 1px solid #E86F50;
                         border-radius: 8px;
                         margin-right: 40px
                     };
                     .van-dialog__confirm {
                         height: 40px;
-                        background: #e22626;
+                        background: #E86F50;
                         color: #fff;
                         border-radius: 8px
                     }
@@ -350,15 +349,13 @@
                         display: flex;
                         justify-content: center;
                         align-items: center;
-                        width: 70px;
+                        width: 68px;
                         margin: 0 20px;
-                        height: 70px;
                         border-radius: 50%;
                         z-index: 1000;
                         img {
                             vertical-align: middle;
-                            width: 70px;
-                            height: 70px;
+                            width: 68px
                         }
                     };
                     .user-message {
@@ -466,9 +463,9 @@
                     text-align: center;
                     line-height: 40px;
                     font-size: 14px;
-                    border: 1px solid #e22626;
+                    border: 1px solid #E86F50;
                     border-radius: 8px;
-                    color: #e22626
+                    color: #E86F50
                 }
             }    
         }
