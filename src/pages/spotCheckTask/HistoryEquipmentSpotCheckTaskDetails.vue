@@ -41,7 +41,7 @@
         </div>
     </div>
     <div class="task-operation-box">
-      <div class="task-quit">返 回</div>
+      <div class="task-quit">退 出</div>
     </div>
     <!-- 退出提示框   -->
     <div class="quit-info-box">
@@ -372,7 +372,7 @@ export default {
         padding-left: 10px;
         box-sizing: border-box;
         font-size: 14px;
-        color: #101010;
+        color: #3B9DF9;
         /deep/ .van-icon {
           vertical-align: middle
         };
@@ -436,11 +436,11 @@ export default {
         height: 42px;
         line-height: 42px;
         background: #fff;
-        font-size: 16px;
+        font-size: 18px;
         text-align: center;
         border-radius: 30px;
-        color: #1684FC;
-        border: 1px solid #1684FC;
+        color: #E86F50;
+        border: 1px solid #E86F50;
         margin-right: 20px
     }
   }

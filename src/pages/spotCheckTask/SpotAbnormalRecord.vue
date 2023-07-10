@@ -1149,6 +1149,7 @@ export default {
                   color: red
                 };
                 &:nth-child(2) {
+                  font-size: 14px;
                   color: #9E9E9A;
                   padding-right: 6px;
                   box-sizing: border-box
@@ -1174,6 +1175,7 @@ export default {
                   color: red
                 };
                 &:nth-child(2) {
+                  font-size: 14px;
                   color: #9E9E9A;
                   padding-right: 6px;
                   box-sizing: border-box
@@ -1193,6 +1195,7 @@ export default {
               };
               >span {
                 color: #101010;
+                font-size: 14px;
                 text-align: right;
                 flex: 1;
                 .no-wrap()
@@ -1203,7 +1206,7 @@ export default {
               .select-box-right {
                 padding-right: 0 !important;
                 .spanStyle {
-                  color: #bfbfbf !important
+                  color: #989999 !important
                 };
               }
           };
@@ -1211,6 +1214,7 @@ export default {
             .select-box-left {
               >span {
                 &:nth-child(1) {
+                  font-size: 14px;
                   color: #9E9E9A !important;
                   padding-right: 6px;
                   box-sizing: border-box

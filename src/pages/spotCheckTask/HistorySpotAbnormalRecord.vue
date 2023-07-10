@@ -316,6 +316,7 @@ export default {
             .select-box-left {
               padding-right: 10px;
               box-sizing: border-box;
+              font-size: 14px;
               >span {
                 &:nth-child(1) {
                   color: red
@@ -340,6 +341,7 @@ export default {
             margin-top: 6px;
             .select-box-left {
               padding-right: 10px;
+              font-size: 14px;
               box-sizing: border-box;
               >span {
                 &:nth-child(1) {
@@ -366,6 +368,7 @@ export default {
               >span {
                 color: #101010;
                 text-align: right;
+                font-size: 14px;
                 flex: 1;
                 .no-wrap()
               }
@@ -383,6 +386,7 @@ export default {
             .select-box-left {
               >span {
                 &:nth-child(1) {
+                  font-size: 14px;
                   color: #9E9E9A !important;
                   padding-right: 6px;
                   box-sizing: border-box

@@ -380,7 +380,7 @@ export default {
             width: 96%;
             margin: 0 auto;
             font-size: 14px;
-            color: #1684FC;
+            color: #3B9DF9;
             /deep/ .van-icon {
                 vertical-align: middle
             };
@@ -396,7 +396,7 @@ export default {
           padding-left: 10px;
           box-sizing: border-box;
           background: #fff;
-          color: #8E9397
+          color: #848484
         };
          .patrol-item-box {
             width: 100%;
@@ -484,7 +484,7 @@ export default {
                   line-height: 28px;
                   word-break: break-all;
                   font-size: 14px;
-                  color: #101010  
+                  color: #8E9397  
                   };
                   .taskset-create-time-type {
                     display: flex;

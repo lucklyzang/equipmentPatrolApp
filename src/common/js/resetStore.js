@@ -15,7 +15,7 @@ export function getDefaultLoginState() {
     }
 };
 
-// 设备巡检模块store的初始值
+// 巡检任务模块store的初始值
 export function getDefaultPatrolTaskState() {
     return {
         taskType: {}, //任务类型
@@ -28,5 +28,17 @@ export function getDefaultPatrolTaskState() {
         patrolTaskListMessage: {}, //巡查任务列表信息
         currentElectronicSignature: null, // 工单完成时的签名信息
         originalSignature: null //// 工单完成时原始签名信息
+    }
+}
+
+// 点检任务模块store的初始值
+export function getSpotCheckTaskState() {
+    return {
+    }
+}
+
+// 点检任务调度管理模块store的初始值
+export function getSpotTaskDispatchingManagementState() {
+    return {
     }
 }

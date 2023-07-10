@@ -16,7 +16,7 @@
                     {{ item }}
                 </div>
             </div>
-            <van-tabs v-model="activeName" color="#1684FC" title-inactive-color="#BEC7D1" title-active-color="#1684FC" @change="vanTabsChangeEvent">
+            <van-tabs v-model="activeName" color="#1684FC" title-inactive-color="#101010" title-active-color="#0A7AF5" @change="vanTabsChangeEvent">
                 <van-tab title="18:00" name="18:00">
                     <van-empty description="暂无数据" v-if="isShowNoMoreData" />
                     <div class="backlog-task-list-box">
@@ -255,6 +255,46 @@ export default {
       })
     },
 
+    // 拼接完整时间
+    getFullDate(hourTime) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "-";
+      let month = new Date().getMonth() + 1;
+      strDate = new Date().getDate();
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+      };
+      currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
+      return currentdate + ' ' + hourTime
+    },
+
+    // 获取当前离任务开始时间最近的时间点
+    disposeTime (item) {
+      if (Object.prototype.toString.call(item.startTime) === '[object Array]') {
+        if (item.startTime.length > 0) {
+          let temporaryArr = [];
+          // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
+          if (new Date().getTime() >= new Date(this.getFullDate(item.startTime[item.startTime.length-1])).getTime()) {
+            temporaryArr.push(item.startTime[item.startTime.length-1])
+          } else {        
+            for (let i=0, len = item.startTime.length; i<len; i++) {
+              if (i > 0) {
+                if (new Date().getTime() < new Date(this.getFullDate(item.startTime[i])).getTime()) {
+                  temporaryArr.push(item.startTime[i-1])
+                  break
+                }
+              }    
+            }
+          };    
+          return temporaryArr.join(',')
+        }
+      }
+    },
+
     // tab切换值变化事件
     vanTabsChangeEvent (value) {
     },
@@ -353,10 +393,10 @@ export default {
             };
             .task-set-name {
                 font-size: 14px;
-                color: #a9a9a9;
+                color: #9C9FA3;
                 flex: none;
                 padding: 6px 12px;
-                border: 1px solid #a9a9a9;
+                border: 1px solid #9C9FA3;
                 box-sizing: border-box;
                 margin-right: 10px;
                 border-radius: 4px;
@@ -365,8 +405,8 @@ export default {
                 } 
             };
             .taskSetNameStyle {
-                color: #1684fc;
-                border: 1px solid #1684fc
+                color: #0379FF;
+                border: 1px solid #0379FF
             }
         };
         /deep/ .van-tabs {
@@ -439,7 +479,7 @@ export default {
                                         border-radius: 6px
                                     };
                                     .spanNoStartStyle {
-                                        background: #1684fc;
+                                        background: #0A7AF5;
                                         color: #fff
                                     }
                                 }
@@ -458,17 +498,17 @@ export default {
                                         line-height: 30px;
                                         padding: 0 8px;
                                         box-sizing: border-box;
-                                        background: #c7c7c7;
+                                        background: #DCDCDC;
                                         border-radius: 6px;
                                         font-size: 12px;
                                         color: #101010;
                                         flex: 1;
                                         margin-right: 6px;
                                         .equipmentNoCompleteStyle {
-                                           background: orange
+                                           background: #F8CFAD
                                         };
                                         .equipmentCompletedStyle {
-                                           background: green
+                                           background: #C5E5E0
                                         }
                                     };
                                     .operation-icon-box {
@@ -507,7 +547,7 @@ export default {
                 line-height: 45px;
                 font-size: 12px;
                 color: #333;
-                background: #d2d2d2;
+                background: #DCDCDC;
                 box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.23);
                 border-radius: 20px
             };

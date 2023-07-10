@@ -145,7 +145,7 @@
                 type="textarea"
                 placeholder="请输入"
               />
-              <van-icon name="add" size="26" color="blue" @click="addCheckItemEvent" />
+              <van-icon name="add" size="26" color="#0A7AF5" @click="addCheckItemEvent" />
           </div>
         </div>
         <div class="dashed-line"></div>
@@ -735,6 +735,7 @@ export default {
           .event-type {
             .select-box-left {
               padding-right: 10px;
+              font-size: 14px;
               box-sizing: border-box;
               >span {
                 &:nth-child(1) {
@@ -785,6 +786,7 @@ export default {
               };
               >span {
                 color: #101010;
+                font-size: 14px;
                 text-align: right;
                 flex: 1;
                 .no-wrap()

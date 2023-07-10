@@ -1,4 +1,3 @@
-import { setStore, getStore } from '@/common/js/utils'
 import { getDefaultPatrolTaskState } from '@/common/js/resetStore'
 export default {
     state: getDefaultPatrolTaskState(),

@@ -331,7 +331,8 @@ export default {
                   color: red
                 };
                 &:nth-child(2) {
-                  color: #9E9E9A;
+                  font-size: 14px;
+                  color: #9E9E9A !important;
                   padding-right: 6px;
                   box-sizing: border-box
                 }
@@ -356,7 +357,8 @@ export default {
                   color: red
                 };
                 &:nth-child(2) {
-                  color: #9E9E9A;
+                  font-size: 14px;
+                  color: #9E9E9A !important;
                   padding-right: 6px;
                   box-sizing: border-box
                 }
@@ -374,6 +376,7 @@ export default {
                 color: #bfbfbf !important
               };
               >span {
+                font-size: 14px;
                 color: #101010;
                 text-align: right;
                 flex: 1;
@@ -383,6 +386,8 @@ export default {
           };
           .end-select-box {
               .select-box-right {
+                font-size: 14px;
+                color: #101010;
                 padding-right: 0 !important;
                 .spanStyle {
                   color: #bfbfbf !important
@@ -393,6 +398,7 @@ export default {
             .select-box-left {
               >span {
                 &:nth-child(1) {
+                  font-size: 14px;
                   color: #9E9E9A !important;
                   padding-right: 6px;
                   box-sizing: border-box

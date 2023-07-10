@@ -353,6 +353,7 @@ export default {
                 align-items: center;
                 .date-title {
                     font-size: 14px;
+                    color: #333333;
                     margin-right: 10px
                 };
                 .date-content {
@@ -360,7 +361,7 @@ export default {
                     justify-content: space-between;
                     align-items: center;
                     height: 30px;
-                    border: 1px solid #bcbcbc;
+                    border: 1px solid #bbbbbb;
                     background:#fff;
                     padding: 0 10px;
                     box-sizing: border-box;
@@ -405,7 +406,7 @@ export default {
                   align-items: center;
                   font-size: 14px;
                   color: #1684FC;
-                  .bottom-border-1px(#BEC7D1);
+                  .bottom-border-1px(rgba(0, 0, 0, 0.23));
                   .backlog-task-top-left {
                       flex: 1;
                       .no-wrap()
@@ -441,7 +442,7 @@ export default {
                     word-break: break-all;
                     height: 40px;
                     font-size: 14px;
-                    color: #8E9397  
+                    color: #000000  
                   };
                   .right-arrow-box {
                     height: 40px;

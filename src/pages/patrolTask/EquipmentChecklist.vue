@@ -453,7 +453,7 @@ export default {
             .equipment-classification-name {
               .bottom-border-1px(#BEC7D1);
               font-size: 12px;
-              color: #a8a8a8;
+              color: #848484;
               padding: 6px 4px;
               box-sizing: border-box
             };
@@ -473,8 +473,8 @@ export default {
                     vertical-align: middle
                   };
                   span {
-                    color: #101010;
-                    font-size: 12px;
+                    color: #494D51;
+                    font-size: 14px;
                     vertical-align: middle
                   }
                 };
@@ -534,7 +534,9 @@ export default {
         box-sizing: border-box;
         margin-top: 4px;
         > span {
-          width: 40px
+          width: 40px;
+          font-size: 14px;
+          color: #101010
         };
         /deep/ .van-cell {
           flex: 1;

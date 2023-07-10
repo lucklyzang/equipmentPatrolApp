@@ -366,7 +366,7 @@ export default {
             .equipment-classification-name {
               .bottom-border-1px(#BEC7D1);
               font-size: 12px;
-              color: #a8a8a8;
+              color: #848484;
               padding: 6px 4px;
               box-sizing: border-box
             };
@@ -386,8 +386,8 @@ export default {
                     vertical-align: middle
                   };
                   span {
-                    color: #101010;
-                    font-size: 12px;
+                    color: #494D51;
+                    font-size: 14px;
                     vertical-align: middle
                   }
                 };
@@ -416,7 +416,7 @@ export default {
                 box-sizing: border-box;
                 .examine-standard-top {
                   p {
-                    color: #101010;
+                    color: #000000;
                     font-size: 12px;
                     margin-bottom: 4px;
                     &:last-child {
@@ -427,7 +427,7 @@ export default {
                 .examine-standard-bottom {
                   margin-top: 10px;
                   p {
-                    color: #101010;
+                    color: #000000;
                     font-size: 12px;
                     margin-bottom: 4px;
                     &:last-child {

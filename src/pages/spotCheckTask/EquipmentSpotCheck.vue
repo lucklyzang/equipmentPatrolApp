@@ -18,13 +18,13 @@
                             <span>任务编号:</span>
                             <span>q2121</span>
                         </div>
-                        <!-- <div class="backlog-task-top-right">
+                        <div class="backlog-task-top-right">
                             <span>未查阅</span>
-                        </div> -->
-                        <div class="backlog-task-top-right-other">
+                        </div>
+                        <!-- <div class="backlog-task-top-right-other">
                             <img :src="uploadingPng" alt="">
                             <span>上传中</span>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="backlog-task-content-box">
                         <div class="backlog-task-content-box-left">
@@ -309,8 +309,8 @@ export default {
                   justify-content: space-between;
                   align-items: center;
                   font-size: 14px;
-                  color: #a0a0a0;
-                  .bottom-border-1px(#BEC7D1);
+                  color: rgba(16, 16, 16, 0.53);
+                  .bottom-border-1px(rgba(0, 0, 0, 0.23));
                   .backlog-task-top-left {
                       padding-right: 4px;
                       box-sizing: border-box;
@@ -323,10 +323,10 @@ export default {
                         border-radius: 4px;
                         padding: 4px 6px;
                         color: #fff;
-                        background: orange
+                        background: #E8CB51
                     };
                     .taskStatusStyle {
-                        background: blue
+                        background: #174E97
                     }
                   };
                   .backlog-task-top-right-other {
@@ -357,7 +357,7 @@ export default {
                             box-sizing: border-box;  
                         };
                         .taskset-create-time-type {
-                            color: #1684FC
+                            color: #0A7AF5
                         };
                         .taskset-create-time-other-type {
                             flex-direction: row;
@@ -398,14 +398,14 @@ export default {
                     padding: 7px 24px;
                     box-sizing: border-box;
                     color: #fff;
-                    font-size: 12px;
+                    font-size: 14px;
                     border-radius: 8px;
                     &:first-child {
-                        background: #1684FC;
+                        background: #298CF8;
                         margin-right: 6px;
                     };
                     &:last-child {
-                        background: #c8c8c8
+                        background: #D5D5D5
                     }
                 }
             }

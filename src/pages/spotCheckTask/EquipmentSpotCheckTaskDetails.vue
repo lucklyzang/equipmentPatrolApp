@@ -373,7 +373,7 @@ export default {
         padding-left: 10px;
         box-sizing: border-box;
         font-size: 14px;
-        color: #101010;
+        color: #3B9DF9;
         /deep/ .van-icon {
           vertical-align: middle
         };
@@ -397,7 +397,7 @@ export default {
             .operation-left {
                 span {
                     color: #101010;
-                    font-size: 12px;
+                    font-size: 14px;
                     vertical-align: middle
                 }
             };

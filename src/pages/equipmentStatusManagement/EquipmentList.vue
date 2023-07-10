@@ -19,7 +19,7 @@
                 <div class="name-box">
                     <span>名称</span>
                     <van-field v-model="nameValue" />
-                    <van-icon name="search" size="26" @click="searchEvent" />
+                    <van-icon name="search" size="26" color="#0E2442" @click="searchEvent" />
                 </div>
             </div>
             <div class="list-title">
@@ -61,7 +61,7 @@
                     <img :src="calendarPng" alt="" @click="dateShow = true" />
                 </div>
             </div>
-            <van-icon name="add" size="24" color="blue" @click="addEquipmentStatusEvent" />
+            <van-icon name="add" size="24" color="#0A7AF5" @click="addEquipmentStatusEvent" />
           </div>
           <div class="timer-shaft-list-box">
             <div class="timer-shaft-list" v-for="(item,index) in timerShaftList" :key="index">
@@ -262,9 +262,9 @@ export default {
 
     // 设备名称列点击事件
     listNameClickEvent (item,index) {
-        this.currentListNameIndex = index;
-        this.screenDialogShow = true;
-        this.currentDate = new Date()
+      this.currentListNameIndex = index;
+      this.screenDialogShow = true;
+      this.currentDate = new Date()
     },
 
     // 添加设备状态事件
@@ -309,17 +309,18 @@ export default {
 
     // 设置弹窗确定事件
     screenDialogSure () {
-        this.screenDialogShow = false
+      this.screenDialogShow = false
     },
 
     // 设置弹窗取消事件
     screenDialogCancel () {
-        this.screenDialogShow = false
+      this.screenDialogShow = false
     },
 
     // 关闭设置弹框
     closeScreenDialogEvent () {
-      this.screenDialogShow = false
+      this.screenDialogShow = false;
+      this.dateShow = false
     },
     // 时间弹框确认事件
      onConDayFirm() {
@@ -523,6 +524,7 @@ export default {
                 width: 30%;
                 height: 30px;
                 border-radius: 6px;
+                border: 1px solid #BBBBBB !important;
                 .cur-name {
                     font-size: 14px
                 };
@@ -541,7 +543,7 @@ export default {
                     justify-content: space-between;
                     align-items: center;
                     height: 30px;
-                    border: 1px solid #bcbcbc;
+                    border: 1px solid #BBBBBB;
                     background:#fff;
                     padding: 0 10px;
                     box-sizing: border-box;
@@ -570,7 +572,7 @@ export default {
                     >p {
                         &:first-child {
                             color: #101010;
-                            font-size: 16px;
+                            font-size: 14px;
                             margin-bottom: 4px
                         };
                         &:last-child {
@@ -689,12 +691,14 @@ export default {
                 align-items: center;
                 >span {
                     font-size: 14px;
+                    color: #101010;
                     display: inline-block;
                     text-align: center;
                     width: 40px
                 };
                 .vue-dropdown {
                     width: 40%;
+                    border: 0.02667rem solid #BBBBBB !important;
                     height: 30px;
                     border-radius: 6px
                 }
@@ -705,6 +709,7 @@ export default {
                 margin-top: 8px;
                 >span {
                     font-size: 14px;
+                    color: #101010;
                     display: inline-block;
                     text-align: center;
                     width: 40px
@@ -715,7 +720,7 @@ export default {
                     padding: 0 5px;
                     line-height: 34px;
                     border-radius: 6px;
-                    border: 1px solid #ccc;
+                    border: 1px solid #BBBBBB;
                     margin-right: 10px
                 }
             }
@@ -761,7 +766,7 @@ export default {
                 }
           };
           .listNameStyle {
-            background: #d8d8d8 !important
+            background: #BBBBBB !important
           };
           .no-more-data {
               font-size: 12px;
