@@ -299,6 +299,7 @@ export default {
 
     // 设置弹窗关闭前事件
     beforeCloseDialogEvent (action, done) {
+      done()
     //   if (action == 'cancel') {
     //     done(false);
     //     return
