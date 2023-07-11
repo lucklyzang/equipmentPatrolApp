@@ -43,7 +43,7 @@
                                        中央空调 2#
                                    </div>
                                    <div class="operation-icon-box">
-                                       <img :src="uploadingPng" alt="">
+                                       <img :src="uploadingGif" alt="">
                                    </div>
                                </div>
                                <div class="equipment-name-list">
@@ -384,9 +384,8 @@ export default {
             align-items: flex-start;
             flex-wrap: nowrap;
             display: flex;
-            width: 100%;
-            overflow-x: scroll;
-            overflow-y: hidden;
+            overflow-x: auto;
+            white-space: nowrap;
             &::-webkit-scrollbar {
                 height: 0;
                 display: none
@@ -399,10 +398,7 @@ export default {
                 border: 1px solid #9C9FA3;
                 box-sizing: border-box;
                 margin-right: 10px;
-                border-radius: 4px;
-                &:last-child {
-                    margin-right: 0
-                } 
+                border-radius: 4px
             };
             .taskSetNameStyle {
                 color: #0379FF;
