@@ -80,7 +80,7 @@ export default {
       backlogTaskList: [],
       loadText: '加载中',
       uploadingSuccessPng: require("@/common/images/home/uploading-success.png"),
-      uploadingPng: require("@/common/images/home/uploading.png"),
+      uploadingGif: require("@/common/images/home/uploading.gif"),
       uploadingFailPng: require("@/common/images/home/uploading-fail.png"),
       statusBackgroundPng: require("@/common/images/home/status-background.png")
     }

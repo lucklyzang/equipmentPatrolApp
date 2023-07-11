@@ -48,6 +48,8 @@ const EquipmentSpotList = () =>
     import ('@/pages/spotTaskDispatchingManagement/EquipmentSpotList')
 const CreateSpotTask = () =>
     import ('@/pages/spotTaskDispatchingManagement/CreateSpotTask')
+const EditSpotTask = () =>
+    import ('@/pages/spotTaskDispatchingManagement/EditSpotTask')
 const EquipmentList = () =>
     import ('@/pages/equipmentStatusManagement/EquipmentList')
 Vue.use(Router)
@@ -165,6 +167,11 @@ let baseRoute = [{
         path: '/createSpotTask',
         name: 'createSpotTask',
         component: CreateSpotTask
+    },
+    {
+        path: '/editSpotTask',
+        name: 'editSpotTask',
+        component: EditSpotTask
     },
     {
         path: '/equipmentList',

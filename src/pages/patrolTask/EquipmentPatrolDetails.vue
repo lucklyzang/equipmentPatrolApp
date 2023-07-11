@@ -84,7 +84,7 @@
                                        中央空调 2#
                                    </div>
                                    <div class="operation-icon-box">
-                                       <img :src="uploadingPng" alt="">
+                                       <img :src="uploadingGif" alt="">
                                    </div>
                                </div>
                                <div class="equipment-name-list">
@@ -133,7 +133,7 @@ export default {
       activeName: '14:00',
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       uploadingSuccessPng: require("@/common/images/home/uploading-success.png"),
-      uploadingPng: require("@/common/images/home/uploading.png"),
+      uploadingGif: require("@/common/images/home/uploading.gif"),
       uploadingFailPng: require("@/common/images/home/uploading-fail.png")
     }
   },
@@ -460,7 +460,7 @@ export default {
                                 align-items: center;
                                 font-size: 16px;
                                 color: #101010;
-                                .bottom-border-1px(#BEC7D1);
+                                .bottom-border-1px(#a9a9a9);
                                 .backlog-task-top-left {
                                     flex: 1;
                                     .no-wrap()
@@ -468,12 +468,12 @@ export default {
                                 .backlog-task-top-right {
                                     width: 70px;
                                     font-size: 14px;
-                                    text-align: center;
+                                    text-align: right;
                                     span {
                                         display: inline-block;
                                         width: 62px;
                                         height: 22px;
-                                        text-align: center;
+                                        text-align: right;
                                         line-height: 22px;
                                         color: #289E8E;
                                         border-radius: 6px

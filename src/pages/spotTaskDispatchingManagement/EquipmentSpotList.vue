@@ -52,7 +52,7 @@
             </div>
             <van-empty description="暂无数据" v-show="dispatchEmptyShow" />
             <div class="backlog-task-list-box" ref="scrollBacklogTask" v-show="!dispatchEmptyShow">
-                <div class="backlog-task-list" @click="enterDispathTaskEvent()">
+                <div class="backlog-task-list" @click="enterTaskEvent()">
                 <div class="list-top">
                     <div class="list-top-left">
                     <img :src="anxiousSignPng" alt="急" v-show="true">
@@ -231,13 +231,14 @@ export default {
     },
 
 
-    // 进入任务详情事件
-    enterDispathTaskEvent () {
+    // 进入任务编辑页面事件
+    enterTaskEvent () {
+      this.$router.push({path: '/editSpotTask'})
     },
 
     // 创建任务
     createTask () {
-        this.$router.push({path: '/createSpotTask'})
+      this.$router.push({path: '/createSpotTask'})
     },
 
     // 任务状态转换

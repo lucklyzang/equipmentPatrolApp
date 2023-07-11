@@ -684,21 +684,27 @@ export default {
         padding-bottom: 50px;
         .content-top {
             width: 100%;
-            padding: 6px 10px;
+            padding: 14px 6px;
             box-sizing: border-box;
-            background: #e8e8e8;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #919191;
             .status-box {
                 display: flex;
                 align-items: center;
+                width: 35%;
+                margin-right: 10px;
                 >span {
                     font-size: 14px;
                     color: #101010;
                     display: inline-block;
-                    text-align: center;
-                    width: 40px
+                    text-align: left;
+                    width: 50px
                 };
                 .vue-dropdown {
-                    width: 40%;
+                    width: 100%;
                     border: 0.02667rem solid #BBBBBB !important;
                     height: 30px;
                     border-radius: 6px
@@ -707,19 +713,19 @@ export default {
             .name-box {
                 display: flex;
                 align-items: center;
-                margin-top: 8px;
+                flex: 1;
                 >span {
                     font-size: 14px;
                     color: #101010;
                     display: inline-block;
-                    text-align: center;
-                    width: 40px
+                    text-align: left;
+                    width: 50px
                 };
                 /deep/ .van-cell {
-                    width: 60%;
-                    height: 34px;
+                    width: 100%;
+                    height: 30px;
                     padding: 0 5px;
-                    line-height: 34px;
+                    line-height: 30px;
                     border-radius: 6px;
                     border: 1px solid #BBBBBB;
                     margin-right: 10px
@@ -731,8 +737,9 @@ export default {
             padding: 16px 6px;
             box-sizing: border-box;
             align-items: center;
+            background: #fff;
             > span {
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: bold;
                 flex: 1;
                 text-align: center;
@@ -756,9 +763,10 @@ export default {
                padding: 12px 6px;
                box-sizing: border-box;
                align-items: center;
+               background: #fff;
                 > span {
                     display: inline-block;
-                    font-size: 14px;
+                    font-size: 12px;
                     padding: 0 3px;
                     word-break: break-all;
                     flex: 1;
@@ -767,7 +775,7 @@ export default {
                 }
           };
           .listNameStyle {
-            background: #BBBBBB !important
+            background: #ededed !important
           };
           .no-more-data {
               font-size: 12px;
