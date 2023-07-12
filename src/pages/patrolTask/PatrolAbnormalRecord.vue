@@ -135,6 +135,7 @@
         </div>
         <div class="select-box end-select-box end-select-box-room">
           <div class="select-box-left">
+            <span>*</span>
             <span>异常类型</span>
           </div>
           <div class="select-box-right" @click="abnormalTypeClickEvent">
@@ -144,6 +145,7 @@
         </div>
         <div class="select-box end-select-box end-select-box-room">
           <div class="select-box-left">
+            <span>*</span>
             <span>严重程度</span>
           </div>
           <div class="select-box-right" @click="severityLevelClickEvent">
@@ -153,6 +155,7 @@
         </div>
         <div class="select-box end-select-box end-select-box-room">
           <div class="select-box-left">
+            <span>*</span>
             <span>设备状态</span>
           </div>
           <div class="select-box-right" @click="equipmentStatusClickEvent">
@@ -167,9 +170,9 @@
             <div class="transport-type-right">
               <van-field
                 v-model="problemOverview"
-                rows="1"
+                rows="2"
                 autosize
-                maxlength="200"
+                maxlength="500"
                 show-word-limit
                 type="textarea"
                 placeholder="请输入"
@@ -199,7 +202,9 @@
             <div class="transport-type-right">
               <van-field
                 v-model="taskDescribe"
-                rows="3"
+                rows="2"
+                maxlength="500"
+                show-word-limit
                 autosize
                 type="textarea"
                 placeholder="请输入"
@@ -1226,8 +1231,11 @@ export default {
             .select-box-left {
               >span {
                 &:nth-child(1) {
+                  color: red
+                };
+                &:nth-child(2) {
+                  color: #9E9E9A;
                   font-size: 14px;
-                  color: #9E9E9A !important;
                   padding-right: 6px;
                   box-sizing: border-box
                 }

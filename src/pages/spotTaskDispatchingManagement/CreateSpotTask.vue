@@ -138,9 +138,9 @@
           <div class="check-item-bottom">
              <van-field
                 v-model="checkItemContent"
-                rows="1"
+                rows="2"
                 autosize
-                maxlength="200"
+                maxlength="100"
                 show-word-limit
                 type="textarea"
                 placeholder="请输入"
