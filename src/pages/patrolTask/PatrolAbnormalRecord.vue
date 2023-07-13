@@ -214,8 +214,7 @@
         </div>
         <div class="btn-box">
           <span class="operate-one" @click="quitEvent">退出</span>
-          <span class="operate-two" @click="temporaryStorageEvent">暂存</span>
-          <span class="operate-three" @click="repairsEvent">登记</span>
+          <span class="operate-two" @click="temporaryStorageEvent">保存</span>
         </div>
       </div>
     </div>
