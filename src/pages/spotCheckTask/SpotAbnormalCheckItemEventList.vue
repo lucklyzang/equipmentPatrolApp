@@ -67,7 +67,7 @@
         </div>
     </div>
     <div class="task-operation-box">
-      <div class="new-increase-btn">新增</div>
+      <div class="new-increase-btn" @click="newAddRecordEvent">新增</div>
       <div class="back-btn" @click="backEvent">返回</div>
     </div>
   </div>
@@ -148,6 +148,11 @@ export default {
     // 顶部导航左边点击事件
     onClickLeft () {
       this.$router.push({path: '/equipmentSpotCheckTaskDetails'})
+    },
+
+    // 新增事件
+    newAddRecordEvent () {
+      this.$router.push({path: '/spotAbnormalRecord'})
     },
 
     // 底部返回事件

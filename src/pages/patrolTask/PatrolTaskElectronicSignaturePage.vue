@@ -56,16 +56,24 @@ export default {
       loadingShow: false,
       isExpire: false,
       loadText: '提交中',
+      fromPathSource: '',
       imgOnlinePathArr: [],
     }
   },
 
   mounted() {
     // 控制设备物理返回按键
-    this.deviceReturn("/workOrderDetails");
+    this.deviceReturn(`${this.fromPathSource}`);
     // this.$nextTick(()=> {
     //   this.resizeScreen()
     // })
+  },
+
+  beforeRouteEnter(to, from, next) {
+    next(vm=>{
+      vm.fromPathSource = from.path
+	  });
+    next() 
   },
 
   watch: {},
@@ -257,7 +265,7 @@ export default {
     cancel () {
       this.$refs.mychild.overwrite();
       this.$router.push({
-        path: "/workOrderDetails"
+        path: `${this.fromPathSource}`
       })
     },
   }

@@ -191,7 +191,9 @@ export default {
     },
 
     // 完成任务事件
-    completeTaskEvent () {},
+    completeTaskEvent () {
+        this.$router.push({path: '/patrolTaskElectronicSignaturePage'})
+    },
 
     // 任务状态转换
     taskStatusTransition (num) {

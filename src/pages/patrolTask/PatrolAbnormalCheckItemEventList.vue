@@ -70,7 +70,7 @@
         </div>
     </div>
     <div class="task-operation-box">
-      <div class="new-increase-btn">新增</div>
+      <div class="new-increase-btn" @click="newAddRecordEvent">新增</div>
       <div class="back-btn" @click="backEvent">返回</div>
     </div>
   </div>
@@ -236,6 +236,11 @@ export default {
     // 进入事件详情事件
     taskDetailsEvent () {
       
+    },
+
+    // 新增记录事件
+    newAddRecordEvent () {
+      this.$router.push({path: '/patrolAbnormalRecord'})
     }
   }
 };

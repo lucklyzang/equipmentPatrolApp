@@ -781,65 +781,61 @@ export default {
 
     // 确定退出
     quitSure () {
-      this.$router.push({path: '/equipmentChecklist'})
+      this.temporaryStorageEvent()
     },
 
     // 取消退出(暂存)
     quitCancel () {
-      this.temporaryStorageEvent()
+      this.$router.push({path: '/equipmentChecklist'})
     },
 
     // 暂存事件
     temporaryStorageEvent () {
-      let casuallyTemporaryStorageOtherRegisterMessage = this.temporaryStorageOtherRegisterMessage;
-      if (this.temporaryStorageOtherRegisterMessage.length > 0 ) {
-          let temporaryIndex = this.temporaryStorageOtherRegisterMessage.findIndex((item) => { return item.id == this.$route.query.eventId});
-          if (temporaryIndex != -1) {
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['createTime'] = this.getNowFormatDate(this.currentFindTime);
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName'] = this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces;
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['description'] = this.problemOverview;
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['remark'] = this.taskDescribe;
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['images'] = this.problemPicturesList;
-            casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName'] = this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces
-          } else {
-            casuallyTemporaryStorageOtherRegisterMessage.push({
-              id: uuidv4(),
-              checkItemId: this.enterEventRegisterPageMessage['checkItemId'],
-              resultId: this.enterEventRegisterPageMessage['resultId'],
-              taskId: this.enterEventRegisterPageMessage['taskId'],
-              depId: this.enterEventRegisterPageMessage['depId'],
-              createTime: this.getNowFormatDate(this.currentFindTime),
-              createName: this.userName,
-              roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
-              description: this.problemOverview,
-              remark: this.taskDescribe,
-              images: this.problemPicturesList,
-              state: -1
-            })
-          }
-        } else {
-          casuallyTemporaryStorageOtherRegisterMessage.push({
-            id: uuidv4(),
-            checkItemId: this.enterEventRegisterPageMessage['checkItemId'],
-            resultId: this.enterEventRegisterPageMessage['resultId'],
-            taskId: this.enterEventRegisterPageMessage['taskId'],
-            depId: this.enterEventRegisterPageMessage['depId'],
-            createTime: this.getNowFormatDate(this.currentFindTime),
-            createName: this.userName,
-            roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
-            description: this.problemOverview,
-            remark: this.taskDescribe,
-            images: this.problemPicturesList,
-            state: -1
-          })
-      };
-      this.changeTemporaryStorageOtherRegisterMessage(casuallyTemporaryStorageOtherRegisterMessage);
+      // let casuallyTemporaryStorageOtherRegisterMessage = this.temporaryStorageOtherRegisterMessage;
+      // if (this.temporaryStorageOtherRegisterMessage.length > 0 ) {
+      //     let temporaryIndex = this.temporaryStorageOtherRegisterMessage.findIndex((item) => { return item.id == this.$route.query.eventId});
+      //     if (temporaryIndex != -1) {
+      //       casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['createTime'] = this.getNowFormatDate(this.currentFindTime);
+      //       casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName'] = this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces;
+      //       casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['description'] = this.problemOverview;
+      //       casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['remark'] = this.taskDescribe;
+      //       casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['images'] = this.problemPicturesList;
+      //       casuallyTemporaryStorageOtherRegisterMessage[temporaryIndex]['roomName'] = this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces
+      //     } else {
+      //       casuallyTemporaryStorageOtherRegisterMessage.push({
+      //         id: uuidv4(),
+      //         checkItemId: this.enterEventRegisterPageMessage['checkItemId'],
+      //         resultId: this.enterEventRegisterPageMessage['resultId'],
+      //         taskId: this.enterEventRegisterPageMessage['taskId'],
+      //         depId: this.enterEventRegisterPageMessage['depId'],
+      //         createTime: this.getNowFormatDate(this.currentFindTime),
+      //         createName: this.userName,
+      //         roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
+      //         description: this.problemOverview,
+      //         remark: this.taskDescribe,
+      //         images: this.problemPicturesList,
+      //         state: -1
+      //       })
+      //     }
+      //   } else {
+      //     casuallyTemporaryStorageOtherRegisterMessage.push({
+      //       id: uuidv4(),
+      //       checkItemId: this.enterEventRegisterPageMessage['checkItemId'],
+      //       resultId: this.enterEventRegisterPageMessage['resultId'],
+      //       taskId: this.enterEventRegisterPageMessage['taskId'],
+      //       depId: this.enterEventRegisterPageMessage['depId'],
+      //       createTime: this.getNowFormatDate(this.currentFindTime),
+      //       createName: this.userName,
+      //       roomName: this.currentGoalSpaces == '请选择' ? '' : this.currentGoalSpaces,
+      //       description: this.problemOverview,
+      //       remark: this.taskDescribe,
+      //       images: this.problemPicturesList,
+      //       state: -1
+      //     })
+      // };
+      // this.changeTemporaryStorageOtherRegisterMessage(casuallyTemporaryStorageOtherRegisterMessage);
       this.$Alert({message:"暂存成功",duration:3000,type:'success'});
-      if (this.enterEventRegisterPageMessage['enterRegisterEventPageSource']) {
-        this.$router.push({path: this.enterEventRegisterPageMessage['enterRegisterEventPageSource']})
-      } else {
-        this.$router.push({path: '/eventList'})
-      }
+      this.$router.push({path: '/patrolAbnormalCheckItemEventList'})
     }
   }
 };

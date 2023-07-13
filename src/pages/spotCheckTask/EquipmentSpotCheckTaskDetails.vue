@@ -41,8 +41,8 @@
         </div>
     </div>
     <div class="task-operation-box">
-      <div class="task-quit">退 出</div>
-      <div class="task-complete">上 报</div>
+      <div class="task-quit" @click="quitEvent">退 出</div>
+      <div class="task-complete" @click="reportedEvent">上 报</div>
     </div>
     <!-- 退出提示框   -->
     <div class="quit-info-box">
@@ -102,6 +102,16 @@ export default {
 
     // 顶部导航左边点击事件
     onClickLeft () {
+      this.$router.push({path: '/equipmentSpotCheck'})
+    },
+
+    // 上报事件
+    reportedEvent () {
+      this.$router.push({path: '/patrolTaskElectronicSignaturePage'})
+    },
+
+    // 退出事件
+    quitEvent () {
       this.$router.push({path: '/equipmentSpotCheck'})
     },
 
