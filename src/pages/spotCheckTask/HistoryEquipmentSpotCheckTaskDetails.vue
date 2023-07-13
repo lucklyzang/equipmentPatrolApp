@@ -41,21 +41,7 @@
         </div>
     </div>
     <div class="task-operation-box">
-      <div class="task-quit">退 出</div>
-    </div>
-    <!-- 退出提示框   -->
-    <div class="quit-info-box">
-      <van-dialog v-model="quitInfoShow"  show-cancel-button width="85%"
-          @confirm="quitSure" @cancel="quitCancel" confirm-button-text="是"
-          cancel-button-text="否"
-        >
-          <div class="dialog-title">
-            该检查单未填写完毕,是否要退出?
-          </div>
-          <div class="dialog-center">
-            退出后您还可以再次进入进行填写，本次填写的内容将被保留，但未将检查项全部勾选之前您将无法完成该巡检任务 
-          </div>
-      </van-dialog>
+      <div class="task-quit" @click="quitEvent">退 出</div>
     </div>
   </div>
 </template>
@@ -104,14 +90,9 @@ export default {
       this.$router.push({path: '/historyEquipmSpotTaskList'})
     },
 
-    // 确定退出
-    quitSure () {
+    // 退出事件
+    quitEvent () {
       this.$router.push({path: '/historyEquipmSpotTaskList'})
-    },
-
-    // 取消退出
-    quitCancel () {
-
     },
 
     // 通过事件

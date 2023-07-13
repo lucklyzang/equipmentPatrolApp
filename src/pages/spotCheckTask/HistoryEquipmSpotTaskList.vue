@@ -85,6 +85,7 @@ export default {
       currentPage: 1,
       pageSize: 10,
       isLoadData: true,
+      fromPathSource: '',
       fullBacklogTaskList: [],
       echoFullBacklogTaskList: [],
       backlogTaskList: [],
@@ -98,7 +99,7 @@ export default {
 
   mounted() {
     // 控制设备物理返回按键
-    this.deviceReturn("/home");
+    this.deviceReturn(`${this.fromPathSource}`);
     this.$nextTick(()=> {
       this.initScrollChange()
     })
@@ -121,6 +122,13 @@ export default {
 
   watch: {},
 
+  beforeRouteEnter(to, from, next) {
+    next(vm=>{
+      vm.fromPathSource = from.path
+	  });
+    next() 
+  },
+
   computed: {
     ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList"]),
     proId () {
@@ -139,7 +147,7 @@ export default {
 
     // 顶部导航左边点击事件
     onClickLeft () {
-      this.$router.push({path: '/equipmentSpotCheck'})
+      this.$router.push({path: `${this.fromPathSource}`})
     },
 
     // 格式化时间
