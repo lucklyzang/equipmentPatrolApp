@@ -34,6 +34,7 @@ export function getDefaultPatrolTaskState() {
 // 点检任务模块store的初始值
 export function getSpotCheckTaskState() {
     return {
+        enterHistoryEquipmSpotTaskListPageSource: ''
     }
 }
 

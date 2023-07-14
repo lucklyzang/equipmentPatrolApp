@@ -85,7 +85,6 @@ export default {
       currentPage: 1,
       pageSize: 10,
       isLoadData: true,
-      fromPathSource: '',
       fullBacklogTaskList: [],
       echoFullBacklogTaskList: [],
       backlogTaskList: [],
@@ -99,16 +98,10 @@ export default {
 
   mounted() {
     // 控制设备物理返回按键
-    this.deviceReturn(`${this.fromPathSource}`);
+    this.deviceReturn(`${this.enterHistoryEquipmSpotTaskListPageSource}`);
     this.$nextTick(()=> {
       this.initScrollChange()
     })
-  },
-
-  beforeRouteEnter(to, from, next) {
-    next(vm=>{
-	  });
-    next() 
   },
 
   beforeDestroy () {
@@ -124,13 +117,14 @@ export default {
 
   beforeRouteEnter(to, from, next) {
     next(vm=>{
-      vm.fromPathSource = from.path
+      if (from.path == '/historyEquipmentSpotCheckTaskDetails') { return };
+      vm.changeEnterHistoryEquipmSpotTaskListPageSource(from.path)
 	  });
     next() 
   },
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList","enterHistoryEquipmSpotTaskListPageSource"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -143,11 +137,11 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeDepartmentCheckList","changePatrolTaskListMessage"]),
+    ...mapMutations(["changeDepartmentCheckList","changePatrolTaskListMessage","changeEnterHistoryEquipmSpotTaskListPageSource"]),
 
     // 顶部导航左边点击事件
     onClickLeft () {
-      this.$router.push({path: `${this.fromPathSource}`})
+      this.$router.push({path: `${this.enterHistoryEquipmSpotTaskListPageSource}`})
     },
 
     // 格式化时间
