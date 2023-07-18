@@ -301,7 +301,7 @@ export default {
                                         line-height: 30px;
                                         padding: 0 8px;
                                         box-sizing: border-box;
-                                        background: green;
+                                        background: #C5E5E0;
                                         border-radius: 6px;
                                         font-size: 12px;
                                         color: #101010;

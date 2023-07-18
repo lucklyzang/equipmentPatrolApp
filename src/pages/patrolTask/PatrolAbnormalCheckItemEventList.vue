@@ -60,7 +60,7 @@
                           <span>sdasas</span>
                       </div>
                   </div>
-                  <div class="right-arrow-box" @click="taskDetailsEvent()">
+                  <div class="right-arrow-box" @click="taskDetailsEvent">
                     <van-icon name="arrow" color="#1684FC" size="24" />
                   </div>
               </div>
@@ -146,7 +146,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([]),
+    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource']),
 
     // 顶部导航左边点击事件
     onClickLeft () {
@@ -233,13 +233,14 @@ export default {
       }  
     },
 
-    // 进入事件详情事件
+    // 进入异常记录详情事件
     taskDetailsEvent () {
-      
+      this.$router.push({path:'/editPatrolAbnormalRecord'})
     },
 
     // 新增记录事件
     newAddRecordEvent () {
+      this.changeEnterPatrolAbnormalRecordPageSource('/patrolAbnormalCheckItemEventList');
       this.$router.push({path: '/patrolAbnormalRecord'})
     }
   }

@@ -232,7 +232,7 @@ import _ from 'lodash'
 import ScrollSelection from "@/components/ScrollSelection";
 import BottomSelect from "@/components/BottomSelect";
 export default {
-  name: "PatrolAbnormalRecord",
+  name: "EditPatrolAbnormalRecord",
   components: {
     ScrollSelection,
     BottomSelect
@@ -289,7 +289,7 @@ export default {
       pushHistory();
       that.gotoURL(() => {
         pushHistory();
-        that.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})
+        that.$router.push({path: '/patrolAbnormalCheckItemEventList'})
       })
     };
     this.parallelFunction()
@@ -305,7 +305,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["userInfo","ossMessage","departmentCheckList","timeMessage","enterProblemRecordMessage","enterPatrolAbnormalRecordPageSource"]),
+    ...mapGetters(["userInfo","ossMessage","departmentCheckList","timeMessage","enterProblemRecordMessage"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -321,7 +321,7 @@ export default {
     ...mapMutations(["changeOverDueWay","changeTimeMessage","changeOssMessage","changeDepartmentCheckList"]),
 
     onClickLeft() {
-      this.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})
+      this.$router.push({path: '/patrolAbnormalCheckItemEventList'})
     },
 
     // 任务开始事件弹框确认事件
@@ -786,7 +786,7 @@ export default {
 
     // 取消退出(不暂存)
     quitCancel () {
-      this.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})
+      this.$router.push({path: '/patrolAbnormalCheckItemEventList'})
     },
 
     // 暂存事件
@@ -835,7 +835,7 @@ export default {
       // };
       // this.changeTemporaryStorageOtherRegisterMessage(casuallyTemporaryStorageOtherRegisterMessage);
       this.$Alert({message:"暂存成功",duration:3000,type:'success'});
-      this.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})
+      this.$router.push({path: '/patrolAbnormalCheckItemEventList'})
     }
   }
 };

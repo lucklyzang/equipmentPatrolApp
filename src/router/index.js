@@ -28,6 +28,8 @@ const HistoryPatrolAbnormalCheckItemEventList = () =>
     import ('@/pages/patrolTask/HistoryPatrolAbnormalCheckItemEventList')
 const HistoryPatrolAbnormalRecord = () =>
     import ('@/pages/patrolTask/HistoryPatrolAbnormalRecord')
+const EditPatrolAbnormalRecord = () =>
+    import ('@/pages/patrolTask/EditPatrolAbnormalRecord')
 const EquipmentSpotCheck = () =>
     import ('@/pages/spotCheckTask/EquipmentSpotCheck')
 const EquipmentSpotCheckTaskDetails = () =>
@@ -117,6 +119,11 @@ let baseRoute = [{
         path: '/patrolAbnormalRecord',
         name: 'patrolAbnormalRecord',
         component: PatrolAbnormalRecord
+    },
+    {
+        path: '/editPatrolAbnormalRecord',
+        name: 'editPatrolAbnormalRecord',
+        component: EditPatrolAbnormalRecord
     },
     {
         path: '/equipmentSpotCheck',

@@ -160,7 +160,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([]),
+    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource']),
 
     // 顶部导航左边点击事件
     onClickLeft () {
@@ -191,8 +191,9 @@ export default {
 
     // 不通过事件
     noPassEvent (event) {
-      this.$router.push({path: '/patrolAbnormalRecord'});
-      // this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
+      // this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
+      // this.$router.push({path: '/patrolAbnormalRecord'});
+      this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
       // 已完成的任务
       // if (this.patrolTaskListMessage.state == 4) {
       //   // 该检查项最终结果选为×,点击后直接进入异常检查项事件列表页

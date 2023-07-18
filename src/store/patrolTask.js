@@ -7,6 +7,10 @@ export default {
             return state.enterProblemRecordMessage
         },
 
+        enterPatrolAbnormalRecordPageSource: (state) => {
+            return state.enterPatrolAbnormalRecordPageSource
+        },
+
         patrolTaskListMessage: (state) => {
             return state.patrolTaskListMessage
         },
@@ -70,6 +74,11 @@ export default {
         // 保存任务工单列表切换类型
         changeTaskOrderType (state, payLoad) {
             state.taskOrderType = payLoad
+        },
+
+        // 保存进入异常记录页的来源页面
+        changeEnterPatrolAbnormalRecordPageSource (state, playLoad) {
+            state.enterPatrolAbnormalRecordPageSource = playLoad
         },
 
         //重置巡更任务状态
