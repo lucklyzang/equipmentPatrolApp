@@ -11,95 +11,69 @@
 			<img :src="statusBackgroundPng" />
 		</div>
         <div class="content-box">
-            <div class="task-set-box">
-                <div class="task-set-name" :class="{'taskSetNameStyle': taskSetNameIndex == index }" v-for="(item,index) in taskSetList" :key="item" @click="taskSetNameClickEvent(item,index)">
-                    {{ item }}
+            <div class="content-top">
+                <div class="task-set-box">
+                    <div class="task-set-name" :class="{'taskSetNameStyle': taskSetNameIndex == index }" v-for="(item,index) in taskSetList" :key="item" @click="taskSetNameClickEvent(item,index)">
+                        {{ item }}
+                    </div>
+                </div>
+                <div class="time-tab-box">
+                    <div class="time-list-box">
+                        <div class="time-list" :class="{'timetabStyle': timeTabIndex == index}" v-for="(item, index) in timeList" :key="item" @click="timeTabClickEvent(item,index)">{{ item }}</div>
+                    </div>
+                    <div class="calendar-icon">
+                        <img :src="calendarPng" alt="" @click="dateClickEvent">
+                    </div>
                 </div>
             </div>
-            <van-tabs v-model="activeName" color="#1684FC" title-inactive-color="#101010" title-active-color="#0A7AF5" @change="vanTabsChangeEvent">
-                <van-tab title="18:00" name="18:00">
-                    <van-empty description="暂无数据" v-if="isShowNoMoreData" />
-                    <div class="backlog-task-list-box">
-                        <div class="backlog-task-list">
-                            <div class="backlog-task-top">
-                                <div class="backlog-task-top-left">
-                                    <span>任务编号</span>
+            <div class="task-content-box">
+                <van-empty description="暂无数据" v-if="isShowNoMoreData" />
+                <div class="backlog-task-list-box">
+                    <div class="backlog-task-list">
+                        <div class="backlog-task-top">
+                            <div class="backlog-task-top-left">
+                                <span>任务编号</span>
+                            </div>
+                            <div class="backlog-task-top-right" @click="clockInEvent">
+                                <span>已打卡</span>
+                            </div>
+                        </div>
+                        <div class="backlog-task-content">
+                            <div class="equipment-name-list" @click="equipmentChecklistEvent">
+                                <div class="equipment-name">
+                                    中央空调 1#
                                 </div>
-                                <div class="backlog-task-top-right" @click="clockInEvent">
-                                    <span>已打卡</span>
+                                <div class="operation-icon-box">
+                                    <img :src="uploadingFailPng" alt="">
                                 </div>
                             </div>
-                            <div class="backlog-task-content">
-                               <div class="equipment-name-list" @click="equipmentChecklistEvent">
-                                   <div class="equipment-name">
-                                       中央空调 1#
-                                   </div>
-                                   <div class="operation-icon-box">
-                                       <img :src="uploadingFailPng" alt="">
-                                   </div>
-                               </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 2#
-                                   </div>
-                                   <div class="operation-icon-box">
-                                       <img :src="uploadingGif" alt="">
-                                   </div>
-                               </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 3#
-                                   </div>
-                                   <div class="operation-icon-box">
-                                       <img :src="uploadingSuccessPng" alt="">
-                                   </div>
+                            <div class="equipment-name-list">
+                                <div class="equipment-name">
+                                    中央空调 2#
+                                </div>
+                                <div class="operation-icon-box">
+                                    <img :src="uploadingGif" alt="">
+                                </div>
+                            </div>
+                            <div class="equipment-name-list">
+                                <div class="equipment-name">
+                                    中央空调 3#
+                                </div>
+                                <div class="operation-icon-box">
+                                    <img :src="uploadingSuccessPng" alt="">
                                 </div>
                             </div>
                         </div>
-                    </div>    
-                </van-tab>
-                <van-tab title="14:00" name="14:00">
-                    <van-empty description="暂无数据" v-if="isShowNoMoreData" />
-                    <div class="backlog-task-list-box">
-                        <div class="backlog-task-list">
-                            <div class="backlog-task-top">
-                                <div class="backlog-task-top-left">
-                                    <span>任务编号</span>
-                                </div>
-                                <div class="backlog-task-top-right" @click="clockInEvent">
-                                    <span>已打卡</span>
-                                </div>
-                            </div>
-                            <div class="backlog-task-content">
-                               <div class="equipment-name-list" @click="equipmentChecklistEvent">
-                                   <div class="equipment-name">
-                                       中央空调 1#
-                                   </div>
-                                   <div class="operation-icon-box">
-                                       <img :src="uploadingFailPng" alt="">
-                                   </div>
-                               </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 2#
-                                   </div>
-                                   <div class="operation-icon-box">
-                                       <img :src="uploadingGif" alt="">
-                                   </div>
-                               </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 3#
-                                   </div>
-                                   <div class="operation-icon-box">
-                                       <img :src="uploadingSuccessPng" alt="">
-                                   </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>    
-                </van-tab>
-            </van-tabs>
+                    </div>
+                    <Calendar
+                        v-on:choseDay="clickDay"
+                        v-on:changeMonth="changeDate"
+                        v-on:isToday="clickToday"
+                        :markDate=arr
+                    ></Calendar>
+
+                </div>    
+            </div>
             <div class="complete-btn-box">
                 <div class="complete-btn" @click="completeTaskEvent">完成任务</div>
             </div>
@@ -111,11 +85,13 @@
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
 import {getAllTaskList} from '@/api/escortManagement.js'
-import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
+import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
+import Calendar from 'vue-calendar-component'
 export default {
   name: "EquipmentPatrolDetails",
   components: {
-    NavBar
+    NavBar,
+    Calendar
   },
   mixins:[mixinsDeviceReturn],
   data() {
@@ -123,7 +99,11 @@ export default {
       loadingShow: false,
       overlayShow: false,
       taskSetNameIndex: 0,
+      timeTabIndex: 0,
+      arr: ['2023/7/20','2023/7/10'],
       taskSetList: ['任务集A','任务集B','任务集C','任务集D','任务集E','任务集F'],
+      timeList: ['8:00','10:00','11:00'],
+      calendarPng: require("@/common/images/home/calendar-other.png"),
       totalCount: '',
       backlogTaskTimer: 0,
       isShowNoMoreData: false,
@@ -172,6 +152,16 @@ export default {
   methods: {
     ...mapMutations(["changePatrolTaskListMessage","changeTaskType"]),
 
+    clickDay(data) {
+      console.log(data); //选中某天
+    },
+    changeDate(data) {
+      console.log(data); //左右点击切换月份
+    },
+    clickToday(data) {
+      console.log(data); // 跳到了本月
+    },
+
     onClickLeft () {
         this.$router.push({path: '/home'})
     },
@@ -184,6 +174,14 @@ export default {
     taskSetNameClickEvent (item,index) {
         this.taskSetNameIndex = index
     },
+
+    // 时间tab切换事件
+    timeTabClickEvent (item,index) {
+        this.timeTabIndex = index
+    },
+
+    // 日期图标点击事件
+    dateClickEvent () {},
 
     // 打卡事件
     clockInEvent () {
@@ -297,10 +295,6 @@ export default {
       }
     },
 
-    // tab切换值变化事件
-    vanTabsChangeEvent (value) {
-    },
-
     // 点击进入设备检查单事件
     equipmentChecklistEvent () {
         // this.changePatrolTaskListMessage(item);
@@ -379,158 +373,177 @@ export default {
         width: 100%;
         height: 100%;
         padding-bottom: 50px;
-        .task-set-box {
-            background: #fff;
-            padding: 10px 14px 0 14px;
-            box-sizing: border-box;
-            align-items: flex-start;
-            flex-wrap: nowrap;
-            display: flex;
-            overflow-x: auto;
-            white-space: nowrap;
-            &::-webkit-scrollbar {
-                height: 0;
-                display: none
-            };
-            .task-set-name {
-                font-size: 14px;
-                color: #9C9FA3;
-                flex: none;
-                padding: 6px 12px;
-                border: 1px solid #9C9FA3;
+        .content-top {
+            .task-set-box {
+                background: #fff;
+                padding: 10px 14px 0 14px;
                 box-sizing: border-box;
-                margin-right: 10px;
-                border-radius: 4px
+                align-items: flex-start;
+                flex-wrap: nowrap;
+                display: flex;
+                overflow-x: auto;
+                white-space: nowrap;
+                &::-webkit-scrollbar {
+                    height: 0;
+                    display: none
+                };
+                .task-set-name {
+                    font-size: 14px;
+                    color: #9C9FA3;
+                    flex: none;
+                    padding: 6px 12px;
+                    border: 1px solid #9C9FA3;
+                    box-sizing: border-box;
+                    margin-right: 10px;
+                    border-radius: 4px
+                }
+            };
+            .time-tab-box {
+                display: flex;
+                height: 45px;
+                background: #fff;
+                align-items: center;
+                border-right: 1px solid #333;
+                border-left: 1px solid #333;
+                box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.23);
+                .bottom-border-1px(#BEC7D1);
+                .time-list-box  {
+                    flex: 1;
+                    display: flex;
+                    flex-wrap: nowrap;
+                    height: 45px;
+                    padding-left: 14px;
+                    box-sizing: border-box;
+                    align-items: center;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    &::-webkit-scrollbar {
+                        height: 0;
+                        display: none
+                    };
+                    .time-list {
+                        height: 45px;
+                        padding: 0 6px;
+                        box-sizing: border-box;
+                        line-height: 45px;
+                        margin-right: 20px;
+                        font-size: 14px;
+                        color: #101010;
+                        flex-shrink: 0
+                    };
+                    .timetabStyle {
+                        color: #0379FF;
+                        border-bottom: 4px solid #0379FF
+                    }
+                };
+                .calendar-icon {
+                    width: 24px;
+                    margin-right: 4px;
+                    >img {
+                        width: 100%
+                    }
+                }
             };
             .taskSetNameStyle {
                 color: #0379FF;
                 border: 1px solid #0379FF
             }
-        };
-        /deep/ .van-tabs {
+        };    
+        .task-content-box {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 0;
-            .van-tabs__wrap {
-                border-right: 1px solid #333;
-                border-left: 1px solid #333;
-                box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.23);
-                .bottom-border-1px(#BEC7D1);
-                .van-tabs__nav {
-                    .van-tab {
-                        flex: none !important;
-                        width: 90px
-                    };
-                }
-            };
-            .van-tabs__content {
-                flex: 1;
-                padding: 12px 4px 0px 4px;
-                box-sizing: border-box;
-                background: #f7f7f7;
+            padding: 12px 4px 0px 4px;
+            box-sizing: border-box;
+            background: #f7f7f7;
+            .backlog-task-list-box {
                 overflow: scroll;
-                .van-tab__pane {
-                    height: 100%;
-                    position: relative;
-                    .van-empty {
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%,-50%)
+                height: 100%;
+                .backlog-task-list {
+                    padding: 0 0 4px 0;
+                    box-sizing: border-box;
+                    border-radius: 6px;
+                    background: #fff;
+                    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.23);
+                    margin-bottom: 10px;
+                    .backlog-task-top {
+                        height: 40px;
+                        padding: 0 14px;
+                        box-sizing: border-box;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-size: 16px;
+                        color: #101010;
+                        .bottom-border-1px(#a9a9a9);
+                        .backlog-task-top-left {
+                            flex: 1;
+                            .no-wrap()
+                        };
+                        .backlog-task-top-right {
+                            width: 70px;
+                            font-size: 14px;
+                            text-align: right;
+                            span {
+                                display: inline-block;
+                                width: 62px;
+                                height: 22px;
+                                text-align: right;
+                                line-height: 22px;
+                                color: #289E8E;
+                                border-radius: 6px
+                            };
+                            .spanNoStartStyle {
+                                background: #0A7AF5;
+                                color: #fff
+                            }
+                        }
                     };
-                    .backlog-task-list-box {
-                        overflow: scroll;
-                        height: 100%;
-                        .backlog-task-list {
-                            padding: 0 0 4px 0;
-                            box-sizing: border-box;
-                            border-radius: 6px;
-                            background: #fff;
-                            box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.23);
+                    .backlog-task-content {
+                        position: relative;
+                        padding: 10px 14px 8px 14px;
+                        box-sizing: border-box;
+                        .equipment-name-list {
+                            display: flex;
+                            align-items: center;
+                            height: 30px;
                             margin-bottom: 10px;
-                            .backlog-task-top {
-                                height: 40px;
-                                padding: 0 14px;
+                            .equipment-name {
+                                height: 30px;
+                                line-height: 30px;
+                                padding: 0 8px;
                                 box-sizing: border-box;
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                                font-size: 16px;
+                                background: #DCDCDC;
+                                border-radius: 6px;
+                                font-size: 12px;
                                 color: #101010;
-                                .bottom-border-1px(#a9a9a9);
-                                .backlog-task-top-left {
-                                    flex: 1;
-                                    .no-wrap()
+                                flex: 1;
+                                margin-right: 6px;
+                                .equipmentNoCompleteStyle {
+                                    background: #F8CFAD
                                 };
-                                .backlog-task-top-right {
-                                    width: 70px;
-                                    font-size: 14px;
-                                    text-align: right;
-                                    span {
-                                        display: inline-block;
-                                        width: 62px;
-                                        height: 22px;
-                                        text-align: right;
-                                        line-height: 22px;
-                                        color: #289E8E;
-                                        border-radius: 6px
-                                    };
-                                    .spanNoStartStyle {
-                                        background: #0A7AF5;
-                                        color: #fff
-                                    }
+                                .equipmentCompletedStyle {
+                                    background: #C5E5E0
                                 }
                             };
-                            .backlog-task-content {
-                                position: relative;
-                                padding: 10px 14px 8px 14px;
-                                box-sizing: border-box;
-                                .equipment-name-list {
-                                    display: flex;
-                                    align-items: center;
-                                    height: 30px;
-                                    margin-bottom: 10px;
-                                    .equipment-name {
-                                        height: 30px;
-                                        line-height: 30px;
-                                        padding: 0 8px;
-                                        box-sizing: border-box;
-                                        background: #DCDCDC;
-                                        border-radius: 6px;
-                                        font-size: 12px;
-                                        color: #101010;
-                                        flex: 1;
-                                        margin-right: 6px;
-                                        .equipmentNoCompleteStyle {
-                                           background: #F8CFAD
-                                        };
-                                        .equipmentCompletedStyle {
-                                           background: #C5E5E0
-                                        }
-                                    };
-                                    .operation-icon-box {
-                                        width: 70px;
-                                        text-align: left;
-                                        img {
-                                            width: 20px
-                                        }
-                                    };
-                                    &:last-child {
-                                        margin-bottom: 0
-                                    }
+                            .operation-icon-box {
+                                width: 70px;
+                                text-align: left;
+                                img {
+                                    width: 20px
                                 }
+                            };
+                            &:last-child {
+                                margin-bottom: 0
                             }
-                        };
-                        .no-more-data {
-                            font-size: 12px;
-                            color: #BEC7D1;
-                            width: 100%;
-                            text-align: center;
-                            line-height: 30px
                         }
                     }
-                }        
+                };
+                .no-more-data {
+                    font-size: 12px;
+                    color: #BEC7D1;
+                    width: 100%;
+                    text-align: center;
+                    line-height: 30px
+                }
             }
         };
         .complete-btn-box {
