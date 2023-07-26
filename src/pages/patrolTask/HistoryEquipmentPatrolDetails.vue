@@ -81,7 +81,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import {getAllTaskList} from '@/api/escortManagement.js'
+import {getPatrolTaskDetailsList} from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
 export default {
   name: "HistoryEquipmentPatrolDetails",

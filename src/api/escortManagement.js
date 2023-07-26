@@ -1,46 +1,20 @@
 import request from '@/utils/request'
 
-// 巡更任务
+// 巡任务
 
 // 获取巡更任务列表
-export function getAllTaskList(data) {
+export function getPatrolTaskDetailsList(data) {
     return request({
-        url: 'nblink/patrol/checkTask/app/page',
+        url: 'nblink/patrol/checkTask/deviceDetails4App',
         method: 'get',
         params: data
     })
 }
 
-// 获取任务详情
-export function getTaskDetails(taskId) {
+// 重置日历
+export function resetPatrolTaskCalendarData (data) {
     return request({
-        url: `nblink/patrol/checkTask/app/detail/one/${taskId}`,
-        method: 'get'
-    })
-}
-
-// 打卡科室(手动打卡)
-export function clockingsSection(data) {
-    return request({
-        url: 'nblink/patrol/checkTask/app/punch',
-        method: 'put',
-        data
-    })
-}
-
-// 打卡科室(蓝牙打卡)
-export function bluetoothPunchSection(id,data) {
-    return request({
-        url: `nblink/patrol/checkTask/position/${id}`,
-        method: 'get',
-        params: data
-    })
-}
-
-// 已完成打卡的科室点击
-export function departmentClockFinsh(data) {
-    return request({
-        url: 'nblink/patrol/checkTask/app/hasSpace/itemsDetail',
+        url: 'nblink/patrol/checkTask/deviceCalendar4App',
         method: 'get',
         params: data
     })

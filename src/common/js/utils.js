@@ -19,6 +19,45 @@ export const setStore = (name, content) => {
     window.localStorage.setItem(name, content);
 }
 
+/* 
+  * 拼接完整时间
+  * @param{Array} arr
+  * @param{String} key 
+*/
+export const getFullDate = (hourTime) => {
+    let currentdate;
+    let strDate;
+    let seperator1 = "-";
+    let month = new Date().getMonth() + 1;
+    strDate = new Date().getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    };
+    if (strDate >= 0 && strDate <= 9) {
+      strDate = "0" + strDate;
+    };
+    currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
+    return currentdate + ' ' + hourTime
+  }
+
+/* 
+  * 数组升序排序(时间专用)
+  * @param{Array} arr
+  * @param{String} key 
+*/
+export const arrDateTimeSort = (arr) => {
+    if (Object.prototype.toString.call(arr) != '[object Array]') { return };
+    for (let i=0; i<arr.length-1; i++) {
+      for (let j = 0; j < arr.length-1-i; j++) {
+        if((new Date(getFullDate(arr[j]))).getTime() > (new Date(getFullDate(arr[j+1])).getTime())){
+          let temp = arr[j];
+          arr[j] = arr[j+1];
+          arr[j+1] = temp
+        }
+      }    
+    };
+    return arr
+  }
 
 /*
  * canvas签名旋转

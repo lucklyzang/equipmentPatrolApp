@@ -1,5 +1,17 @@
 <template>
   <div class="page-box" ref="wrapper">
+    <div class="calendar-box" v-show="calendarShow">
+        <div class="calendar-title">
+            <span>请选择日期</span>
+            <img :src="dateOtherIconPng" alt="">
+        </div>
+        <VueCalendar
+            v-on:choseDay="clickDay"
+            v-on:changeMonth="changeDate"
+            v-on:isToday="clickToday"
+            :markDate=noCompleteTaskDateList
+        ></VueCalendar>
+    </div>
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">加载中...</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
     <div class="nav">
@@ -13,8 +25,8 @@
         <div class="content-box">
             <div class="content-top">
                 <div class="task-set-box">
-                    <div class="task-set-name" :class="{'taskSetNameStyle': taskSetNameIndex == index }" v-for="(item,index) in taskSetList" :key="item" @click="taskSetNameClickEvent(item,index)">
-                        {{ item }}
+                    <div class="task-set-name" :class="{'taskSetNameStyle': taskSetNameIndex == index }" v-for="(item,index) in allPatrolTaskDetailsData" :key="item.configId" @click="taskSetNameClickEvent(item,index)">
+                        {{ item.configName }}
                     </div>
                 </div>
                 <div class="time-tab-box">
@@ -27,51 +39,28 @@
                 </div>
             </div>
             <div class="task-content-box">
-                <van-empty description="暂无数据" v-if="isShowNoMoreData" />
+                <van-empty description="无巡检任务" v-if="isShowNoMoreData" />
                 <div class="backlog-task-list-box">
-                    <div class="backlog-task-list">
+                    <div class="backlog-task-list" v-for="(item,index) in currentTaskList" :key="index">
                         <div class="backlog-task-top">
                             <div class="backlog-task-top-left">
-                                <span>任务编号</span>
+                                <span>{{ item.taskSite }}</span>
                             </div>
                             <div class="backlog-task-top-right" @click="clockInEvent">
-                                <span>已打卡</span>
+                                <span :class="{'spanNoStartStyle': item.isClockIn == 0 }">{{ item.isClockIn == 0 ? '打卡' : '已打卡' }}</span>
                             </div>
                         </div>
                         <div class="backlog-task-content">
-                            <div class="equipment-name-list" @click="equipmentChecklistEvent">
+                            <div class="equipment-name-list" @click="equipmentChecklistEvent" v-for="(innerItem,innerIndex) in item.taskContentList" :key="innerIndex">
                                 <div class="equipment-name">
-                                    中央空调 1#
+                                    {{ `${innerItem.deviceName} ${innerItem.norms}` }}
                                 </div>
                                 <div class="operation-icon-box">
                                     <img :src="uploadingFailPng" alt="">
                                 </div>
                             </div>
-                            <div class="equipment-name-list">
-                                <div class="equipment-name">
-                                    中央空调 2#
-                                </div>
-                                <div class="operation-icon-box">
-                                    <img :src="uploadingGif" alt="">
-                                </div>
-                            </div>
-                            <div class="equipment-name-list">
-                                <div class="equipment-name">
-                                    中央空调 3#
-                                </div>
-                                <div class="operation-icon-box">
-                                    <img :src="uploadingSuccessPng" alt="">
-                                </div>
-                            </div>
                         </div>
                     </div>
-                    <Calendar
-                        v-on:choseDay="clickDay"
-                        v-on:changeMonth="changeDate"
-                        v-on:isToday="clickToday"
-                        :markDate=arr
-                    ></Calendar>
-
                 </div>    
             </div>
             <div class="complete-btn-box">
@@ -84,25 +73,30 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import {getAllTaskList} from '@/api/escortManagement.js'
+import {getPatrolTaskDetailsList, resetPatrolTaskCalendarData} from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
-import Calendar from 'vue-calendar-component'
+import VueCalendar from '@/components/calendar/VueCalendar'
+import { arrDateTimeSort } from "@/common/js/utils";
 export default {
   name: "EquipmentPatrolDetails",
   components: {
     NavBar,
-    Calendar
+    VueCalendar
   },
   mixins:[mixinsDeviceReturn],
   data() {
     return {
       loadingShow: false,
+      calendarShow: false,
       overlayShow: false,
       taskSetNameIndex: 0,
+      currentTaskSetId: '',
       timeTabIndex: 0,
-      arr: ['2023/7/20','2023/7/10'],
-      taskSetList: ['任务集A','任务集B','任务集C','任务集D','任务集E','任务集F'],
-      timeList: ['8:00','10:00','11:00'],
+      noCompleteTaskDateList: [],
+      completeTaskDateList: [],
+      allPatrolTaskDetailsData: [],
+      timeList: [],
+      currentTaskList: [],
       calendarPng: require("@/common/images/home/calendar-other.png"),
       totalCount: '',
       backlogTaskTimer: 0,
@@ -114,13 +108,24 @@ export default {
       statusBackgroundPng: require("@/common/images/home/status-background.png"),
       uploadingSuccessPng: require("@/common/images/home/uploading-success.png"),
       uploadingGif: require("@/common/images/home/uploading.gif"),
+      dateOtherIconPng: require("@/common/images/home/date-other-icon.png"),
       uploadingFailPng: require("@/common/images/home/uploading-fail.png")
     }
   },
 
   mounted() {
     // 控制设备物理返回按键
-    this.deviceReturn('/home')
+    this.deviceReturn('/home');
+    let _this = this;
+    document.addEventListener('click',function(e){
+        if(e.target.className == 'van-overlay'){ 
+            console.log('Jinqule1');
+            _this.calendarShow = false;
+            _this.overlayShow = false
+        }
+    });
+    // 查询巡检任务详情
+    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'))
   },
 
   beforeDestroy () {
@@ -153,13 +158,15 @@ export default {
     ...mapMutations(["changePatrolTaskListMessage","changeTaskType"]),
 
     clickDay(data) {
-      console.log(data); //选中某天
+     this.calendarShow = false;
+     this.overlayShow = false;
+      console.log('as',data); //选中某天
     },
     changeDate(data) {
-      console.log(data); //左右点击切换月份
+        this.initCalendarData(this.getNowFormatDate(new Date(data),'month'))
+       console.log('a1', data); //左右点击切换月份
     },
     clickToday(data) {
-      console.log(data); // 跳到了本月
     },
 
     onClickLeft () {
@@ -172,16 +179,39 @@ export default {
 
     // 任务集名称点击事件
     taskSetNameClickEvent (item,index) {
-        this.taskSetNameIndex = index
+        this.taskSetNameIndex = index;
+        this.currentTaskList = [];
+        this.currentTaskSetId = item.configId;
+        // 获取当前任务集的时间点集合,做升序处理
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData.filter((innerItem) => { return innerItem.configId == item.configId })[0]['deviceListByTime']));
+        // 显示离任务时间最近的时间点
+        this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
+        // 拼装当前时间段任务列表数据
+        let currentTimeData = this.allPatrolTaskDetailsData.filter((innerItem) => { return innerItem.configId == item.configId })[0]['deviceListByTime'][this.disposeTime(this.timeList)];
+        Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+            taskSite: item,
+            isClockIn: currentTimeData[item][0]['isClockIn'],
+            taskContentList: currentTimeData[item]
+        })})
     },
 
     // 时间tab切换事件
     timeTabClickEvent (item,index) {
-        this.timeTabIndex = index
+        this.timeTabIndex = index;
+        this.currentTaskList = [];
+        // 拼装当前时间段任务列表数据
+        let currentTimeData = this.allPatrolTaskDetailsData.filter((innerItem) => { return innerItem.configId == this.currentTaskSetId })[0]['deviceListByTime'][item];
+        Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+            taskSite: item,
+            isClockIn: currentTimeData[item][0]['isClockIn'],
+            taskContentList: currentTimeData[item]
+        })})
     },
 
     // 日期图标点击事件
-    dateClickEvent () {},
+    dateClickEvent () {
+        this.initCalendarData(this.getNowFormatDate(new Date(),'month'))
+    },
 
     // 打卡事件
     clockInEvent () {
@@ -229,15 +259,33 @@ export default {
         }
     },
 
-    // 获取任务列表
-    queryTaskList (taskType,page,pageSize) {
+    // 获取巡检任务详情
+    queryPatrolTaskDetailsList (queryDate) {
         this.loadingShow = true;
         this.overlayShow = true;
-		getAllTaskList({proId : this.userInfo.proIds[0], workerId: this.userInfo.id,taskType,system:6,page,pageSize})
+		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate:'2023-07-20'})
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
             if (res && res.data.code == 200) {
+                if (res.data.data.length > 0) {
+                    this.allPatrolTaskDetailsData = res.data.data;
+                    // 获取初始任务集id
+                    this.currentTaskSetId = this.allPatrolTaskDetailsData[0]['configId'];
+                    // 获取当前任务集的时间点集合,做升序处理
+                    this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[0]['deviceListByTime']));
+                    // 显示离任务时间最近的时间点
+                    this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
+                    // 拼装当前时间段任务列表数据
+                    let currentTimeData = this.allPatrolTaskDetailsData[0]['deviceListByTime'][this.disposeTime(this.timeList)];
+                    Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+                        taskSite: item,
+                        isClockIn: currentTimeData[item][0]['isClockIn'],
+                        taskContentList: currentTimeData[item]
+                    })})
+                } else {
+                    this.isShowNoMoreData = true
+                }
             } else {
                 this.$toast({
                     type: 'fail',
@@ -253,6 +301,61 @@ export default {
           message: err
         })
       })
+    },
+
+    // 点击日历时对每天数据进行初始化
+    initCalendarData (queryTime) {
+        this.loadingShow = true;
+        this.overlayShow = true;
+		resetPatrolTaskCalendarData({proId : this.userInfo.proIds[0], workerId: 6,system:9,queryTime})
+        .then((res) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            this.noCompleteTaskDateList = [];
+            this.completeTaskDateList = [];
+            if (res && res.data.code == 200) {
+                // 获取有未完成任务的日期
+                Object.keys(res.data.data).forEach((item) => { if (res.data.data[item] == 1) { this.noCompleteTaskDateList.push(item)}});
+                // 获取完成任务的日期
+                Object.keys(res.data.data).forEach((item) => { if (res.data.data[item] == 0) { this.completeTaskDateList.push(item)}});
+                this.calendarShow = true;
+                this.overlayShow = true
+            } else {
+                this.$toast({
+                    type: 'fail',
+                    message: res.data.msg
+                })
+            }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
+    },
+
+    // 获取当前日期
+    getNowFormatDate(currentDate,type) {
+        let currentdate;
+        let strDate;
+        let seperator1 = "-";
+        let month = currentDate.getMonth() + 1;
+        strDate = currentDate.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        };
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        };
+        if ( type == 'month') {
+            currentdate = currentDate.getFullYear() + seperator1 + month
+        } else {
+            currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+        };
+        return currentdate
     },
 
     // 拼接完整时间
@@ -274,22 +377,23 @@ export default {
 
     // 获取当前离任务开始时间最近的时间点
     disposeTime (item) {
-      if (Object.prototype.toString.call(item.startTime) === '[object Array]') {
-        if (item.startTime.length > 0) {
+      if (Object.prototype.toString.call(item) === '[object Array]') {
+        if (item.length > 0) {
           let temporaryArr = [];
           // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
-          if (new Date().getTime() >= new Date(this.getFullDate(item.startTime[item.startTime.length-1])).getTime()) {
-            temporaryArr.push(item.startTime[item.startTime.length-1])
+          if (new Date().getTime() >= new Date(this.getFullDate(item[item.length-1])).getTime()) {
+            temporaryArr.push(item[item.length-1])
           } else {        
-            for (let i=0, len = item.startTime.length; i<len; i++) {
+            for (let i=0, len = item.length; i<len; i++) {
               if (i > 0) {
-                if (new Date().getTime() < new Date(this.getFullDate(item.startTime[i])).getTime()) {
-                  temporaryArr.push(item.startTime[i-1])
+                if (new Date().getTime() < new Date(this.getFullDate(item[i])).getTime()) {
+                  temporaryArr.push(item[i-1])
                   break
                 }
               }    
             }
-          };    
+          };
+           console.log('当前时间',temporaryArr.join(','));    
           return temporaryArr.join(',')
         }
       }
@@ -338,6 +442,42 @@ export default {
           color: #fff !important;
           font-size: 16px !important;
         }
+    }
+  };
+  .calendar-box {
+      position: absolute;
+      z-index: 1000000;
+      top: 20%;
+      width: 90%;
+      left: 50%;
+      transform: translateX(-50%);
+      .calendar-title {
+        height: 35px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        background: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        >span {
+            font-size: 14px;
+            color: #b3b3b3
+        };
+        >img {
+            width: 16px
+        }
+      };
+      /deep/ .wh_container {
+      .wh_content_all {
+        .wh_content {
+            .wh_content_item {
+                .wh_isToday {
+                    background: transparent
+                }
+            }
+        }
+      }
     }
   };
   /deep/ .van-loading {
@@ -445,8 +585,8 @@ export default {
                 }
             };
             .taskSetNameStyle {
-                color: #0379FF;
-                border: 1px solid #0379FF
+                color: #0379FF !important;
+                border: 1px solid #0379FF !important
             }
         };    
         .task-content-box {
@@ -492,8 +632,10 @@ export default {
                                 border-radius: 6px
                             };
                             .spanNoStartStyle {
-                                background: #0A7AF5;
-                                color: #fff
+                                background: #0A7AF5 !important;
+                                border-radius: 4px;
+                                text-align: center !important;
+                                color: #fff !important
                             }
                         }
                     };
