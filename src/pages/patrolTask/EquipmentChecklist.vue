@@ -27,12 +27,12 @@
                     </div>
                     <div class="operation-right">
                       <van-radio-group v-model="innerItem.checkResult" direction="horizontal">
-                          <van-radio name="1">
+                          <van-radio name="1" @click="(event) => passEvent(event,innerItem,innerIndex)">
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
                               </template>
                           </van-radio>
-                          <van-radio name="3">
+                          <van-radio name="3" @click="(event) => noPassEvent(event,innerItem,innerIndex)">
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
                               </template>
@@ -90,7 +90,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import { } from '@/api/escortManagement.js'
+import { checkItemPass, checkItemNoPass, getIsHaveEventRegister} from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
 export default {
   name: "EquipmentChecklist",
@@ -170,91 +170,136 @@ export default {
       this.$forceUpdate()
     },
 
+    // 判断该巡查项下是否有登记事件
+    queryIsHaveEventRegister (event,innerItem,innerIndex) {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.loadText = '查询中';
+      getIsHaveEventRegister(this.userInfo.proIds[0],6,innerItem.resultId).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+          // 该巡查项下面有登记事件该巡查项无法再由X改为√。如果把登记的事件全部删除了，那就可以由X改为√。
+          if (res.data.data == 1) {
+            this.$toast({
+              type: 'fail',
+              message: '该巡查项下面有异常记录,把该巡查项下登记的异常记录全部删除后,方能通过'
+            });
+            // 重置该检查项选中状态
+            item['checkResult'] = '3';
+            return
+          };
+          this.loadingShow = true;
+          this.overlayShow = true;
+          this.loadText = '反馈中';
+          checkItemPass({resultId:item.resultId,workerName: this.userInfo.name}).then((res) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            this.loadText = '';
+            if (res && res.data.code == 200) {
+              this.$toast({
+                type: 'success',
+                message: '反馈成功'
+              });
+              // 更改该检查项选中状态
+              let tempraryMessage = deepClone(this.departmentCheckList);
+              tempraryMessage['checkItemList'][index]['checkResult'] = '1';
+              this.changeDepartmentCheckList(tempraryMessage)
+            } else {
+              this.$toast({
+                type: 'fail',
+                message: res.data.msg
+              })
+            }
+          })
+          .catch((err) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            this.loadText = '';
+            this.$toast({
+              type: 'fail',
+              message: err
+            })
+          })
+        } else {
+          this.$toast({
+            type: 'fail',
+            message: res.data.msg
+          })
+        }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
+    },
+
     // 通过事件
     passEvent (event) {
-      // 已完成的任务不可操作
-      // if (this.patrolTaskListMessage.state == 4) {
-      //   return
-      // };
       // 判断该巡查项下是否有登记事件
-      // this.queryIsHaveEventRegister(event,item,index)
+      this.queryIsHaveEventRegister(event,innerItem,innerIndex)
     },
 
     // 不通过事件
-    noPassEvent (event) {
+    noPassEvent (event,innerItem,innerIndex) {
       // this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
       // this.$router.push({path: '/patrolAbnormalRecord'});
-      this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
-      // 已完成的任务
-      // if (this.patrolTaskListMessage.state == 4) {
-      //   // 该检查项最终结果选为×,点击后直接进入异常检查项事件列表页
-      //   if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 3) {
-      //     //保存进入问题记录页的相关信息
-      //     let temporaryInfo = this.enterProblemRecordMessage;
-      //     temporaryInfo['isAllowOperation'] = true;
-      //     temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
-      //     temporaryInfo['issueInfo'] = item;
-      //     temporaryInfo['index'] = index; 
-      //     this.changeEnterProblemRecordMessage(temporaryInfo);
-      //     this.$router.push({path: '/problemRecord'})
-      //   } else {
-      //     // 该检查项最终结果选为√,点击后不做处理
-      //     // 重置该检查项选中状态
-      //     item['checkResult'] = '1';
-      //     return
-      //   }
-      // } else {
-      //   // 未完成的任务
-      //   this.loadingShow = true;
-      //   this.overlayShow = true;
-      //   this.loadText = '反馈中';
-      //   checkItemNoPass({resultId:item.resultId,workerName: this.userInfo.name}).then((res) => {
-      //     this.loadingShow = false;
-      //     this.overlayShow = false;
-      //     this.loadText = '';
-      //     if (res && res.data.code == 200) {
-      //       this.$toast({
-      //         type: 'success',
-      //         message: '反馈成功'
-      //       });
-      //       this.resultId = item['resultId'];
-      //       //保存进入问题记录页的相关信息
-      //       let temporaryInfo = this.enterProblemRecordMessage;
-      //       temporaryInfo['isAllowOperation'] = true;
-      //       temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
-      //       temporaryInfo['issueInfo'] = item;
-      //       temporaryInfo['id'] = res.data.data ? res.data.data.id : null;
-      //       temporaryInfo['index'] = index; 
-      //       this.changeEnterProblemRecordMessage(temporaryInfo);
-      //       // 第一次点击X，直接选择事件类型进行登记
-      //       if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
-      //         this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
-      //         this.eventTypeShow = true
-      //       } else {
-      //         // 第二次及以上再点击X，进入异常巡查项事件列表页
-      //         this.$router.push({path: '/problemRecord'})
-      //       };
-      //       // 更改该检查项选中状态
-      //       let tempraryMessage = deepClone(this.departmentCheckList);
-      //       tempraryMessage['checkItemList'][index]['checkResult'] = '3';
-      //       this.changeDepartmentCheckList(tempraryMessage)
-      //     } else {
-      //       this.$toast({
-      //         type: 'fail',
-      //         message: res.data.msg
-      //       })
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     this.loadingShow = false;
-      //     this.overlayShow = false;
-      //     this.loadText = '';
-      //     this.$toast({
-      //       type: 'fail',
-      //       message: err
-      //     })
-      //   })
-      // }
+      // this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.loadText = '反馈中';
+      checkItemNoPass({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+          this.$toast({
+            type: 'success',
+            message: '反馈成功'
+          });
+          this.resultId = item['resultId'];
+          //保存进入问题记录页的相关信息
+          let temporaryInfo = this.enterProblemRecordMessage;
+          temporaryInfo['isAllowOperation'] = true;
+          temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
+          temporaryInfo['issueInfo'] = item;
+          temporaryInfo['id'] = res.data.data ? res.data.data.id : null;
+          temporaryInfo['index'] = index; 
+          this.changeEnterProblemRecordMessage(temporaryInfo);
+          // 第一次点击X，直接选择事件类型进行登记
+          if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
+            this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
+            this.eventTypeShow = true
+          } else {
+            // 第二次及以上再点击X，进入异常巡查项事件列表页
+            this.$router.push({path: '/problemRecord'})
+          };
+          // 更改该检查项选中状态
+          let tempraryMessage = deepClone(this.departmentCheckList);
+          tempraryMessage['checkItemList'][index]['checkResult'] = '3';
+          this.changeDepartmentCheckList(tempraryMessage)
+        } else {
+          this.$toast({
+            type: 'fail',
+            message: res.data.msg
+          })
+        }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
     }
   }
 };

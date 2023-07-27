@@ -187,7 +187,7 @@ li {
         <div class="wh_content_item" v-for="(item,index) in list" @click="clickDay(item,index)" :key="index">
           <div
             class="wh_item_date"
-            v-bind:class="[{ wh_isMark: item.isMark},{wh_other_dayhide:item.otherMonth!=='nowMonth'},{wh_want_dayhide:item.dayHide},{wh_isToday:item.isToday},{wh_chose_day:item.chooseDay},setClass(item)]"
+            v-bind:class="[{ wh_isMark: item.isMark},{wh_other_dayhide:item.otherMonth!=='nowMonth' || disableClickDateList.indexOf(item.date) == -1},{wh_want_dayhide:item.dayHide},{wh_isToday:item.isToday},{wh_chose_day:item.chooseDay},setClass(item)]"
           >{{item.id}}</div>
           <div class="mark-icon" v-show="item.isMark"></div>
         </div>
@@ -205,10 +205,15 @@ export default {
       historyChose: [],
       dateTopYear: "",
       dateTopMonth: "",
+      disableClickDateList: []
     };
   },
   props: {
     markDate: {
+      type: Array,
+      default: () => []
+    },
+    disableClickDate: {
       type: Array,
       default: () => []
     },
@@ -235,11 +240,12 @@ export default {
   },
   created() {
     this.intStart();
-    this.myDate = new Date();
+    this.myDate = new Date()
   },
   methods: {
     intStart() {
       timeUtil.sundayStart = this.sundayStart;
+      this.disableClickDateList = this.disableClickDate
     },
     setClass(data) {
       let obj = {};
@@ -247,6 +253,7 @@ export default {
       return obj;
     },
     clickDay: function(item, index) {
+      if (this.disableClickDateList.indexOf(item.date) == -1) { return };
       if (item.otherMonth === "nowMonth" && !item.dayHide) {
         this.getList(this.myDate, item.date);
       }
@@ -346,6 +353,13 @@ export default {
     markDate: {
       handler(val, oldVal) {
         this.getList(this.myDate);
+      },
+      deep: true
+    },
+    disableClickDate: {
+      handler(val, oldVal) {
+        this.disableClickDateList = val;
+        console.log('非里面日期可点击',this.disableClickDateList);
       },
       deep: true
     },

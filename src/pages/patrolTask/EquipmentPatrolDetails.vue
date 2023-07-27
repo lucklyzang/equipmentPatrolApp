@@ -9,7 +9,8 @@
             v-on:choseDay="clickDay"
             v-on:changeMonth="changeDate"
             v-on:isToday="clickToday"
-            :markDate=noCompleteTaskDateList
+            :disableClickDate="hasTaskDate"
+            :markDate="noCompleteTaskDateList"
         ></VueCalendar>
     </div>
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">加载中...</van-loading>
@@ -46,12 +47,12 @@
                             <div class="backlog-task-top-left">
                                 <span>{{ item.taskSite }}</span>
                             </div>
-                            <div class="backlog-task-top-right" @click="clockInEvent">
+                            <div class="backlog-task-top-right" @click="clockInEvent(item,index)">
                                 <span :class="{'spanNoStartStyle': item.isClockIn == 0 }">{{ item.isClockIn == 0 ? '打卡' : '已打卡' }}</span>
                             </div>
                         </div>
                         <div class="backlog-task-content">
-                            <div class="equipment-name-list" @click="equipmentChecklistEvent(innerItem,innerIndex)" v-for="(innerItem,innerIndex) in item.taskContentList" :key="innerIndex">
+                            <div class="equipment-name-list" @click="equipmentChecklistEvent(item,innerItem,innerIndex)" v-for="(innerItem,innerIndex) in item.taskContentList" :key="innerIndex">
                                 <div class="equipment-name">
                                     {{ `${innerItem.deviceName} ${innerItem.norms}` }}
                                 </div>
@@ -73,7 +74,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import {getPatrolTaskDetailsList, resetPatrolTaskCalendarData} from '@/api/escortManagement.js'
+import {getPatrolTaskDetailsList, resetPatrolTaskCalendarData,patrolTaskPunchCard} from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 import VueCalendar from '@/components/calendar/VueCalendar'
 import { arrDateTimeSort } from "@/common/js/utils";
@@ -90,9 +91,11 @@ export default {
       calendarShow: false,
       overlayShow: false,
       taskSetNameIndex: 0,
+      currentTaskItemMessage: '',
       currentTaskSetId: '',
       timeTabIndex: 0,
       noCompleteTaskDateList: [],
+      hasTaskDate: [],
       completeTaskDateList: [],
       allPatrolTaskDetailsData: [],
       timeList: [],
@@ -122,6 +125,14 @@ export default {
             console.log('Jinqule1');
             _this.calendarShow = false;
             _this.overlayShow = false
+        };
+        // 二维码回调方法绑定到window下面,提供给外部调用
+        let me = this;
+        window['scanQRcodeCallback'] = (code) => {
+            me.scanQRcodeCallback(code);
+        };
+        window['scanQRcodeCallbackCanceled'] = () => {
+            me.scanQRcodeCallbackCanceled();
         }
     });
     // 查询巡检任务详情
@@ -158,15 +169,16 @@ export default {
     ...mapMutations(["changePatrolTaskListMessage","changeTaskType","changePatrolTaskDeviceChecklist"]),
 
     clickDay(data) {
-        let hasTaskDate =  this.noCompleteTaskDateList.concat(this.completeTaskDateList);
+        this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
+        let allHasTaskDate =  this.noCompleteTaskDateList.concat(this.completeTaskDateList);
         // 没有任务的日期不允许点击
-        if (hasTaskDate.indexOf(this.getNowFormatDate(new Date(data),'day')) == -1) {
-            this.overlayShow = false;
-            this.calendarShow = false;
-            this.$toast('该日期下没有巡检任务')
-        } else {
-           this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
-        }
+        // if (allHasTaskDate.indexOf(this.getNowFormatDate(new Date(data),'day')) == -1) {
+        //     this.overlayShow = false;
+        //     this.calendarShow = false;
+        //     this.$toast('该日期下没有巡检任务')
+        // } else {
+        //    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
+        // }
     },
     changeDate(data) {
        this.initCalendarData(this.getNowFormatDate(new Date(data),'month'))
@@ -216,11 +228,6 @@ export default {
     // 日期图标点击事件
     dateClickEvent () {
         this.initCalendarData(this.getNowFormatDate(new Date(),'month'))
-    },
-
-    // 打卡事件
-    clockInEvent () {
-
     },
 
     // 完成任务事件
@@ -326,6 +333,12 @@ export default {
                 Object.keys(res.data.data).forEach((item) => { if (res.data.data[item] == 1) { this.noCompleteTaskDateList.push(item)}});
                 // 获取完成任务的日期
                 Object.keys(res.data.data).forEach((item) => { if (res.data.data[item] == 0) { this.completeTaskDateList.push(item)}});
+                this.hasTaskDate =  this.noCompleteTaskDateList.concat(this.completeTaskDateList);
+                let temporaryHasTaskDate = [];
+                for (let item of this.hasTaskDate) {
+                    temporaryHasTaskDate.push(this.getNowFormatDateOther(new Date(item)))
+                };
+                this.hasTaskDate = temporaryHasTaskDate;
                 this.calendarShow = true;
                 this.overlayShow = true
             } else {
@@ -345,7 +358,93 @@ export default {
       })
     },
 
-    // 获取当前日期
+    // 打卡事件
+    clockInEvent (item,index) {
+        // 0-未打卡 1-已打卡
+        if (item.isClockIn == 1) { return };
+        this.currentTaskItemMessage = item;
+        console.log('任务打卡信息',item,index)
+        // this.scanQRCode()
+    },
+
+    // 扫描二维码方法
+    scanQRCode () {
+        window.android.scanQRcode()
+    },
+
+    // 摄像头扫码后的回调
+    scanQRcodeCallback(code) {
+        if (code) {
+            let codeData = code.split('|');
+            try {
+                // 判断当前扫码科室是否为任务科室
+                if (codeData[0] == this.currentTaskItemMessage['taskContentList'][0]['depId']) {
+                    let temporaryData = {
+                        taskId: this.currentTaskItemMessage['taskContentList'][0]['checkTaskId'],
+                        workerId: this.userInfo.id,
+                        workerName: this.userInfo.name,
+                        deviceList: []
+                    };
+                    for (let item of this.currentTaskItemMessage['taskContentList']) {
+                        temporaryData['deviceList'].push({
+                            id: item.deviceId,
+                            name: item.deviceName,
+                            depId: item.depId,
+                            depName: item.depName,
+                            structId: item.structId,
+                            structName: item.structName,
+                            norms: item.norms
+                        })
+                    };
+                    this.patrolTaskPunchCardEvent(temporaryData)
+                }
+            } catch (err) {
+                this.$toast({
+                    message: `${err}`,
+                    type: 'fail'
+                })
+            }  
+        } else {
+            this.$dialog.alert({
+                message: '当前没有扫描到任何信息,请重新扫描'
+            }).then(() => {
+                this.scanQRCode()
+            })
+        }
+    },
+
+    // 摄像头取消扫码后的回调
+    scanQRcodeCallbackCanceled () {
+    },
+
+    // 巡检任务打卡
+    patrolTaskPunchCardEvent (data) {
+        this.loadingShow = true;
+        this.overlayShow = true;
+		patrolTaskPunchCard(data)
+        .then((res) => {
+            this.loadingShow = false;
+            this.overlayShow = false;
+            if (res && res.data.code == 200) {
+               
+            } else {
+                this.$toast({
+                    type: 'fail',
+                    message: res.data.msg
+                })
+            }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
+    },
+
+    // 获取当前日期(-)
     getNowFormatDate(currentDate,type) {
         let currentdate;
         let strDate;
@@ -363,6 +462,17 @@ export default {
         } else {
             currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
         };
+        return currentdate
+    },
+
+    // 获取当前日期(/)
+    getNowFormatDateOther(currentDate) {
+        let currentdate;
+        let strDate;
+        let seperator1 = "/";
+        let month = currentDate.getMonth() + 1;
+        strDate = currentDate.getDate();
+        currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate;
         return currentdate
     },
 
@@ -408,8 +518,8 @@ export default {
     },
 
     // 点击进入设备检查单事件
-    equipmentChecklistEvent (innerItem,innerIndex) {
-        console.log('12',innerItem);
+    equipmentChecklistEvent (item,innerItem,innerIndex) {
+        console.log('12',item,innerItem);
         // this.changePatrolTaskListMessage(item);
         // let temporaryMessage = this.taskType;
         // temporaryMessage['taskTypeName'] = this.activeName;

@@ -20,6 +20,15 @@ export function resetPatrolTaskCalendarData (data) {
     })
 }
 
+// 设备巡检打卡
+export function patrolTaskPunchCard(data) {
+    return request({
+        url: 'nblink/patrol/checkTask/device/app/clockIn',
+        method: 'put',
+        data
+    })
+}
+
 // 检查项通过
 export function checkItemPass(data) {
     return request({
