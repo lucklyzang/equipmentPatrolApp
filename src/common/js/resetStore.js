@@ -28,7 +28,8 @@ export function getDefaultPatrolTaskState() {
         patrolTaskListMessage: {}, //巡查任务列表信息
         currentElectronicSignature: null, // 工单完成时的签名信息
         originalSignature: null, // 工单完成时原始签名信息
-        enterPatrolAbnormalRecordPageSource: ''
+        enterPatrolAbnormalRecordPageSource: '',
+        patrolTaskDeviceChecklist: [] // 巡检任务设备检查单信息
     }
 }
 

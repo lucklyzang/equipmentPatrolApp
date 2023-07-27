@@ -51,7 +51,7 @@
                             </div>
                         </div>
                         <div class="backlog-task-content">
-                            <div class="equipment-name-list" @click="equipmentChecklistEvent" v-for="(innerItem,innerIndex) in item.taskContentList" :key="innerIndex">
+                            <div class="equipment-name-list" @click="equipmentChecklistEvent(innerItem,innerIndex)" v-for="(innerItem,innerIndex) in item.taskContentList" :key="innerIndex">
                                 <div class="equipment-name">
                                     {{ `${innerItem.deviceName} ${innerItem.norms}` }}
                                 </div>
@@ -155,16 +155,21 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changePatrolTaskListMessage","changeTaskType"]),
+    ...mapMutations(["changePatrolTaskListMessage","changeTaskType","changePatrolTaskDeviceChecklist"]),
 
     clickDay(data) {
-     this.calendarShow = false;
-     this.overlayShow = false;
-      console.log('as',data); //选中某天
+        let hasTaskDate =  this.noCompleteTaskDateList.concat(this.completeTaskDateList);
+        // 没有任务的日期不允许点击
+        if (hasTaskDate.indexOf(this.getNowFormatDate(new Date(data),'day')) == -1) {
+            this.overlayShow = false;
+            this.calendarShow = false;
+            this.$toast('该日期下没有巡检任务')
+        } else {
+           this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
+        }
     },
     changeDate(data) {
-        this.initCalendarData(this.getNowFormatDate(new Date(data),'month'))
-       console.log('a1', data); //左右点击切换月份
+       this.initCalendarData(this.getNowFormatDate(new Date(data),'month'))
     },
     clickToday(data) {
     },
@@ -263,6 +268,9 @@ export default {
     queryPatrolTaskDetailsList (queryDate) {
         this.loadingShow = true;
         this.overlayShow = true;
+        this.calendarShow = false;
+        this.currentTaskList = [];
+        this.taskSetNameIndex = 0;
 		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate:'2023-07-20'})
         .then((res) => {
             this.loadingShow = false;
@@ -400,11 +408,13 @@ export default {
     },
 
     // 点击进入设备检查单事件
-    equipmentChecklistEvent () {
+    equipmentChecklistEvent (innerItem,innerIndex) {
+        console.log('12',innerItem);
         // this.changePatrolTaskListMessage(item);
         // let temporaryMessage = this.taskType;
         // temporaryMessage['taskTypeName'] = this.activeName;
         // this.changeTaskType(temporaryMessage);
+        this.changePatrolTaskDeviceChecklist(innerItem);
         this.$router.push('/equipmentChecklist')
     }
   }

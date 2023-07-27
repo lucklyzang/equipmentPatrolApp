@@ -35,6 +35,10 @@ export default {
             return state.originalSignature
         },
 
+        patrolTaskDeviceChecklist: (state) => {
+            return state.patrolTaskDeviceChecklist
+        }
+
     },
 
     mutations: {
@@ -80,6 +84,12 @@ export default {
         changeEnterPatrolAbnormalRecordPageSource (state, playLoad) {
             state.enterPatrolAbnormalRecordPageSource = playLoad
         },
+
+        // 保存进入设备检查单页面的信息
+        changePatrolTaskDeviceChecklist (state, playLoad) {
+            state.patrolTaskDeviceChecklist = playLoad
+        },
+
 
         //重置巡更任务状态
         resetPatrolTaskState(state) {

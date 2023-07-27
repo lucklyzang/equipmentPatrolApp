@@ -13,20 +13,20 @@
         <div class="content-box">
           <div class="current-area">
             <van-icon name="location" color="#1684FC" size="25" />
-            <span>当前检查设备: 空调外机</span>
+            <span>当前检查设备: {{ currentPatrolTaskDeviceChecklist.deviceName }}</span>
           </div>
           <div class="equipment-list-box">
             <div class="equipment-classification-box">
-              <div class="equipment-classification-list">
-                <div class="equipment-classification-name">#压缩机组状态</div>
-                <div class="equipment-list">
-                  <div class="equipment-operation-box">
+              <div class="equipment-classification-list" v-for="(item,index) in currentPatrolTaskDeviceChecklist.checkItemListGroupByCheckType" :key="index">
+                <div class="equipment-classification-name">{{ `#${item.checkItemClassifyName}` }}</div>
+                <div class="equipment-list" v-for="(innerItem,innerIndex) in item.checkItemClassifyContent" :key="innerIndex">
+                  <div class="equipment-operation-box" @click="checkItemNameRowCkickEvent(index,innerItem,innerIndex)">
                     <div class="operation-left">
-                      <img :src="arrowGreenBottomPng" alt="">
-                      <span>1#</span>
+                      <img :src="innerItem.unfold ? arrowGreenBottomPng : arrowGreenRightPng" alt="">
+                      <span>{{ innerItem.itemName }}</span>
                     </div>
                     <div class="operation-right">
-                      <van-radio-group v-model="checkResultValue" direction="horizontal">
+                      <van-radio-group v-model="innerItem.checkResult" direction="horizontal">
                           <van-radio name="1">
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
@@ -40,42 +40,10 @@
                       </van-radio-group>
                     </div>
                   </div>
-                  <div class="examine-standard-box">
+                  <div class="examine-standard-box" v-show="innerItem.unfold">
                     <div class="examine-standard-top">
                       <p>标准与要求:</p>
-                      <p>润滑良好、无异响、温度正常</p>
-                    </div>
-                    <div class="examine-standard-bottom">
-                      <p>检查方法及工具:</p>
-                      <p>触摸、听音、目视</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="equipment-list">
-                  <div class="equipment-operation-box">
-                    <div class="operation-left">
-                      <img :src="arrowGreenBottomPng" alt="">
-                      <span>2#</span>
-                    </div>
-                    <div class="operation-right">
-                      <van-radio-group v-model="checkResultValue" direction="horizontal">
-                          <van-radio name="1" @click="(event) => passEvent(event)">
-                              <template #icon="props">
-                                <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
-                              </template>
-                          </van-radio>
-                          <van-radio name="3" @click="(event) => noPassEvent(event)">
-                              <template #icon="props">
-                                <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
-                              </template>
-                          </van-radio>
-                      </van-radio-group>
-                    </div>
-                  </div>
-                  <div class="examine-standard-box">
-                    <div class="examine-standard-top">
-                      <p>标准与要求:</p>
-                      <p>润滑良好、无异响、温度正常</p>
+                      <p>{{ innerItem.itemStandard }}</p>
                     </div>
                     <div class="examine-standard-bottom">
                       <p>检查方法及工具:</p>
@@ -135,7 +103,7 @@ export default {
       overlayShow: false,
       loadingShow: false,
       quitInfoShow: false,
-      checkResultValue: '1',
+      currentPatrolTaskDeviceChecklist: {},
       remarkContent: '',
       loadText: '加载中',
       arrowGreenBottomPng: require("@/common/images/home/arrow-green-bottom.png"),
@@ -150,17 +118,32 @@ export default {
 
   mounted() {
     // 控制设备物理返回按键
-    this.deviceReturn("/equipmentPatrolDetails")
+    this.deviceReturn("/equipmentPatrolDetails");
+    this.currentPatrolTaskDeviceChecklist = this.patrolTaskDeviceChecklist;
+    let temporaryCheckItemListGroupByCheckType = this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
+    this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'] = [];
+    Object.keys(temporaryCheckItemListGroupByCheckType).forEach((item) => {
+      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].push({
+        checkItemClassifyName: item,
+        checkItemClassifyContent: temporaryCheckItemListGroupByCheckType[item]
+      })
+    });
+    this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach(el => {
+      el.checkItemClassifyContent.forEach((innerEl) => {
+        innerEl.unfold = false
+      })
+    });
+    console.log('处理后数据',this.currentPatrolTaskDeviceChecklist);
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage"])
+    ...mapGetters(["userInfo","patrolTaskDeviceChecklist"])
   },
 
   methods: {
-    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource']),
+    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource','changePatrolTaskListMessage','changePatrolTaskDeviceChecklist']),
 
     // 顶部导航左边点击事件
     onClickLeft () {
@@ -177,6 +160,14 @@ export default {
     // 取消退出
     quitCancel () {
 
+    },
+
+    // 检查项名称行点击事件
+    checkItemNameRowCkickEvent (index,innerItem,innerIndex) {
+      this.$nextTick(() => {
+        this.$set(this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][index]['checkItemClassifyContent'][innerIndex], 'unfold',!this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][index]['checkItemClassifyContent'][innerIndex]['unfold'])
+      });
+      this.$forceUpdate()
     },
 
     // 通过事件
@@ -264,49 +255,6 @@ export default {
       //     })
       //   })
       // }
-    },
-
-    // 获取任务详情
-    queryTaskDetails () {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.queryDataSuccess = false;
-      this.loadText = '加载中';
-      getTaskDetails(
-        this.patrolTaskListMessage.id
-      ).then((res) => {
-        if (res && res.data.code == 200) {
-          this.isShowOperateBtn = true;
-          this.loadingShow = false;
-          this.overlayShow = false;
-          this.loadText = '';
-          this.queryDataSuccess = true;
-          this.changePatrolTaskListMessage(res.data.data);
-          // 选择打卡地点弹框的数据
-          this.clockingPlaceOption = [];
-          for (let i = 0,len = this.patrolTaskListMessage['needSpaces'].length; i < len; i++) {
-            this.clockingPlaceOption.push({
-              id: i,
-              text: this.patrolTaskListMessage['needSpaces'][i]['name'],
-              value: this.patrolTaskListMessage['needSpaces'][i]['id']
-            })
-          }
-        } else {
-          this.$toast({
-            type: 'fail',
-            message: res.data.msg
-          })
-        }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
     }
   }
 };
@@ -452,7 +400,7 @@ export default {
         .equipment-classification-box {
           .equipment-classification-list {
             .equipment-classification-name {
-              .bottom-border-1px(#BEC7D1);
+              border-bottom: 4px solid #f7f7f7;
               font-size: 12px;
               color: #848484;
               padding: 6px 4px;
@@ -466,7 +414,7 @@ export default {
                 height: 44px;
                 padding: 0 6px;
                 box-sizing: border-box;
-                .bottom-border-1px(#BEC7D1);
+                border-bottom: 4px solid #f7f7f7;
                 .operation-left {
                   img {
                     width: 22px;

@@ -251,9 +251,9 @@ export default {
         this.getList(this.myDate, item.date);
       }
       if (item.otherMonth !== "nowMonth") {
-        item.otherMonth === "preMonth"
-          ? this.PreMonth(item.date)
-          : this.NextMonth(item.date);
+        // item.otherMonth === "preMonth"
+        //   ? this.PreMonth(item.date)
+        //   : this.NextMonth(item.date);
       }
     },
     ChoseMonth: function(date, isChosedDay = true) {
