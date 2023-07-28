@@ -124,7 +124,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList","enterHistoryEquipmSpotTaskListPageSource"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage","enterHistoryEquipmSpotTaskListPageSource"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -137,7 +137,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeDepartmentCheckList","changePatrolTaskListMessage","changeEnterHistoryEquipmSpotTaskListPageSource"]),
+    ...mapMutations(["changePatrolTaskListMessage","changeEnterHistoryEquipmSpotTaskListPageSource"]),
 
     // 顶部导航左边点击事件
     onClickLeft () {

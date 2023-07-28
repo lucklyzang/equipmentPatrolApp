@@ -10,6 +10,8 @@
             v-on:changeMonth="changeDate"
             v-on:isToday="clickToday"
             :disableClickDate="hasTaskDate"
+            :showDate="showDate"
+            :isDisabledSomeDayClick="true"
             :markDate="noCompleteTaskDateList"
         ></VueCalendar>
     </div>
@@ -91,6 +93,10 @@ export default {
       calendarShow: false,
       overlayShow: false,
       taskSetNameIndex: 0,
+      showDate: new Date(),
+      temporaryShowDate: new Date(),
+      taskSetTime: '',
+      taskSetName: '',
       currentTaskItemMessage: '',
       currentTaskSetId: '',
       timeTabIndex: 0,
@@ -117,6 +123,7 @@ export default {
   },
 
   mounted() {
+    console.log('选中的信息',this.devicePatrolDetailsSelectMessage);
     // 控制设备物理返回按键
     this.deviceReturn('/home');
     let _this = this;
@@ -136,7 +143,11 @@ export default {
         }
     });
     // 查询巡检任务详情
-    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'))
+    if (this.devicePatrolDetailsSelectMessage == '{}') {
+        this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'))
+    } else {
+        this.queryPatrolTaskDetailsList(this.devicePatrolDetailsSelectMessage.showDate)
+    }
   },
 
   beforeDestroy () {
@@ -162,23 +173,15 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","taskType"])
+    ...mapGetters(["userInfo","devicePatrolDetailsSelectMessage"])
   },
 
   methods: {
-    ...mapMutations(["changePatrolTaskListMessage","changeTaskType","changePatrolTaskDeviceChecklist"]),
+    ...mapMutations(["changePatrolTaskListMessage","changePatrolTaskDeviceChecklist","changeDevicePatrolDetailsSelectMessage"]),
 
     clickDay(data) {
+        this.temporaryShowDate = this.getNowFormatDate(new Date(data),'day');
         this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
-        let allHasTaskDate =  this.noCompleteTaskDateList.concat(this.completeTaskDateList);
-        // 没有任务的日期不允许点击
-        // if (allHasTaskDate.indexOf(this.getNowFormatDate(new Date(data),'day')) == -1) {
-        //     this.overlayShow = false;
-        //     this.calendarShow = false;
-        //     this.$toast('该日期下没有巡检任务')
-        // } else {
-        //    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
-        // }
     },
     changeDate(data) {
        this.initCalendarData(this.getNowFormatDate(new Date(data),'month'))
@@ -197,12 +200,14 @@ export default {
     // 任务集名称点击事件
     taskSetNameClickEvent (item,index) {
         this.taskSetNameIndex = index;
+        this.taskSetName = item.configName;
         this.currentTaskList = [];
         this.currentTaskSetId = item.configId;
         // 获取当前任务集的时间点集合,做升序处理
         this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData.filter((innerItem) => { return innerItem.configId == item.configId })[0]['deviceListByTime']));
         // 显示离任务时间最近的时间点
         this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
+        this.taskSetTime = this.disposeTime(this.timeList);
         // 拼装当前时间段任务列表数据
         let currentTimeData = this.allPatrolTaskDetailsData.filter((innerItem) => { return innerItem.configId == item.configId })[0]['deviceListByTime'][this.disposeTime(this.timeList)];
         Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
@@ -215,6 +220,7 @@ export default {
     // 时间tab切换事件
     timeTabClickEvent (item,index) {
         this.timeTabIndex = index;
+        this.taskSetTime = item;
         this.currentTaskList = [];
         // 拼装当前时间段任务列表数据
         let currentTimeData = this.allPatrolTaskDetailsData.filter((innerItem) => { return innerItem.configId == this.currentTaskSetId })[0]['deviceListByTime'][item];
@@ -271,6 +277,12 @@ export default {
         }
     },
 
+    echoSelectMessage () {
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.timeTabIndex = this.timeList.indexOf(this.devicePatrolDetailsSelectMessage['selectTime']);
+        this.showDate = new Date(this.devicePatrolDetailsSelectMessage['showDate'])
+    },
+
     // 获取巡检任务详情
     queryPatrolTaskDetailsList (queryDate) {
         this.loadingShow = true;
@@ -287,17 +299,37 @@ export default {
                     this.allPatrolTaskDetailsData = res.data.data;
                     // 获取初始任务集id
                     this.currentTaskSetId = this.allPatrolTaskDetailsData[0]['configId'];
-                    // 获取当前任务集的时间点集合,做升序处理
-                    this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[0]['deviceListByTime']));
-                    // 显示离任务时间最近的时间点
-                    this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
-                    // 拼装当前时间段任务列表数据
-                    let currentTimeData = this.allPatrolTaskDetailsData[0]['deviceListByTime'][this.disposeTime(this.timeList)];
-                    Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
-                        taskSite: item,
-                        isClockIn: currentTimeData[item][0]['isClockIn'],
-                        taskContentList: currentTimeData[item]
-                    })})
+                    this.taskSetName = this.allPatrolTaskDetailsData[0]['configName'];
+                    // 判断之前是否保存有选中的信息
+                    if ( JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}') {
+                        // 获取当前任务集的时间点集合,做升序处理
+                        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[0]['deviceListByTime']));
+                        // 显示离任务时间最近的时间点
+                        this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
+                        this.taskSetTime = this.disposeTime(this.timeList);
+                        // 拼装当前时间段任务列表数据
+                        let currentTimeData = this.allPatrolTaskDetailsData[0]['deviceListByTime'][this.disposeTime(this.timeList)];
+                        Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+                            taskSite: item,
+                            isClockIn: currentTimeData[item][0]['isClockIn'],
+                            taskContentList: currentTimeData[item]
+                        })})
+                    } else {
+                        this.echoSelectMessage();
+                        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+                        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+                        // 获取当前任务集的时间点集合,做升序处理
+                        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+                        // 显示离任务时间最近的时间点
+                        this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
+                        this.taskSetTime = this.disposeTime(this.timeList);
+                        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime']];
+                        Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+                            taskSite: item,
+                            isClockIn: currentTimeData[item][0]['isClockIn'],
+                            taskContentList: currentTimeData[item]
+                        })})
+                    }
                 } else {
                     this.isShowNoMoreData = true
                 }
@@ -498,6 +530,7 @@ export default {
       if (Object.prototype.toString.call(item) === '[object Array]') {
         if (item.length > 0) {
           let temporaryArr = [];
+          if (item.length == 1) { temporaryArr.push(item[item.length-1]);return temporaryArr.join(',') };
           // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
           if (new Date().getTime() >= new Date(this.getFullDate(item[item.length-1])).getTime()) {
             temporaryArr.push(item[item.length-1])
@@ -511,7 +544,6 @@ export default {
               }    
             }
           };
-           console.log('当前时间',temporaryArr.join(','));    
           return temporaryArr.join(',')
         }
       }
@@ -519,11 +551,12 @@ export default {
 
     // 点击进入设备检查单事件
     equipmentChecklistEvent (item,innerItem,innerIndex) {
-        console.log('12',item,innerItem);
-        // this.changePatrolTaskListMessage(item);
-        // let temporaryMessage = this.taskType;
-        // temporaryMessage['taskTypeName'] = this.activeName;
-        // this.changeTaskType(temporaryMessage);
+        if (item.isClockIn == 0) { return };
+        this.changeDevicePatrolDetailsSelectMessage({
+            selectTaskSet: this.taskSetName,
+            selectTime: this.taskSetTime,
+            showDate: this.temporaryShowDate
+        });
         this.changePatrolTaskDeviceChecklist(innerItem);
         this.$router.push('/equipmentChecklist')
     }

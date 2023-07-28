@@ -143,7 +143,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource','changePatrolTaskListMessage','changePatrolTaskDeviceChecklist']),
+    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource','changePatrolTaskListMessage','changePatrolTaskDeviceChecklist','changePatrolTaskAbnormalCheckItemEventList']),
 
     // 顶部导航左边点击事件
     onClickLeft () {
@@ -187,13 +187,13 @@ export default {
               message: '该巡查项下面有异常记录,把该巡查项下登记的异常记录全部删除后,方能通过'
             });
             // 重置该检查项选中状态
-            item['checkResult'] = '3';
+            item['innerItem'] = '3';
             return
           };
           this.loadingShow = true;
           this.overlayShow = true;
           this.loadText = '反馈中';
-          checkItemPass({resultId:item.resultId,workerName: this.userInfo.name}).then((res) => {
+          checkItemPass({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
             this.loadText = '';
@@ -201,11 +201,7 @@ export default {
               this.$toast({
                 type: 'success',
                 message: '反馈成功'
-              });
-              // 更改该检查项选中状态
-              let tempraryMessage = deepClone(this.departmentCheckList);
-              tempraryMessage['checkItemList'][index]['checkResult'] = '1';
-              this.changeDepartmentCheckList(tempraryMessage)
+              })
             } else {
               this.$toast({
                 type: 'fail',
@@ -241,65 +237,67 @@ export default {
     },
 
     // 通过事件
-    passEvent (event) {
+    passEvent (event,innerItem,innerIndex) {
       // 判断该巡查项下是否有登记事件
       this.queryIsHaveEventRegister(event,innerItem,innerIndex)
     },
 
     // 不通过事件
     noPassEvent (event,innerItem,innerIndex) {
-      // this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
+      console.log('检查项信息',innerItem);
+      this.changePatrolTaskAbnormalCheckItemEventList(innerItem);
+      this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
       // this.$router.push({path: '/patrolAbnormalRecord'});
-      // this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.loadText = '反馈中';
-      checkItemNoPass({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        if (res && res.data.code == 200) {
-          this.$toast({
-            type: 'success',
-            message: '反馈成功'
-          });
-          this.resultId = item['resultId'];
-          //保存进入问题记录页的相关信息
-          let temporaryInfo = this.enterProblemRecordMessage;
-          temporaryInfo['isAllowOperation'] = true;
-          temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
-          temporaryInfo['issueInfo'] = item;
-          temporaryInfo['id'] = res.data.data ? res.data.data.id : null;
-          temporaryInfo['index'] = index; 
-          this.changeEnterProblemRecordMessage(temporaryInfo);
-          // 第一次点击X，直接选择事件类型进行登记
-          if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
-            this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
-            this.eventTypeShow = true
-          } else {
-            // 第二次及以上再点击X，进入异常巡查项事件列表页
-            this.$router.push({path: '/problemRecord'})
-          };
-          // 更改该检查项选中状态
-          let tempraryMessage = deepClone(this.departmentCheckList);
-          tempraryMessage['checkItemList'][index]['checkResult'] = '3';
-          this.changeDepartmentCheckList(tempraryMessage)
-        } else {
-          this.$toast({
-            type: 'fail',
-            message: res.data.msg
-          })
-        }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
+      this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
+      // this.loadingShow = true;
+      // this.overlayShow = true;
+      // this.loadText = '反馈中';
+      // checkItemNoPass({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
+      //   this.loadingShow = false;
+      //   this.overlayShow = false;
+      //   this.loadText = '';
+      //   if (res && res.data.code == 200) {
+      //     this.$toast({
+      //       type: 'success',
+      //       message: '反馈成功'
+      //     });
+      //     this.resultId = item['resultId'];
+      //     //保存进入问题记录页的相关信息
+      //     let temporaryInfo = this.enterProblemRecordMessage;
+      //     temporaryInfo['isAllowOperation'] = true;
+      //     temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
+      //     temporaryInfo['issueInfo'] = item;
+      //     temporaryInfo['id'] = res.data.data ? res.data.data.id : null;
+      //     temporaryInfo['index'] = index; 
+      //     this.changeEnterProblemRecordMessage(temporaryInfo);
+      //     // 第一次点击X，直接选择事件类型进行登记
+      //     if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
+      //       this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
+      //       this.eventTypeShow = true
+      //     } else {
+      //       // 第二次及以上再点击X，进入异常巡查项事件列表页
+      //       this.$router.push({path: '/problemRecord'})
+      //     };
+      //     // 更改该检查项选中状态
+      //     let tempraryMessage = deepClone(this.departmentCheckList);
+      //     tempraryMessage['checkItemList'][index]['checkResult'] = '3';
+      //     this.changeDepartmentCheckList(tempraryMessage)
+      //   } else {
+      //     this.$toast({
+      //       type: 'fail',
+      //       message: res.data.msg
+      //     })
+      //   }
+      // })
+      // .catch((err) => {
+      //   this.loadingShow = false;
+      //   this.overlayShow = false;
+      //   this.loadText = '';
+      //   this.$toast({
+      //     type: 'fail',
+      //     message: err
+      //   })
+      // })
     }
   }
 };

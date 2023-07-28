@@ -305,7 +305,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["userInfo","ossMessage","departmentCheckList","timeMessage","enterProblemRecordMessage","enterPatrolAbnormalRecordPageSource"]),
+    ...mapGetters(["userInfo","ossMessage","timeMessage","enterPatrolAbnormalRecordPageSource"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -318,7 +318,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeOverDueWay","changeTimeMessage","changeOssMessage","changeDepartmentCheckList"]),
+    ...mapMutations(["changeOverDueWay","changeTimeMessage","changeOssMessage"]),
 
     onClickLeft() {
       this.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})

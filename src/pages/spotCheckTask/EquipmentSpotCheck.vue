@@ -111,7 +111,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList","enterProblemRecordMessage"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage"]),
     userName () {
       return this.userInfo.name
     }

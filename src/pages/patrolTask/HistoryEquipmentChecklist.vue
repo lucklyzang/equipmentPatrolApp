@@ -13,26 +13,26 @@
         <div class="content-box">
           <div class="current-area">
             <van-icon name="location" color="#1684FC" size="25" />
-            <span>当前检查设备: 空调外机</span>
+            <span>当前检查设备: {{ currentPatrolTaskDeviceChecklist.deviceName }}</span>
           </div>
           <div class="equipment-list-box">
             <div class="equipment-classification-box">
-              <div class="equipment-classification-list">
-                <div class="equipment-classification-name">#压缩机组状态</div>
-                <div class="equipment-list">
-                  <div class="equipment-operation-box">
+               <div class="equipment-classification-list" v-for="(item,index) in currentPatrolTaskDeviceChecklist.checkItemListGroupByCheckType" :key="index">
+                <div class="equipment-classification-name">{{ `#${item.checkItemClassifyName}` }}</div>
+                <div class="equipment-list" v-for="(innerItem,innerIndex) in item.checkItemClassifyContent" :key="innerIndex">
+                  <div class="equipment-operation-box" @click="checkItemNameRowCkickEvent(index,innerItem,innerIndex)">
                     <div class="operation-left">
-                      <img :src="arrowGreenBottomPng" alt="">
-                      <span>1#</span>
+                      <img :src="innerItem.unfold ? arrowGreenBottomPng : arrowGreenRightPng" alt="">
+                      <span>{{ innerItem.itemName }}</span>
                     </div>
                     <div class="operation-right">
-                      <van-radio-group v-model="checkResultValue" direction="horizontal">
-                          <van-radio name="1">
+                      <van-radio-group v-model="innerItem.checkResult" direction="horizontal" disabled>
+                          <van-radio name="1" v-show="innerItem.checkResult == 1">
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
                               </template>
                           </van-radio>
-                          <van-radio name="3">
+                          <van-radio name="3" v-show="innerItem.checkResult == 3" @click="(event) => noPassEvent(event,innerItem,innerIndex)" disabled>
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
                               </template>
@@ -40,42 +40,10 @@
                       </van-radio-group>
                     </div>
                   </div>
-                  <div class="examine-standard-box">
+                  <div class="examine-standard-box" v-show="innerItem.unfold">
                     <div class="examine-standard-top">
                       <p>标准与要求:</p>
-                      <p>润滑良好、无异响、温度正常</p>
-                    </div>
-                    <div class="examine-standard-bottom">
-                      <p>检查方法及工具:</p>
-                      <p>触摸、听音、目视</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="equipment-list">
-                  <div class="equipment-operation-box">
-                    <div class="operation-left">
-                      <img :src="arrowGreenBottomPng" alt="">
-                      <span>2#</span>
-                    </div>
-                    <div class="operation-right">
-                      <van-radio-group v-model="checkResultValue" direction="horizontal">
-                          <van-radio name="1" @click="(event) => passEvent(event)">
-                              <template #icon="props">
-                                <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
-                              </template>
-                          </van-radio>
-                          <van-radio name="3" @click="(event) => noPassEvent(event)">
-                              <template #icon="props">
-                                <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
-                              </template>
-                          </van-radio>
-                      </van-radio-group>
-                    </div>
-                  </div>
-                  <div class="examine-standard-box">
-                    <div class="examine-standard-top">
-                      <p>标准与要求:</p>
-                      <p>润滑良好、无异响、温度正常</p>
+                      <p>{{ innerItem.itemStandard }}</p>
                     </div>
                     <div class="examine-standard-bottom">
                       <p>检查方法及工具:</p>
@@ -89,7 +57,7 @@
         </div>
     </div>
     <div class="task-operation-box">
-      <div class="task-complete">返 回</div>
+      <div class="task-complete" @click="backEvent">返 回</div>
     </div>
   </div>
 </template>
@@ -110,6 +78,7 @@ export default {
       loadingShow: false,
       quitInfoShow: false,
       checkResultValue: '1',
+      currentPatrolTaskDeviceChecklist: {},
       loadText: '加载中',
       arrowGreenBottomPng: require("@/common/images/home/arrow-green-bottom.png"),
       arrowGreenRightPng: require("@/common/images/home/arrow-green-right.png"),
@@ -122,151 +91,65 @@ export default {
   },
 
   mounted() {
+    console.log('数据',this.historyPatrolTaskDeviceChecklist);
     // 控制设备物理返回按键
-    this.deviceReturn("/historyEquipmentPatrolDetails")
+    this.deviceReturn("/historyEquipmentPatrolDetails");
+    this.initTaskDeviceChecklistData();
+    this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach(el => {
+      el.checkItemClassifyContent.forEach((innerEl) => {
+        innerEl.unfold = false
+      })
+    })
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage"])
+    ...mapGetters(["userInfo","patrolTaskListMessage","historyPatrolTaskDeviceChecklist"])
   },
 
   methods: {
-    ...mapMutations([]),
+    ...mapMutations(['changeHistoryPatrolTaskAbnormalCheckItemEventList']),
 
     // 顶部导航左边点击事件
     onClickLeft () {
       this.$router.push({path: '/historyEquipmentPatrolDetails'})
     },
 
-    // 通过事件
-    passEvent (event) {
-      // 已完成的任务不可操作
-      // if (this.patrolTaskListMessage.state == 4) {
-      //   return
-      // };
-      // 判断该巡查项下是否有登记事件
-      // this.queryIsHaveEventRegister(event,item,index)
+    // 底部返回事件
+    backEvent() {
+      this.onClickLeft()
+    },
+
+    initTaskDeviceChecklistData () {
+      this.currentPatrolTaskDeviceChecklist = this.historyPatrolTaskDeviceChecklist;
+      let temporaryCheckItemListGroupByCheckType = this.historyPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
+      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'] = [];
+      Object.keys(temporaryCheckItemListGroupByCheckType).forEach((item) => {
+        this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].push({
+          checkItemClassifyName: item,
+          checkItemClassifyContent: temporaryCheckItemListGroupByCheckType[item]
+        })
+      });
+      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach(el => {
+        el.checkItemClassifyContent.forEach((innerEl) => {
+          innerEl.unfold = false
+        })
+      })
+    },
+
+    // 检查项名称行点击事件
+    checkItemNameRowCkickEvent (index,innerItem,innerIndex) {
+      this.$nextTick(() => {
+        this.$set(this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][index]['checkItemClassifyContent'][innerIndex], 'unfold',!this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][index]['checkItemClassifyContent'][innerIndex]['unfold'])
+      });
+      this.$forceUpdate()
     },
 
     // 不通过事件
-    noPassEvent (event) {
-    //   this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'});
-      this.$router.push({path: '/historyPatrolAbnormalRecord'});
-      // 已完成的任务
-      // if (this.patrolTaskListMessage.state == 4) {
-      //   // 该检查项最终结果选为×,点击后直接进入异常检查项事件列表页
-      //   if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 3) {
-      //     //保存进入问题记录页的相关信息
-      //     let temporaryInfo = this.enterProblemRecordMessage;
-      //     temporaryInfo['isAllowOperation'] = true;
-      //     temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
-      //     temporaryInfo['issueInfo'] = item;
-      //     temporaryInfo['index'] = index; 
-      //     this.changeEnterProblemRecordMessage(temporaryInfo);
-      //     this.$router.push({path: '/problemRecord'})
-      //   } else {
-      //     // 该检查项最终结果选为√,点击后不做处理
-      //     // 重置该检查项选中状态
-      //     item['checkResult'] = '1';
-      //     return
-      //   }
-      // } else {
-      //   // 未完成的任务
-      //   this.loadingShow = true;
-      //   this.overlayShow = true;
-      //   this.loadText = '反馈中';
-      //   checkItemNoPass({resultId:item.resultId,workerName: this.userInfo.name}).then((res) => {
-      //     this.loadingShow = false;
-      //     this.overlayShow = false;
-      //     this.loadText = '';
-      //     if (res && res.data.code == 200) {
-      //       this.$toast({
-      //         type: 'success',
-      //         message: '反馈成功'
-      //       });
-      //       this.resultId = item['resultId'];
-      //       //保存进入问题记录页的相关信息
-      //       let temporaryInfo = this.enterProblemRecordMessage;
-      //       temporaryInfo['isAllowOperation'] = true;
-      //       temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
-      //       temporaryInfo['issueInfo'] = item;
-      //       temporaryInfo['id'] = res.data.data ? res.data.data.id : null;
-      //       temporaryInfo['index'] = index; 
-      //       this.changeEnterProblemRecordMessage(temporaryInfo);
-      //       // 第一次点击X，直接选择事件类型进行登记
-      //       if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
-      //         this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
-      //         this.eventTypeShow = true
-      //       } else {
-      //         // 第二次及以上再点击X，进入异常巡查项事件列表页
-      //         this.$router.push({path: '/problemRecord'})
-      //       };
-      //       // 更改该检查项选中状态
-      //       let tempraryMessage = deepClone(this.departmentCheckList);
-      //       tempraryMessage['checkItemList'][index]['checkResult'] = '3';
-      //       this.changeDepartmentCheckList(tempraryMessage)
-      //     } else {
-      //       this.$toast({
-      //         type: 'fail',
-      //         message: res.data.msg
-      //       })
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     this.loadingShow = false;
-      //     this.overlayShow = false;
-      //     this.loadText = '';
-      //     this.$toast({
-      //       type: 'fail',
-      //       message: err
-      //     })
-      //   })
-      // }
-    },
-
-    // 获取任务详情
-    queryTaskDetails () {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.queryDataSuccess = false;
-      this.loadText = '加载中';
-      getTaskDetails(
-        this.patrolTaskListMessage.id
-      ).then((res) => {
-        if (res && res.data.code == 200) {
-          this.isShowOperateBtn = true;
-          this.loadingShow = false;
-          this.overlayShow = false;
-          this.loadText = '';
-          this.queryDataSuccess = true;
-          this.changePatrolTaskListMessage(res.data.data);
-          // 选择打卡地点弹框的数据
-          this.clockingPlaceOption = [];
-          for (let i = 0,len = this.patrolTaskListMessage['needSpaces'].length; i < len; i++) {
-            this.clockingPlaceOption.push({
-              id: i,
-              text: this.patrolTaskListMessage['needSpaces'][i]['name'],
-              value: this.patrolTaskListMessage['needSpaces'][i]['id']
-            })
-          }
-        } else {
-          this.$toast({
-            type: 'fail',
-            message: res.data.msg
-          })
-        }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
+    noPassEvent (event,innerItem,innerIndex) {
+      this.changeHistoryPatrolTaskAbnormalCheckItemEventList(item);
+      this.$router.push({path: '/historyPatrolAbnormalRecord'})
     }
   }
 };

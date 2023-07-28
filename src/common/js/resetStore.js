@@ -18,18 +18,16 @@ export function getDefaultLoginState() {
 // 巡检任务模块store的初始值
 export function getDefaultPatrolTaskState() {
     return {
-        taskType: {}, //任务类型
-        taskOrderType: {}, //任务工单类型
-        departmentCheckList: {
-            depId: '',
-            checkItemList: []
-        }, // 科室检查项信息
-        enterProblemRecordMessage: {}, //进入问题记录页时携带的相关信息
         patrolTaskListMessage: {}, //巡查任务列表信息
         currentElectronicSignature: null, // 工单完成时的签名信息
         originalSignature: null, // 工单完成时原始签名信息
         enterPatrolAbnormalRecordPageSource: '',
-        patrolTaskDeviceChecklist: [] // 巡检任务设备检查单信息
+        devicePatrolDetailsSelectMessage: {}, // 设备巡检详情页选中的任务集名称和时间点信息
+        patrolTaskDeviceChecklist: [], // 巡检任务设备检查单信息
+        patrolTaskAbnormalCheckItemEventList: [], // 异常检查项事件列表信息
+        historyPatrolTaskAbnormalCheckItemEventList: [], // 历史异常检查项事件列表信息
+        historyPatrolTaskDetails: [], // 历史巡检任务详情信息
+        historyPatrolTaskDeviceChecklist: [] // 历史巡检任务设备检查单信息
     }
 }
 

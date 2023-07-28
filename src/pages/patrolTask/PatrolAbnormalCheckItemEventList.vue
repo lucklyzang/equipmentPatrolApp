@@ -13,25 +13,25 @@
         <div class="content-box">
           <div class="current-area">
             <van-icon name="location" color="#1684FC" size="22" />
-            <span>当前检查设备: 风机箱抽机组</span>
+            <span>当前检查设备: {{ patrolTaskAbnormalCheckItemEventList.spaceName }}</span>
           </div>
           <div class="classification-box">
-            #压缩机组状态
+            {{ `#${patrolTaskAbnormalCheckItemEventList.typeName}`}}
           </div>
           <div class="patrol-item-box">
             <div class="patrol-item-list">
               <div class="patrol-item-list-left">
                   <span>检查项:</span>
-                  <span>2#</span>
+                  <span>{{ patrolTaskAbnormalCheckItemEventList.itemName }}</span>
               </div>
               <div class="patrol-item-list-right">
-                  <van-radio-group v-model="checkResultValue" direction="horizontal" disabled>
-                      <van-radio name="1">
+                  <van-radio-group v-model="patrolTaskAbnormalCheckItemEventList.checkResult" direction="horizontal" disabled>
+                      <van-radio name="1" v-show="patrolTaskAbnormalCheckItemEventList.checkResult == 1">
                           <template #icon="props">
                               <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
                           </template>
                       </van-radio>
-                      <van-radio name="3">
+                      <van-radio name="3" v-show="patrolTaskAbnormalCheckItemEventList.checkResult == 3">
                           <template #icon="props">
                               <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
                           </template>
@@ -46,6 +46,9 @@
                       <div class="backlog-task-top-left">
                           <span>编号:</span>
                           <span>q2121</span>
+                      </div>
+                      <div class="backlog-task-top-right" @click="deleteEventListEvent">
+                        <img :src="deletePng" alt="">
                       </div>
                   </div>
                   <div class="backlog-task-content" >
@@ -107,6 +110,7 @@ export default {
       checkCheckboxPng: require("@/common/images/home/check-checkbox-circle.png"),
       checkboxPng: require("@/common/images/home/checkbox-circle.png"),
       closeCirclePng: require("@/common/images/home/close-circle.png"),
+      deletePng: require("@/common/images/home/delete.png"),
       checkCloseCirclePng: require("@/common/images/home/check-close-circle.png"),
       statusBackgroundPng: require("@/common/images/home/status-background.png")
     }
@@ -126,8 +130,7 @@ export default {
             })
         }
     });
-    // 回显勾选的检查项状态
-    this.checkResultValue = this.departmentCheckList['checkItemList'][this.enterProblemRecordMessage['index']]['checkResult']
+    console.log('检查项事件列表信息',this.patrolTaskAbnormalCheckItemEventList)
   },
 
    beforeDestroy () {
@@ -139,7 +142,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList","enterProblemRecordMessage"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage","patrolTaskAbnormalCheckItemEventList"]),
     userName () {
       return this.userInfo.name
     }
@@ -152,6 +155,9 @@ export default {
     onClickLeft () {
       this.$router.push({path: '/equipmentChecklist'})
     },
+
+    // 删除异常记录列表事件
+    deleteEventListEvent () {},
 
     // 底部返回事件
     backEvent () {
@@ -484,6 +490,13 @@ export default {
                   .backlog-task-top-left {
                       flex: 1;
                       .no-wrap()
+                  };
+                  .backlog-task-top-right {
+                    width: 24px;
+                    height: 24px;
+                    img {
+                      width: 24px
+                    }
                   }
               };
               .backlog-task-content {

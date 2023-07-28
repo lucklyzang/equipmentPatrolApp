@@ -122,9 +122,7 @@ export default {
                 message: error
             })
         }
-    });
-    // 回显勾选的检查项状态
-    this.checkResultValue = this.departmentCheckList['checkItemList'][this.enterProblemRecordMessage['index']]['checkResult']
+    })
   },
 
    beforeDestroy () {
@@ -136,7 +134,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList","enterProblemRecordMessage"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList"]),
     userName () {
       return this.userInfo.name
     }

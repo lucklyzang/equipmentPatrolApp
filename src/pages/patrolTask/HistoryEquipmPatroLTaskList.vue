@@ -11,7 +11,7 @@
           <img :src="statusBackgroundPng" />a
         </div>
         <div class="content-box">
-            <div class="content-top">
+            <div class="content-top" ref="dateBox">
                 <div class="date-box">
                     <div class="date-title">日期查询</div>
                     <div class="date-content">
@@ -21,10 +21,10 @@
                 </div>
             </div>
             <div class="backlog-task-list-box" ref="scrollBacklogTask">
-              <div class="backlog-task-list">
+              <div class="backlog-task-list" v-for="(item,index) in taskSetList" :key="index">
                   <div class="backlog-task-top">
                       <div class="backlog-task-top-left">
-                          <span>1号楼日常巡检</span>
+                          <span>{{ item.configName }}</span>
                       </div>
                       <div class="backlog-task-top-right">
                           <span>已完成</span>
@@ -33,9 +33,9 @@
                   <div class="backlog-task-content">
                       <div class="taskset-name">
                         <span>日期:</span>
-                        <span>2023-6-12</span>
+                        <span>{{ item.createDate }}</span>
                       </div>
-                      <div class="right-arrow-box" @click="taskDetailsEvent()">
+                      <div class="right-arrow-box" @click="taskDetailsEvent(item)">
                         <van-icon name="arrow" color="#1684FC" size="24" />
                       </div>
                   </div>
@@ -56,7 +56,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import { getEventList } from '@/api/escortManagement.js'
+import { getPatrolTaskDetailsList } from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 export default {
   name: "HistoryEquipmPatroLTaskList",
@@ -68,16 +68,19 @@ export default {
     return {
       overlayShow: false,
       dateQueryRangeShow: false,
-      isOnlyMe: true,
+      timeThree: null,
       backlogEmptyShow: false,
       isShowBacklogTaskNoMoreData: false,
       currentDateRange: '',
       currentStartDate: this.formatDate(new Date()),
-      currentEndDate: '',
+      currentEndDate: this.getNowFormatDateNext(new Date(),1),
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 0, 31),
-      timeOne: null,
+      timeTwo: null,
       isLoadDataTime: null,
+      taskSetList: [],
+      temporaryTaskSetList: [],
+      eventTime: 0,
       totalCount: '',
       currentPage: 1,
       pageSize: 10,
@@ -98,7 +101,9 @@ export default {
     this.deviceReturn("/home");
     this.$nextTick(()=> {
       this.initScrollChange()
-    })
+    });
+    // 查询巡检任务详情
+    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'),this.getNowFormatDate(new Date(),'day'))
   },
 
   beforeRouteEnter(to, from, next) {
@@ -108,18 +113,18 @@ export default {
   },
 
   beforeDestroy () {
-    if (this.timeOne) {
-      clearTimeout(this.timeOne)
+    if (this.timeTwo) {
+      clearTimeout(this.timeTwo)
     };
-    if (this.isLoadDataTime) {
-      clearTimeout(this.isLoadDataTime)
+    if (this.timeThree) {
+      clearTimeout(this.timeThree)
     }
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -132,11 +137,56 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeDepartmentCheckList","changePatrolTaskListMessage"]),
+    ...mapMutations(["changePatrolTaskListMessage","changeHistoryPatrolTaskDetails"]),
 
     // 顶部导航左边点击事件
     onClickLeft () {
       this.$router.push({path: '/equipmentPatrolDetails'})
+    },
+
+    // 获取当前日期(-)
+    getNowFormatDate(currentDate,type) {
+        let currentdate;
+        let strDate;
+        let seperator1 = "-";
+        let month = currentDate.getMonth() + 1;
+        strDate = currentDate.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        };
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        };
+        if ( type == 'month') {
+            currentdate = currentDate.getFullYear() + seperator1 + month
+        } else {
+            currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+        };
+        return currentdate
+    },
+
+    // 获取当前日期的下一天(-)
+    getNowFormatDateNext(date, i) {
+      if (date === undefined || date === null) {
+        date = new Date()
+      };
+      let month, day;
+      date.setTime(date.getTime() + i * 24 * 60 * 60 * 1000);
+      month = date.getMonth() + 1 < 10 ? '0' + parseInt(date.getMonth() + 1) : date.getMonth() + 1;
+      day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate(); 
+      let time = date.getFullYear() + "-" + month + "-" + day;
+      return time
+    },
+
+    // 获取当前日期(/)
+    getNowFormatDateOther(currentDate) {
+        let currentdate;
+        let strDate;
+        let seperator1 = "/";
+        let month = currentDate.getMonth() + 1;
+        strDate = currentDate.getDate();
+        currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate;
+        return currentdate
     },
 
     // 格式化时间
@@ -181,29 +231,27 @@ export default {
       this.dateQueryRangeShow = false;
       this.currentDateRange = `${this.formatDate(start)} - ${this.formatDate(end)}`;
       this.currentStartDate = this.formatDate(start).replaceAll('/','-');
-      this.currentEndDate = this.formatDate(end).replaceAll('/','-')
+      this.currentEndDate = this.formatDate(end).replaceAll('/','-');
+      this.queryPatrolTaskDetailsList()
     },
 
-    // 事件列表注册滚动事件
+    // 任务集列表注册滚动事件
     initScrollChange () {
       let boxBackScroll = this.$refs['scrollBacklogTask'];
-      boxBackScroll.addEventListener('scroll',this.eventListLoadMore,true)
+      boxBackScroll.addEventListener('scroll',this.taskSetListLoadMore,true)
     },
 
-    // 事件列表加载事件
-    eventListLoadMore () {
-      // 暂存的数据不进行上拉加载
-      if (this.storageRadio) {return};
+    // 任务集列表加载事件
+    taskSetListLoadMore () {
+      if (!this.isLoadMore) { return };
       let boxBackScroll = this.$refs['scrollBacklogTask'];
-      if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
-        // 点击筛选确定后，不加载数据
-        if (!this.isLoadData) {return};
+      if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight + this.$refs['dateBox'].offsetHeight >= boxBackScroll.scrollHeight) {
         if (this.eventTime) {return};
         this.eventTime = 1;
         this.timeTwo = setTimeout(() => {
           let totalPage = Math.ceil(this.totalCount/this.pageSize);
           if (this.currentPage >= totalPage) {
-            if (this.isOnlyMe && this.fullBacklogTaskList.length == 0) {
+            if (this.taskSetList.length == 0) {
               this.isShowBacklogTaskNoMoreData = false
             } else {
               this.isShowBacklogTaskNoMoreData = true
@@ -211,63 +259,64 @@ export default {
           } else {
             this.isShowBacklogTaskNoMoreData = false;
             this.currentPage = this.currentPage + 1;
-            if (this.isOnlyMe) {
-              this.queryEventList(this.currentPage,this.pageSize,this.userName)
-            } else {
-              this.queryEventList(this.currentPage,this.pageSize)
-            }
+            this.loadingShow = true;
+            this.overlayShow = true;
+            this.loadText = '加载中...';
+            // 模拟ajax请求
+            this.timeThree = setTimeout(() =>{
+              this.loadingShow = false;
+              this.overlayShow = false;
+              let currentPageList = this.temporaryBeaconList.slice((this.currentPage - 1) * this.pageSize,(this.currentPage - 1) * this.pageSize + this.pageSize);
+              // 合并已经加载的数据
+              this.taskSetList = this.taskSetList.concat(currentPageList)
+            },1000)
           };
-          this.eventTime = 0;
-          console.log('事件列表滚动了',boxBackScroll.scrollTop, boxBackScroll.offsetHeight, boxBackScroll.scrollHeight)
+          this.eventTime = 0
         },300)
       }
     },
 
     // 进入历史巡检任务详情事件
-    taskDetailsEvent () {
+    taskDetailsEvent (item) {
+      this.changeHistoryPatrolTaskDetails(item);
       this.$router.push({path: '/historyEquipmentPatrolDetails'})
     },
 
-    // 获取历史任务列表
-    queryEventList (page,pageSize,name='',startDate='',endDate='',eventType=[],registerType=[]) {
+   // 获取巡检任务详情
+    queryPatrolTaskDetailsList (startDate,endDate) {
       this.loadingShow = true;
       this.overlayShow = true;
-      this.loadText = '加载中';
-      this.backlogEmptyShow = false;
-      this.isShowBacklogTaskNoMoreData = false;
-      getEventList({proId:this.userInfo.proIds[0], system: 6, 
-        workerId: this.userInfo.id,page, limit:pageSize, name,
-        startDate,endDate,eventType:eventType,registerType
-      })
-        .then((res) => {
-            this.loadingShow = false;
-            this.overlayShow = false;
-            this.loadText = '';
-            if (res && res.data.code == 200) {
-                  this.backlogTaskList = res.data.data.list;
-                  this.totalCount = res.data.data.total;
-                  this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList);
-                  this.echoFullBacklogTaskList = this.fullBacklogTaskList;
-                  if (this.fullBacklogTaskList.length == 0) {
+      this.taskSetList = [];
+      getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:4,system:9,startDate:'2023-07-20',endDate:'2023-07-21'})
+          .then((res) => {
+              this.loadingShow = false;
+              this.overlayShow = false;
+              if (res && res.data.code == 200) {
+                  if (res.data.data.length > 0) {
+                    this.temporaryTaskSetList = res.data.data;
+                    console.log('历史任务集数据',this.temporaryTaskSetList);
+                    this.totalCount = res.data.data.length;
+                    this.taskSetList = this.temporaryTaskSetList.slice((this.currentPage - 1) * this.pageSize,(this.currentPage - 1) * this.pageSize + this.pageSize);
+                    this.$forceUpdate()
+                  } else {
                     this.backlogEmptyShow = true
                   }
-            } else {
-              this.$toast({
-                  type: 'fail',
-                  message: res.data.msg
-              })
-            }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
+              } else {
+                  this.$toast({
+                      type: 'fail',
+                      message: res.data.msg
+                  })
+              }
         })
-      })
-    }
+        .catch((err) => {
+          this.loadingShow = false;
+          this.overlayShow = false;
+          this.$toast({
+            type: 'fail',
+            message: err
+          })
+        })
+      }
   }
 };
 </script>

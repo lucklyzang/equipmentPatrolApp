@@ -12,60 +12,21 @@
 		</div>
         <div class="content-box">
             <van-tabs v-model="activeName" color="#1684FC" title-inactive-color="#BEC7D1" title-active-color="#1684FC" @change="vanTabsChangeEvent">
-                <van-tab title="18:00" name="18:00">
-                    <van-empty description="暂无数据" v-if="isShowNoMoreData" />
+                <van-tab :title="item" :name="item" v-for="(item) in timeList" :key="item">
+                    <van-empty description="无巡检任务" v-if="isShowNoMoreData" />
                     <div class="backlog-task-list-box">
-                        <div class="backlog-task-list">
+                        <div class="backlog-task-list" v-for="(item,index) in timeTaskContentList" :key="index">
                             <div class="backlog-task-top">
                                 <div class="backlog-task-top-left">
-                                    <span>任务编号</span>
+                                    <span>{{ item.taskSite }}</span>
                                 </div>
                             </div>
                             <div class="backlog-task-content">
-                               <div class="equipment-name-list" @click="equipmentChecklistEvent">
+                               <div class="equipment-name-list" v-for="(innerItem,innerIndex) in item.taskContentList" @click="equipmentChecklistEvent(innerItem)" :key="innerIndex">
                                    <div class="equipment-name">
-                                       中央空调 1#
+                                       {{ `${innerItem.deviceName} ${innerItem.norms}` }}
                                    </div>
                                </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 2#
-                                   </div>
-                               </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 3#
-                                   </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>    
-                </van-tab>
-                <van-tab title="14:00" name="14:00">
-                    <van-empty description="暂无数据" v-if="isShowNoMoreData" />
-                    <div class="backlog-task-list-box">
-                        <div class="backlog-task-list">
-                            <div class="backlog-task-top">
-                                <div class="backlog-task-top-left">
-                                    <span>任务编号</span>
-                                </div>
-                            </div>
-                            <div class="backlog-task-content">
-                               <div class="equipment-name-list" @click="equipmentChecklistEvent">
-                                   <div class="equipment-name">
-                                       中央空调 1#
-                                   </div>
-                               </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 2#
-                                   </div>
-                               </div>
-                               <div class="equipment-name-list">
-                                   <div class="equipment-name">
-                                       中央空调 3#
-                                   </div>
-                                </div>
                             </div>
                         </div>
                     </div>    
@@ -81,8 +42,8 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import {getPatrolTaskDetailsList} from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
+import { arrDateTimeSort } from "@/common/js/utils";
 export default {
   name: "HistoryEquipmentPatrolDetails",
   components: {
@@ -94,24 +55,28 @@ export default {
       loadingShow: false,
       overlayShow: false,
       isShowNoMoreData: false,
-      activeName: '14:00',
+      timeList: [],
+      timeTaskContentList:[],
+      activeName: '',
       statusBackgroundPng: require("@/common/images/home/status-background.png")
     }
   },
 
   mounted() {
     // 控制设备物理返回按键
-    this.deviceReturn('/historyEquipmPatroLTaskList')
+    this.deviceReturn('/historyEquipmPatroLTaskList');
+    this.initData();
+    console.log('历史巡检任务信息',this.historyPatrolTaskDetails)
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","taskType"])
+    ...mapGetters(["userInfo","historyPatrolTaskDetails"])
   },
 
   methods: {
-    ...mapMutations(["changePatrolTaskListMessage","changeTaskType"]),
+    ...mapMutations(["changePatrolTaskListMessage","changePatrolHistoryTaskDeviceChecklist"]),
 
     onClickLeft () {
         this.$router.push({path: '/historyEquipmPatroLTaskList'})
@@ -122,42 +87,79 @@ export default {
         this.$router.push({path: '/historyEquipmPatroLTaskList'})
     },
 
-    // 获取任务列表
-    queryTaskList (taskType,page,pageSize) {
-        this.loadingShow = true;
-        this.overlayShow = true;
-		getAllTaskList({proId : this.userInfo.proIds[0], workerId: this.userInfo.id,taskType,system:6,page,pageSize})
-        .then((res) => {
-            this.loadingShow = false;
-            this.overlayShow = false;
-            if (res && res.data.code == 200) {
-            } else {
-                this.$toast({
-                    type: 'fail',
-                    message: res.data.msg
-                })
+    // 初始化数据
+    initData () {
+        // 获取时间集合
+        Object.keys(this.historyPatrolTaskDetails.deviceListByTime).forEach((item) => {
+            this.timeList.push(item)
+        });
+        //当前任务集的时间点集合,做升序处理
+        this.timeList = arrDateTimeSort(this.timeList);
+        // 显示离任务时间最近的时间点
+        this.activeName = this.disposeTime(this.timeList);
+        // 拼装当前时间段任务列表数据
+        let currentTimeData = this.historyPatrolTaskDetails['deviceListByTime'][this.activeName];
+        Object.keys(currentTimeData).forEach((item) => { this.timeTaskContentList.push({
+            taskSite: item,
+            taskContentList: currentTimeData[item]
+        })})
+    },
+
+    // 拼接完整时间
+    getFullDate(hourTime) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "-";
+      let month = new Date().getMonth() + 1;
+      strDate = new Date().getDate();
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+      };
+      currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
+      return currentdate + ' ' + hourTime
+    },
+
+    // 获取当前离任务开始时间最近的时间点
+    disposeTime (item) {
+      if (Object.prototype.toString.call(item) === '[object Array]') {
+        if (item.length > 0) {
+          let temporaryArr = [];
+          if (item.length == 1) { temporaryArr.push(item[item.length-1]);return temporaryArr.join(',') };
+          // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
+          if (new Date().getTime() >= new Date(this.getFullDate(item[item.length-1])).getTime()) {
+            temporaryArr.push(item[item.length-1])
+          } else {        
+            for (let i=0, len = item.length; i<len; i++) {
+              if (i > 0) {
+                if (new Date().getTime() < new Date(this.getFullDate(item[i])).getTime()) {
+                  temporaryArr.push(item[i-1])
+                  break
+                }
+              }    
             }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
+          };    
+          return temporaryArr.join(',')
+        }
+      }
     },
 
     // tab切换值变化事件
     vanTabsChangeEvent (value) {
+        // 拼装当前时间段任务列表数据
+        this.timeTaskContentList = [];
+        let currentTimeData = this.historyPatrolTaskDetails['deviceListByTime'][value];
+        Object.keys(currentTimeData).forEach((item) => { this.timeTaskContentList.push({
+            taskSite: item,
+            taskContentList: currentTimeData[item]
+        })})
     },
 
     // 点击进入设备检查单事件
-    equipmentChecklistEvent () {
-        // this.changePatrolTaskListMessage(item);
-        // let temporaryMessage = this.taskType;
-        // temporaryMessage['taskTypeName'] = this.activeName;
-        // this.changeTaskType(temporaryMessage);
+    equipmentChecklistEvent (item) {
+        this.changePatrolHistoryTaskDeviceChecklist(item)
         this.$router.push('/historyEquipmentChecklist')
     }
   }

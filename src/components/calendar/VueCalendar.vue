@@ -187,7 +187,7 @@ li {
         <div class="wh_content_item" v-for="(item,index) in list" @click="clickDay(item,index)" :key="index">
           <div
             class="wh_item_date"
-            v-bind:class="[{ wh_isMark: item.isMark},{wh_other_dayhide:item.otherMonth!=='nowMonth' || disableClickDateList.indexOf(item.date) == -1},{wh_want_dayhide:item.dayHide},{wh_isToday:item.isToday},{wh_chose_day:item.chooseDay},setClass(item)]"
+            v-bind:class="[{ wh_isMark: item.isMark},{wh_other_dayhide:item.otherMonth!=='nowMonth' || (disableClickDateList.indexOf(item.date) == -1 && isDisabledSomeDayClick)},{wh_want_dayhide:item.dayHide},{wh_isToday:item.isToday},{wh_chose_day:item.chooseDay},setClass(item)]"
           >{{item.id}}</div>
           <div class="mark-icon" v-show="item.isMark"></div>
         </div>
@@ -229,6 +229,13 @@ export default {
       type: Boolean,
       default: () => false
     },
+    isDisabledSomeDayClick: {
+      type: Boolean,
+      default: () => false
+    },
+    showDate: {
+      default: new Date()
+    },
     agoDayHide: {
       type: String,
       default: `0`
@@ -240,7 +247,7 @@ export default {
   },
   created() {
     this.intStart();
-    this.myDate = new Date()
+    this.myDate = this.showDate
   },
   methods: {
     intStart() {
@@ -253,7 +260,7 @@ export default {
       return obj;
     },
     clickDay: function(item, index) {
-      if (this.disableClickDateList.indexOf(item.date) == -1) { return };
+      if ((this.disableClickDateList.indexOf(item.date) == -1) && this.isDisabledSomeDayClick ) { return };
       if (item.otherMonth === "nowMonth" && !item.dayHide) {
         this.getList(this.myDate, item.date);
       }

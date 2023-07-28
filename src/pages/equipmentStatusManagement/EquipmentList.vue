@@ -227,7 +227,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -240,7 +240,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changeDepartmentCheckList","changePatrolTaskListMessage"]),
+    ...mapMutations(["changePatrolTaskListMessage"]),
 
     // 顶部导航左边点击事件
     onClickLeft () {

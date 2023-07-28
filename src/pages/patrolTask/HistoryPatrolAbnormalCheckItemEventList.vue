@@ -13,25 +13,25 @@
         <div class="content-box">
           <div class="current-area">
             <van-icon name="location" color="#1684FC" size="22" />
-            <span>当前检查设备: 风机箱抽机组</span>
+            <span>当前检查设备: {{ historyPatrolTaskAbnormalCheckItemEventList.spaceName }}</span>
           </div>
           <div class="classification-box">
-            #压缩机组状态
+            {{ `#${historyPatrolTaskAbnormalCheckItemEventList.typeName}` }}
           </div>
           <div class="patrol-item-box">
             <div class="patrol-item-list">
               <div class="patrol-item-list-left">
                   <span>检查项:</span>
-                  <span>2#</span>
+                  <span>{{ historyPatrolTaskAbnormalCheckItemEventList.itemName }}</span>
               </div>
               <div class="patrol-item-list-right">
-                  <van-radio-group v-model="checkResultValue" direction="horizontal" disabled>
-                      <van-radio name="1">
+                  <van-radio-group v-model="historyPatrolTaskAbnormalCheckItemEventList.checkResult" direction="horizontal" disabled>
+                      <van-radio name="1" v-show="historyPatrolTaskAbnormalCheckItemEventList.checkResult == 1">
                           <template #icon="props">
                               <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
                           </template>
                       </van-radio>
-                      <van-radio name="3">
+                      <van-radio name="3" v-show="historyPatrolTaskAbnormalCheckItemEventList.checkResult == 3">
                           <template #icon="props">
                               <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
                           </template>
@@ -60,7 +60,7 @@
                           <span>sdasas</span>
                       </div>
                   </div>
-                  <div class="right-arrow-box" @click="taskDetailsEvent()">
+                  <div class="right-arrow-box" @click="taskDetailsEvent">
                     <van-icon name="arrow" color="#1684FC" size="24" />
                   </div>
               </div>
@@ -112,6 +112,7 @@ export default {
   },
 
   mounted() {
+    console.log('sa',this.historyPatrolTaskAbnormalCheckItemEventList);
     // 控制设备物理返回按键
     this.deviceReturn('/equipmentChecklist');
     // this.queryEventList(this.currentPage,this.pageSize,this.userName,1);
@@ -138,7 +139,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","departmentCheckList","enterProblemRecordMessage"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage","historyPatrolTaskDeviceChecklist","historyPatrolTaskAbnormalCheckItemEventList"]),
     userName () {
       return this.userInfo.name
     }
