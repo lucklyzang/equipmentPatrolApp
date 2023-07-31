@@ -78,6 +78,7 @@ import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
 import {getPatrolTaskDetailsList, resetPatrolTaskCalendarData,patrolTaskPunchCard} from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
+import _ from 'lodash';
 import VueCalendar from '@/components/calendar/VueCalendar'
 import { arrDateTimeSort } from "@/common/js/utils";
 export default {
@@ -123,7 +124,6 @@ export default {
   },
 
   mounted() {
-    console.log('选中的信息',this.devicePatrolDetailsSelectMessage);
     // 控制设备物理返回按键
     this.deviceReturn('/home');
     let _this = this;
@@ -142,12 +142,39 @@ export default {
             me.scanQRcodeCallbackCanceled();
         }
     });
-    // 查询巡检任务详情
-    if (this.devicePatrolDetailsSelectMessage == '{}') {
-        this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'))
-    } else {
-        this.queryPatrolTaskDetailsList(this.devicePatrolDetailsSelectMessage.showDate)
-    }
+    // 判断之前有无存过当前查询日期的任务，有存过就不再查询
+    let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+    let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+    if (temporaryIndex == -1) {
+        // 查询巡检任务详情
+        if (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}') {
+            this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'))
+        } else {
+            this.queryPatrolTaskDetailsList(this.devicePatrolDetailsSelectMessage.showDate)
+        }
+    }  else {
+        // 从store中取存储过的当前巡检任务信息
+        this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
+        // 获取初始任务集id
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[0]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[0]['configName'];
+        this.echoSelectMessage();
+        this.taskSetNameIndex = this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['configName'];
+        // 获取当前任务集的时间点集合,做升序处理
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['deviceListByTime']));
+        // 显示离任务时间最近的时间点
+        this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
+        this.taskSetTime = this.disposeTime(this.timeList);
+        console.log('当亲数据',this.allPatrolTaskDetailsData[this.taskSetNameIndex]);
+        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
+        Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+            taskSite: item,
+            isClockIn: currentTimeData[item][0]['isClockIn'],
+            taskContentList: currentTimeData[item]
+        })})
+    }  
   },
 
   beforeDestroy () {
@@ -173,14 +200,14 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","devicePatrolDetailsSelectMessage"])
+    ...mapGetters(["userInfo","devicePatrolDetailsSelectMessage","patrolTaskListMessage"])
   },
 
   methods: {
     ...mapMutations(["changePatrolTaskListMessage","changePatrolTaskDeviceChecklist","changeDevicePatrolDetailsSelectMessage"]),
 
     clickDay(data) {
-        this.temporaryShowDate = this.getNowFormatDate(new Date(data),'day');
+        this.temporaryShowDate = data;
         this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
     },
     changeDate(data) {
@@ -283,6 +310,30 @@ export default {
         this.showDate = new Date(this.devicePatrolDetailsSelectMessage['showDate'])
     },
 
+    // 存储后台查询的巡检任务
+    storePatrolTaskMessage (messageContent) {
+      let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+      if (casuallyTemporaryStoragePatrolTaskListMessage.length > 0 ) {
+          let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+          if (temporaryIndex != -1) {
+            casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['date'] = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
+            casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'] = messageContent
+          } else {
+            casuallyTemporaryStoragePatrolTaskListMessage.push({
+               date: JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate,
+               content: messageContent
+            })
+          }
+        } else {
+            casuallyTemporaryStoragePatrolTaskListMessage.push({
+                date: JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate,
+                content: messageContent
+            })
+      };
+      this.changePatrolTaskListMessage(casuallyTemporaryStoragePatrolTaskListMessage);
+      console.log('村上',casuallyTemporaryStoragePatrolTaskListMessage);
+    },
+
     // 获取巡检任务详情
     queryPatrolTaskDetailsList (queryDate) {
         this.loadingShow = true;
@@ -296,7 +347,11 @@ export default {
             this.overlayShow = false;
             if (res && res.data.code == 200) {
                 if (res.data.data.length > 0) {
-                    this.allPatrolTaskDetailsData = res.data.data;
+                    // 存储查询的巡检任务
+                    this.storePatrolTaskMessage(res.data.data);
+                    let casuallyTemporaryStoragePatrolTaskListMessage = this.patrolTaskListMessage;
+                    let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+                    this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
                     // 获取初始任务集id
                     this.currentTaskSetId = this.allPatrolTaskDetailsData[0]['configId'];
                     this.taskSetName = this.allPatrolTaskDetailsData[0]['configName'];
@@ -555,7 +610,7 @@ export default {
         this.changeDevicePatrolDetailsSelectMessage({
             selectTaskSet: this.taskSetName,
             selectTime: this.taskSetTime,
-            showDate: this.temporaryShowDate
+            showDate: this.getNowFormatDate(new Date(this.temporaryShowDate),'day')
         });
         this.changePatrolTaskDeviceChecklist(innerItem);
         this.$router.push('/equipmentChecklist')

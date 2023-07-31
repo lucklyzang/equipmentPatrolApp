@@ -9,6 +9,7 @@ export default {
         },
 
         patrolTaskListMessage: (state) => {
+            state.patrolTaskListMessage = getStore('patrolTaskListMessage') ? JSON.parse(getStore('patrolTaskListMessage')) : [];
             return state.patrolTaskListMessage
         },
 
@@ -38,13 +39,13 @@ export default {
             state.patrolTaskAbnormalCheckItemEventList = getStore('historyPatrolTaskAbnormalCheckItemEventList') ? JSON.parse(getStore('historyPatrolTaskAbnormalCheckItemEventList')) : [];
             return state.historyPatrolTaskAbnormalCheckItemEventList
         },
-        
-        historyPatrolTaskDetails: (state) => { 
+
+        historyPatrolTaskDetails: (state) => {
             state.historyPatrolTaskDetails = getStore('historyPatrolTaskDetails') ? JSON.parse(getStore('historyPatrolTaskDetails')) : [];
             return state.historyPatrolTaskDetails
         },
 
-        historyPatrolTaskDeviceChecklist: (state) => { 
+        historyPatrolTaskDeviceChecklist: (state) => {
             state.historyPatrolTaskDeviceChecklist = getStore('historyPatrolTaskDeviceChecklist') ? JSON.parse(getStore('historyPatrolTaskDeviceChecklist')) : [];
             return state.historyPatrolTaskDeviceChecklist
         }
@@ -55,6 +56,7 @@ export default {
         // 保存巡查任务列表页的信息
         changePatrolTaskListMessage(state, playLoad) {
             if (playLoad && playLoad != 'null') {
+                setStore('patrolTaskListMessage', playLoad);
                 state.patrolTaskListMessage = playLoad
             }
         },
@@ -70,42 +72,42 @@ export default {
         },
 
         // 保存进入异常记录页的来源页面
-        changeEnterPatrolAbnormalRecordPageSource (state, playLoad) {
+        changeEnterPatrolAbnormalRecordPageSource(state, playLoad) {
             state.enterPatrolAbnormalRecordPageSource = playLoad
         },
 
         //保存离开设备巡检详情页时选中的任务集名称和时间点信息
-        changeDevicePatrolDetailsSelectMessage (state, playLoad) {
+        changeDevicePatrolDetailsSelectMessage(state, playLoad) {
             state.devicePatrolDetailsSelectMessage = playLoad
         },
 
         // 保存进入设备检查单页面的信息
-        changePatrolTaskDeviceChecklist (state, playLoad) {
+        changePatrolTaskDeviceChecklist(state, playLoad) {
             setStore('patrolTaskDeviceChecklist', playLoad);
             state.patrolTaskDeviceChecklist = playLoad
         },
 
         // 保存进入异常检查项事件列表页面的信息
-        changePatrolTaskAbnormalCheckItemEventList (state, playLoad) {
+        changePatrolTaskAbnormalCheckItemEventList(state, playLoad) {
             setStore('patrolTaskAbnormalCheckItemEventList', playLoad);
             state.patrolTaskAbnormalCheckItemEventList = playLoad
         },
 
         // 保存进入历史异常检查项事件列表页面的信息
-         changeHistoryPatrolTaskAbnormalCheckItemEventList (state, playLoad) {
+        changeHistoryPatrolTaskAbnormalCheckItemEventList(state, playLoad) {
             setStore('historyPatrolTaskAbnormalCheckItemEventList', playLoad);
             state.historyPatrolTaskAbnormalCheckItemEventList = playLoad
         },
 
 
         // 保存进入历史巡检任务详情页面的信息
-        changeHistoryPatrolTaskDetails (state, playLoad) {
+        changeHistoryPatrolTaskDetails(state, playLoad) {
             setStore('historyPatrolTaskDetails', playLoad);
             state.historyPatrolTaskDetails = playLoad
         },
 
         // 保存进入历史设备检查单页面的信息
-        changePatrolHistoryTaskDeviceChecklist (state, playLoad) {
+        changePatrolHistoryTaskDeviceChecklist(state, playLoad) {
             setStore('historyPatrolTaskDeviceChecklist', playLoad);
             state.historyPatrolTaskDeviceChecklist = playLoad
         },

@@ -20,10 +20,10 @@ export const setStore = (name, content) => {
 }
 
 /* 
-  * 拼接完整时间
-  * @param{Array} arr
-  * @param{String} key 
-*/
+ * 拼接完整时间
+ * @param{Array} arr
+ * @param{String} key 
+ */
 export const getFullDate = (hourTime) => {
     let currentdate;
     let strDate;
@@ -34,30 +34,30 @@ export const getFullDate = (hourTime) => {
         month = "0" + month;
     };
     if (strDate >= 0 && strDate <= 9) {
-      strDate = "0" + strDate;
+        strDate = "0" + strDate;
     };
     currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
     return currentdate + ' ' + hourTime
-  }
+}
 
 /* 
-  * 数组升序排序(时间专用)
-  * @param{Array} arr
-  * @param{String} key 
-*/
+ * 数组升序排序(时间专用)
+ * @param{Array} arr
+ * @param{String} key 
+ */
 export const arrDateTimeSort = (arr) => {
     if (Object.prototype.toString.call(arr) != '[object Array]') { return };
-    for (let i=0; i<arr.length-1; i++) {
-      for (let j = 0; j < arr.length-1-i; j++) {
-        if((new Date(getFullDate(arr[j]))).getTime() > (new Date(getFullDate(arr[j+1])).getTime())){
-          let temp = arr[j];
-          arr[j] = arr[j+1];
-          arr[j+1] = temp
+    for (let i = 0; i < arr.length - 1; i++) {
+        for (let j = 0; j < arr.length - 1 - i; j++) {
+            if ((new Date(getFullDate(arr[j]))).getTime() > (new Date(getFullDate(arr[j + 1])).getTime())) {
+                let temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp
+            }
         }
-      }    
     };
     return arr
-  }
+}
 
 /*
  * canvas签名旋转
@@ -67,20 +67,20 @@ export const arrDateTimeSort = (arr) => {
 export const rotateBase64Img = (src, edg, callback) => {
     var canvas = document.createElement("canvas");
     var ctx = canvas.getContext("2d");
-    var imgW;//图片宽度
-    var imgH;//图片高度
-    var size;//canvas初始大小
+    var imgW; //图片宽度
+    var imgH; //图片高度
+    var size; //canvas初始大小
     if (edg % 90 != 0) {
         console.error("旋转角度必须是90的倍数!");
         throw '旋转角度必须是90的倍数!';
     }
     (edg < 0) && (edg = (edg % 360) + 360)
     const quadrant = (edg / 90) % 4; //旋转象限
-    const cutCoor = {sx: 0, sy: 0, ex: 0, ey: 0}; //裁剪坐标
+    const cutCoor = { sx: 0, sy: 0, ex: 0, ey: 0 }; //裁剪坐标
     var image = new Image();
     image.crossOrigin = "anonymous"
     image.src = src;
-    image.onload = function () {
+    image.onload = function() {
         imgW = image.width;
         imgH = image.height;
         size = imgW > imgH ? imgW : imgH;
@@ -694,6 +694,7 @@ export const removeAllLocalStorage = () => {
     removeStore('changeOverDueWay');
     removeStore('timeMessage');
     removeStore('ossMessage');
+    removeStore('patrolTaskListMessage');
     removeStore('temporaryStorageClaimRegisterMessage');
     removeStore('temporaryStorageRepairsRegisterMessage');
     removeStore('temporaryStorageOtherRegisterMessage');
@@ -711,6 +712,7 @@ export const removeExceptLoginMessageLocalStorage = () => {
     removeStore('timeMessage');
     removeStore('ossMessage');
     removeStore('chooseProject');
+    removeStore('patrolTaskListMessage');
     removeStore('patrolTaskDeviceChecklist');
     removeStore('historyPatrolTaskDetails');
     removeStore('patrolTaskAbnormalCheckItemEventList');
