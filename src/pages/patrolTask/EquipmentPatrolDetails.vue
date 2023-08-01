@@ -125,23 +125,29 @@ export default {
 
   mounted() {
     // 控制设备物理返回按键
-    this.deviceReturn('/home');
-    let _this = this;
+    if (!IsPC()) {
+      let that = this;
+      pushHistory();
+      that.gotoURL(() => {
+        pushHistory();
+        that.changeDevicePatrolDetailsSelectMessage({});
+        that.$router.push({path: '/home'})
+      })
+    };
     document.addEventListener('click',function(e){
-        if(e.target.className == 'van-overlay'){ 
-            console.log('Jinqule1');
-            _this.calendarShow = false;
-            _this.overlayShow = false
-        };
-        // 二维码回调方法绑定到window下面,提供给外部调用
-        let me = this;
-        window['scanQRcodeCallback'] = (code) => {
-            me.scanQRcodeCallback(code);
-        };
-        window['scanQRcodeCallbackCanceled'] = () => {
-            me.scanQRcodeCallbackCanceled();
+        if(e.target.className == 'van-overlay'){
+            me.calendarShow = false;
+            me.overlayShow = false
         }
     });
+    // 二维码回调方法绑定到window下面,提供给外部调用
+    let me = this;
+    window['scanQRcodeCallback'] = (code) => {
+        me.scanQRcodeCallback(code);
+    };
+    window['scanQRcodeCallbackCanceled'] = () => {
+        me.scanQRcodeCallbackCanceled();
+    };
     // 判断之前有无存过当前查询日期的任务，有存过就不再查询
     let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
     let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
@@ -155,20 +161,18 @@ export default {
     }  else {
         // 从store中取存储过的当前巡检任务信息
         this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
-        // 获取初始任务集id
-        this.currentTaskSetId = this.allPatrolTaskDetailsData[0]['configId'];
-        this.taskSetName = this.allPatrolTaskDetailsData[0]['configName'];
-        this.echoSelectMessage();
-        this.taskSetNameIndex = this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
-        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['configId'];
-        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['configName'];
         // 获取当前任务集的时间点集合,做升序处理
-        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['deviceListByTime']));
-        // 显示离任务时间最近的时间点
-        this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
-        this.taskSetTime = this.disposeTime(this.timeList);
-        console.log('当亲数据',this.allPatrolTaskDetailsData[this.taskSetNameIndex]);
-        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+        this.echoSelectMessage();
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+        // 判断之前有没有存储选中的时间信息
+        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
         Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
             taskSite: item,
             isClockIn: currentTimeData[item][0]['isClockIn'],
@@ -211,12 +215,14 @@ export default {
         this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
     },
     changeDate(data) {
+       this.temporaryShowDate = data;
        this.initCalendarData(this.getNowFormatDate(new Date(data),'month'))
     },
     clickToday(data) {
     },
 
     onClickLeft () {
+        this.changeDevicePatrolDetailsSelectMessage({});
         this.$router.push({path: '/home'})
     },
 
@@ -260,7 +266,7 @@ export default {
 
     // 日期图标点击事件
     dateClickEvent () {
-        this.initCalendarData(this.getNowFormatDate(new Date(),'month'))
+        this.initCalendarData(this.getNowFormatDate(new Date(this.temporaryShowDate),'month'))
     },
 
     // 完成任务事件
@@ -370,14 +376,13 @@ export default {
                             taskContentList: currentTimeData[item]
                         })})
                     } else {
+                        // 获取当前任务集的时间点集合,做升序处理
+                        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
                         this.echoSelectMessage();
                         this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
                         this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
-                        // 获取当前任务集的时间点集合,做升序处理
-                        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
-                        // 显示离任务时间最近的时间点
-                        this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
-                        this.taskSetTime = this.disposeTime(this.timeList);
+                        // 回显存储之前选中的时间点
+                        this.taskSetTime = this.timeList[this.timeTabIndex];
                         let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime']];
                         Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
                             taskSite: item,
@@ -606,10 +611,13 @@ export default {
 
     // 点击进入设备检查单事件
     equipmentChecklistEvent (item,innerItem,innerIndex) {
+        console.log('as',item);
         if (item.isClockIn == 0) { return };
         this.changeDevicePatrolDetailsSelectMessage({
             selectTaskSet: this.taskSetName,
             selectTime: this.taskSetTime,
+            taskSite: item.taskSite,
+            deviceId: innerItem['deviceId'],
             showDate: this.getNowFormatDate(new Date(this.temporaryShowDate),'day')
         });
         this.changePatrolTaskDeviceChecklist(innerItem);

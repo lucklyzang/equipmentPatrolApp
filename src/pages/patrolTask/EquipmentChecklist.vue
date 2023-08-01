@@ -27,12 +27,12 @@
                     </div>
                     <div class="operation-right">
                       <van-radio-group v-model="innerItem.checkResult" direction="horizontal">
-                          <van-radio name="1" @click="(event) => passEvent(event,innerItem,innerIndex)">
+                          <van-radio name="1" @click.stop.native="()=>{}" @click="(event) => passEvent(event,item,innerItem,innerIndex)">
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
                               </template>
                           </van-radio>
-                          <van-radio name="3" @click="(event) => noPassEvent(event,innerItem,innerIndex)">
+                          <van-radio name="3" @click.stop.native="()=>{}" @click="(event) => noPassEvent(event,item,innerItem,innerIndex)">
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
                               </template>
@@ -69,7 +69,7 @@
         </div>
     </div>
     <div class="task-operation-box">
-      <div class="task-complete">保 存</div>
+      <div class="task-complete">{{ isAllCheck ? '提 交' : '保 存'}}</div>
     </div>
     <!-- 退出提示框   -->
     <div class="quit-info-box">
@@ -91,6 +91,7 @@
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
 import { checkItemPass, checkItemNoPass, getIsHaveEventRegister} from '@/api/escortManagement.js'
+import _ from 'lodash';
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
 export default {
   name: "EquipmentChecklist",
@@ -102,6 +103,7 @@ export default {
     return {
       overlayShow: false,
       loadingShow: false,
+      isAllCheck: false,
       quitInfoShow: false,
       currentPatrolTaskDeviceChecklist: {},
       remarkContent: '',
@@ -119,7 +121,7 @@ export default {
   mounted() {
     // 控制设备物理返回按键
     this.deviceReturn("/equipmentPatrolDetails");
-    this.currentPatrolTaskDeviceChecklist = this.patrolTaskDeviceChecklist;
+    this.currentPatrolTaskDeviceChecklist =  _.cloneDeep(this.patrolTaskDeviceChecklist);
     let temporaryCheckItemListGroupByCheckType = this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
     this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'] = [];
     Object.keys(temporaryCheckItemListGroupByCheckType).forEach((item) => {
@@ -128,18 +130,23 @@ export default {
         checkItemClassifyContent: temporaryCheckItemListGroupByCheckType[item]
       })
     });
+    this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach((item) => {
+      item['checkItemClassifyContent'].forEach((innerItem) => {
+        innerItem['checkResult'] = innerItem['checkResult'].toString()
+      })
+    });
     this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach(el => {
       el.checkItemClassifyContent.forEach((innerEl) => {
         innerEl.unfold = false
       })
     });
-    console.log('处理后数据',this.currentPatrolTaskDeviceChecklist);
+    this.judgeIsAllCheck()
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskDeviceChecklist"])
+    ...mapGetters(["userInfo","patrolTaskDeviceChecklist","patrolTaskListMessage","devicePatrolDetailsSelectMessage"])
   },
 
   methods: {
@@ -160,6 +167,13 @@ export default {
     // 取消退出
     quitCancel () {
 
+    },
+
+    // 判断检查项是否全部勾选完毕
+    judgeIsAllCheck () {
+      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach((item) => {
+        this.isAllCheck = !item['checkItemClassifyContent'].some((innerItem) => { return innerItem.checkResult == 0})
+      })
     },
 
     // 检查项名称行点击事件
@@ -236,68 +250,53 @@ export default {
       })
     },
 
+    // 保存选择的数据(选√还是×)
+    storeExamineData (itemArguments,data) {
+      let temporaryPatrolTaskListMessage =  _.cloneDeep(this.patrolTaskListMessage);
+      let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate})[0]['content'];
+      let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet})[0];
+      let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite];
+      let temporaryDataFour = temporaryDataShree.filter((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId})[0];
+      let temporaryDataFive = temporaryDataFour['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']];
+      // for (let item of temporaryDataFive) {
+      //   if (item['resultId'] == data['resultId']) {
+      //     item['checkResult'] = data['checkResult']
+      //   }
+      // };
+      // 存储选中数据
+      let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet});
+      let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId});
+      let temporaryIndexThree = temporaryDataFive.findIndex((item) => { return item['resultId'] == data['resultId']});
+      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']][temporaryIndexThree]['checkResult'] = data['checkResult'].toString();
+      let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
+      temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+      this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+      this.judgeIsAllCheck();
+      console.log('传递数据2',temporaryDataOne)
+    },
+
     // 通过事件
-    passEvent (event,innerItem,innerIndex) {
+    passEvent (event,item,innerItem,innerIndex) {
+      this.storeExamineData(item,innerItem)
       // 判断该巡查项下是否有登记事件
-      this.queryIsHaveEventRegister(event,innerItem,innerIndex)
+      // this.queryIsHaveEventRegister(event,innerItem,innerIndex)
     },
 
     // 不通过事件
-    noPassEvent (event,innerItem,innerIndex) {
-      console.log('检查项信息',innerItem);
-      this.changePatrolTaskAbnormalCheckItemEventList(innerItem);
-      this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
-      // this.$router.push({path: '/patrolAbnormalRecord'});
-      this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
-      // this.loadingShow = true;
-      // this.overlayShow = true;
-      // this.loadText = '反馈中';
-      // checkItemNoPass({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
-      //   this.loadingShow = false;
-      //   this.overlayShow = false;
-      //   this.loadText = '';
-      //   if (res && res.data.code == 200) {
-      //     this.$toast({
-      //       type: 'success',
-      //       message: '反馈成功'
-      //     });
-      //     this.resultId = item['resultId'];
-      //     //保存进入问题记录页的相关信息
-      //     let temporaryInfo = this.enterProblemRecordMessage;
-      //     temporaryInfo['isAllowOperation'] = true;
-      //     temporaryInfo['enterProblemRecordPageSource'] = '/areaPatrolDetails';
-      //     temporaryInfo['issueInfo'] = item;
-      //     temporaryInfo['id'] = res.data.data ? res.data.data.id : null;
-      //     temporaryInfo['index'] = index; 
-      //     this.changeEnterProblemRecordMessage(temporaryInfo);
-      //     // 第一次点击X，直接选择事件类型进行登记
-      //     if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
-      //       this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
-      //       this.eventTypeShow = true
-      //     } else {
-      //       // 第二次及以上再点击X，进入异常巡查项事件列表页
-      //       this.$router.push({path: '/problemRecord'})
-      //     };
-      //     // 更改该检查项选中状态
-      //     let tempraryMessage = deepClone(this.departmentCheckList);
-      //     tempraryMessage['checkItemList'][index]['checkResult'] = '3';
-      //     this.changeDepartmentCheckList(tempraryMessage)
-      //   } else {
-      //     this.$toast({
-      //       type: 'fail',
-      //       message: res.data.msg
-      //     })
-      //   }
-      // })
-      // .catch((err) => {
-      //   this.loadingShow = false;
-      //   this.overlayShow = false;
-      //   this.loadText = '';
-      //   this.$toast({
-      //     type: 'fail',
-      //     message: err
-      //   })
-      // })
+    noPassEvent (event,item,innerItem,innerIndex) {
+      this.storeExamineData(item,innerItem)
+      // this.changePatrolTaskAbnormalCheckItemEventList(innerItem);
+      // this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
+      // // this.$router.push({path: '/patrolAbnormalRecord'});
+      // this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
+      // // 第一次点击X，直接选择事件类型进行登记
+      // if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
+      //   this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
+      //   this.eventTypeShow = true
+      // } else {
+      //   // 第二次及以上再点击X，进入异常巡查项事件列表页
+      //   this.$router.push({path: '/problemRecord'})
+      // }
     }
   }
 };
