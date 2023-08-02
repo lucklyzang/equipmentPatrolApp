@@ -50,9 +50,26 @@ export function checkItemNoPass(data) {
 // 提交检查项
 export function submitCheckItem(data) {
     return request({
-        url: 'nblink/patrol/checkResult/check/confirm',
+        url: 'nblink/patrol/checkResult/device/app/batchSubmit',
         method: 'put',
         data
+    })
+}
+
+// 提交异常信息记录
+export function saveDeviceAbnormalRecord(data) {
+    return request({
+        url: 'nblink/patrol/eventregister/device/save',
+        method: 'post',
+        data
+    })
+}
+
+// 异常信息记录删除
+export function deleteDeviceAbnormalRecord(id) {
+    return request({
+        url: `nblink/patrol/eventregister/device/${id}`,
+        method: 'delete'
     })
 }
 

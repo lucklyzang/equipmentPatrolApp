@@ -82,7 +82,7 @@
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
 import { mixinsDeviceReturn } from '@/mixins/deviceReturnFunction';
-import { getEventList } from '@/api/escortManagement.js'
+import { getEventList, deleteDeviceAbnormalRecord } from '@/api/escortManagement.js'
 export default {
   name: "PatrolAbnormalCheckItemEventList",
   components: {
@@ -157,7 +157,33 @@ export default {
     },
 
     // 删除异常记录列表事件
-    deleteEventListEvent () {},
+    deleteEventListEvent () {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.loadText = '删除中';
+      deleteDeviceAbnormalRecord()
+      .then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+        } else {
+          this.$toast({
+            type: 'fail',
+            message: res.data.msg
+          })
+        }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
+    },
 
     // 底部返回事件
     backEvent () {

@@ -13,6 +13,11 @@ export default {
             return state.patrolTaskListMessage
         },
 
+        patrolTaskAbnormalRecordList: (state) => {
+            state.patrolTaskAbnormalRecordList = getStore('patrolTaskAbnormalRecordList') ? JSON.parse(getStore('patrolTaskAbnormalRecordList')) : [];
+            return state.patrolTaskAbnormalRecordList
+        },
+
         currentElectronicSignature: (state) => {
             return state.currentElectronicSignature
         },
@@ -112,6 +117,11 @@ export default {
             state.historyPatrolTaskDeviceChecklist = playLoad
         },
 
+        // 保存异常记录信息
+        changePatrolTaskAbnormalRecordList(state, playLoad) {
+            setStore('patrolTaskAbnormalRecordList', playLoad);
+            state.patrolTaskAbnormalRecordList = playLoad
+        },
 
         //重置巡更任务状态
         resetPatrolTaskState(state) {

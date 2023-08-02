@@ -94,7 +94,7 @@ export default {
       calendarShow: false,
       overlayShow: false,
       taskSetNameIndex: 0,
-      showDate: new Date(),
+      showDate: this.getNowFormatDate(new Date(),'month'),
       temporaryShowDate: new Date(),
       taskSetTime: '',
       taskSetName: '',
@@ -154,9 +154,9 @@ export default {
     if (temporaryIndex == -1) {
         // 查询巡检任务详情
         if (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}') {
-            this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'))
+            this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'),false)
         } else {
-            this.queryPatrolTaskDetailsList(this.devicePatrolDetailsSelectMessage.showDate)
+            this.queryPatrolTaskDetailsList(this.devicePatrolDetailsSelectMessage.showDate,false)
         }
     }  else {
         // 从store中取存储过的当前巡检任务信息
@@ -212,7 +212,10 @@ export default {
 
     clickDay(data) {
         this.temporaryShowDate = data;
-        this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'))
+        let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
+        this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
+        this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'),true)
     },
     changeDate(data) {
        this.temporaryShowDate = data;
@@ -266,7 +269,9 @@ export default {
 
     // 日期图标点击事件
     dateClickEvent () {
-        this.initCalendarData(this.getNowFormatDate(new Date(this.temporaryShowDate),'month'))
+        let temporaryDate = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
+        this.showDate = this.getNowFormatDate(new Date(temporaryDate),'month');
+        this.initCalendarData(this.getNowFormatDate(new Date(temporaryDate),'month'))
     },
 
     // 完成任务事件
@@ -313,7 +318,7 @@ export default {
     echoSelectMessage () {
         this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
         this.timeTabIndex = this.timeList.indexOf(this.devicePatrolDetailsSelectMessage['selectTime']);
-        this.showDate = new Date(this.devicePatrolDetailsSelectMessage['showDate'])
+        this.showDate = this.devicePatrolDetailsSelectMessage['showDate']
     },
 
     // 存储后台查询的巡检任务
@@ -341,7 +346,7 @@ export default {
     },
 
     // 获取巡检任务详情
-    queryPatrolTaskDetailsList (queryDate) {
+    queryPatrolTaskDetailsList (queryDate,isClickDay) {
         this.loadingShow = true;
         this.overlayShow = true;
         this.calendarShow = false;
@@ -378,12 +383,18 @@ export default {
                     } else {
                         // 获取当前任务集的时间点集合,做升序处理
                         this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
-                        this.echoSelectMessage();
+                        if (isClickDay) {
+                            this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
+                            this.taskSetTime = this.disposeTime(this.timeList);
+                            this.showDate = this.devicePatrolDetailsSelectMessage['showDate']
+                        } else {
+                            this.echoSelectMessage();
+                            // 回显存储之前选中的时间点
+                            this.taskSetTime = this.timeList[this.timeTabIndex]
+                        };
                         this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
                         this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
-                        // 回显存储之前选中的时间点
-                        this.taskSetTime = this.timeList[this.timeTabIndex];
-                        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime']];
+                        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][isClickDay ? this.taskSetTime : this.devicePatrolDetailsSelectMessage['selectTime']];
                         Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
                             taskSite: item,
                             isClockIn: currentTimeData[item][0]['isClockIn'],
@@ -611,15 +622,15 @@ export default {
 
     // 点击进入设备检查单事件
     equipmentChecklistEvent (item,innerItem,innerIndex) {
-        console.log('as',item);
         if (item.isClockIn == 0) { return };
-        this.changeDevicePatrolDetailsSelectMessage({
-            selectTaskSet: this.taskSetName,
-            selectTime: this.taskSetTime,
-            taskSite: item.taskSite,
-            deviceId: innerItem['deviceId'],
-            showDate: this.getNowFormatDate(new Date(this.temporaryShowDate),'day')
-        });
+        let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
+        temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
+        temporaryDevicePatrolDetailsSelectMessage['selectTaskSetId'] = this.currentTaskSetId;
+        temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.taskSetTime;
+        temporaryDevicePatrolDetailsSelectMessage['taskSite'] = item.taskSite;
+        temporaryDevicePatrolDetailsSelectMessage['deviceId'] = innerItem['deviceId'];
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
+        this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
         this.changePatrolTaskDeviceChecklist(innerItem);
         this.$router.push('/equipmentChecklist')
     }

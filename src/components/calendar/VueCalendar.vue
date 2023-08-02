@@ -234,7 +234,7 @@ export default {
       default: () => false
     },
     showDate: {
-      default: new Date()
+      default: String
     },
     agoDayHide: {
       type: String,
@@ -247,7 +247,7 @@ export default {
   },
   created() {
     this.intStart();
-    this.myDate = this.showDate
+    this.myDate = new Date(this.showDate)
   },
   methods: {
     intStart() {
@@ -392,6 +392,13 @@ export default {
       handler(val, oldVal) {
         this.intStart();
         this.getList(this.myDate);
+      },
+      deep: true
+    },
+    showDate: {
+      handler(val, oldVal) {
+        this.myDate = new Date(val);
+        this.getList(this.myDate)
       },
       deep: true
     }

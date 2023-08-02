@@ -150,6 +150,7 @@ export default {
           this.loadingShow = false;
           this.overlayShow = false;
 					if (res && res.data.code == 200) {
+            this.$store.dispatch('resetPatrolTaskStore');
 						removeAllLocalStorage();
             if(this.globalTimer) {window.clearInterval(this.globalTimer)};
             this.$router.push({path: '/'})

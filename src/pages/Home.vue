@@ -159,6 +159,7 @@
                     this.overlayShow = false;
                     if (res && res.data.code == 200) {
                         removeAllLocalStorage();
+                        this.$store.dispatch('resetPatrolTaskStore');
                         if(this.globalTimer) {window.clearInterval(this.globalTimer)};
                                 this.$router.push({path: '/'})
                     } else {

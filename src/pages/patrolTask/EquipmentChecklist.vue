@@ -68,7 +68,7 @@
             </div>
         </div>
     </div>
-    <div class="task-operation-box">
+    <div class="task-operation-box" @click="btnClickEvent">
       <div class="task-complete">{{ isAllCheck ? '提 交' : '保 存'}}</div>
     </div>
     <!-- 退出提示框   -->
@@ -90,7 +90,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import { checkItemPass, checkItemNoPass, getIsHaveEventRegister} from '@/api/escortManagement.js'
+import { checkItemPass, checkItemNoPass, getIsHaveEventRegister, submitCheckItem} from '@/api/escortManagement.js'
 import _ from 'lodash';
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
 export default {
@@ -119,9 +119,11 @@ export default {
   },
 
   mounted() {
+    console.log(this.patrolTaskDeviceChecklist,this.patrolTaskListMessage,this.devicePatrolDetailsSelectMessage);
     // 控制设备物理返回按键
     this.deviceReturn("/equipmentPatrolDetails");
     this.currentPatrolTaskDeviceChecklist =  _.cloneDeep(this.patrolTaskDeviceChecklist);
+    this.remarkContent = this.currentPatrolTaskDeviceChecklist['remark'];
     let temporaryCheckItemListGroupByCheckType = this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
     this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'] = [];
     Object.keys(temporaryCheckItemListGroupByCheckType).forEach((item) => {
@@ -140,7 +142,8 @@ export default {
         innerEl.unfold = false
       })
     });
-    this.judgeIsAllCheck()
+    this.judgeIsAllCheck();
+    console.log('处理后数据',this.currentPatrolTaskDeviceChecklist)
   },
 
   watch: {},
@@ -258,11 +261,6 @@ export default {
       let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite];
       let temporaryDataFour = temporaryDataShree.filter((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId})[0];
       let temporaryDataFive = temporaryDataFour['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']];
-      // for (let item of temporaryDataFive) {
-      //   if (item['resultId'] == data['resultId']) {
-      //     item['checkResult'] = data['checkResult']
-      //   }
-      // };
       // 存储选中数据
       let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet});
       let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId});
@@ -271,8 +269,7 @@ export default {
       let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
       temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
       this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
-      this.judgeIsAllCheck();
-      console.log('传递数据2',temporaryDataOne)
+      this.judgeIsAllCheck()
     },
 
     // 通过事件
@@ -285,10 +282,10 @@ export default {
     // 不通过事件
     noPassEvent (event,item,innerItem,innerIndex) {
       this.storeExamineData(item,innerItem)
-      // this.changePatrolTaskAbnormalCheckItemEventList(innerItem);
-      // this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
-      // // this.$router.push({path: '/patrolAbnormalRecord'});
-      // this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
+      this.changePatrolTaskAbnormalCheckItemEventList(innerItem);
+      this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
+      // this.$router.push({path: '/patrolAbnormalRecord'});
+      this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
       // // 第一次点击X，直接选择事件类型进行登记
       // if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
       //   this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
@@ -297,6 +294,98 @@ export default {
       //   // 第二次及以上再点击X，进入异常巡查项事件列表页
       //   this.$router.push({path: '/problemRecord'})
       // }
+    },
+
+    // 保存备注事件
+    storeRemarkEvent () {
+      let temporaryPatrolTaskListMessage =  _.cloneDeep(this.patrolTaskListMessage);
+      let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate})[0]['content'];
+      let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet})[0];
+      let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite];
+      // 存储选中数据
+      let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet});
+      let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId});
+      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['remark'] = this.remarkContent;
+      let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
+      temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+      this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+      console.log('数据',temporaryDataOne)
+    },
+
+    // 批量提交检查项事件
+    batchSubmitCheckItemEvent () {
+      // this.loadingShow = true;
+      // this.overlayShow = true;
+      // this.loadText = '提交中';
+      let submitData = {
+        taskId: this.patrolTaskDeviceChecklist.checkTaskId,
+        deviceId: this.patrolTaskDeviceChecklist.deviceId,
+        deviceName: this.patrolTaskDeviceChecklist.deviceName,
+        norms: this.patrolTaskDeviceChecklist.norms,
+        structId: this.patrolTaskDeviceChecklist.structId,
+        structName: this.patrolTaskDeviceChecklist.structName,
+        depId: this.patrolTaskDeviceChecklist.depId,
+        depName: this.patrolTaskDeviceChecklist.depName,
+        remark: this.remarkContent,
+        collectId: this.devicePatrolDetailsSelectMessage.selectTaskSetId,
+        proId: this.userInfo.proIds[0],
+        system: 9,
+        workerName: this.userInfo.name,
+        deviceChecklistRemarkId: this.patrolTaskDeviceChecklist.deviceChecklistRemarkId,
+        checkResultDtoList: []
+      };
+      // 拼接检查结果数据
+      let mergeCheckData = [];
+      this.currentPatrolTaskDeviceChecklist.checkItemListGroupByCheckType.forEach((item) => {
+        item.checkItemClassifyContent.forEach((innerItem) => {
+          mergeCheckData.push(innerItem)
+        })
+      });
+      mergeCheckData.forEach((el) => {
+        submitData['checkResultDtoList'].push({
+          resultId: el.resultId,
+          taskId: el.taskId,
+          taskNumber: el.taskNumber,
+          checkResult: el.checkResult,
+          workerName: this.userInfo.name,
+          registerList: []
+        })
+      });
+      console.log('拼接后的数据',submitData);
+      // submitCheckItem({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
+      //   this.loadingShow = false;
+      //   this.overlayShow = false;
+      //   this.loadText = '';
+      //   if (res && res.data.code == 200) {
+      //     this.$toast({
+      //       type: 'success',
+      //       message: '反馈成功'
+      //     })
+      //   } else {
+      //     this.$toast({
+      //       type: 'fail',
+      //       message: res.data.msg
+      //     })
+      //   }
+      // })
+      // .catch((err) => {
+      //   this.loadingShow = false;
+      //   this.overlayShow = false;
+      //   this.loadText = '';
+      //   this.$toast({
+      //     type: 'fail',
+      //     message: err
+      //   })
+      // })
+    },
+
+    // 保存或提交事件
+    btnClickEvent () {
+      if (this.isAllCheck) {
+        this.batchSubmitCheckItemEvent()
+      } else {
+        this.storeRemarkEvent()
+      }
     }
   }
 };
