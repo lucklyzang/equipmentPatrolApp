@@ -119,37 +119,22 @@ export default {
   },
 
   mounted() {
-    console.log(this.patrolTaskDeviceChecklist,this.patrolTaskListMessage,this.devicePatrolDetailsSelectMessage);
+    console.log('啥叫',this.patrolTaskDeviceChecklist,this.patrolTaskListMessage,this.devicePatrolDetailsSelectMessage);
     // 控制设备物理返回按键
     this.deviceReturn("/equipmentPatrolDetails");
-    this.currentPatrolTaskDeviceChecklist =  _.cloneDeep(this.patrolTaskDeviceChecklist);
-    this.remarkContent = this.currentPatrolTaskDeviceChecklist['remark'];
-    let temporaryCheckItemListGroupByCheckType = this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
-    this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'] = [];
-    Object.keys(temporaryCheckItemListGroupByCheckType).forEach((item) => {
-      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].push({
-        checkItemClassifyName: item,
-        checkItemClassifyContent: temporaryCheckItemListGroupByCheckType[item]
-      })
-    });
-    this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach((item) => {
-      item['checkItemClassifyContent'].forEach((innerItem) => {
-        innerItem['checkResult'] = innerItem['checkResult'].toString()
-      })
-    });
+    this.getCurrentDeviceCheckData();
     this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach(el => {
       el.checkItemClassifyContent.forEach((innerEl) => {
         innerEl.unfold = false
       })
     });
-    this.judgeIsAllCheck();
-    console.log('处理后数据',this.currentPatrolTaskDeviceChecklist)
+    this.judgeIsAllCheck()
   },
 
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskDeviceChecklist","patrolTaskListMessage","devicePatrolDetailsSelectMessage"])
+    ...mapGetters(["userInfo","patrolTaskDeviceChecklist","patrolTaskListMessage","devicePatrolDetailsSelectMessage","patrolTaskAbnormalRecordList","patrolTaskAbnormalCheckItemEventList"])
   },
 
   methods: {
@@ -157,9 +142,30 @@ export default {
 
     // 顶部导航左边点击事件
     onClickLeft () {
-      this.quitInfoShow = true;
-      return;
-      this.$router.push({path: '/equipmentPatrolDetails'})
+      if (!this.isAllCheck) {
+        this.quitInfoShow = true
+      } else {
+        this.$router.push({path: '/equipmentPatrolDetails'})
+      }
+    },
+
+    // 获取当前机器下的检查项数据
+    getCurrentDeviceCheckData () {
+      this.currentPatrolTaskDeviceChecklist =  _.cloneDeep(this.patrolTaskDeviceChecklist);
+      this.remarkContent = this.currentPatrolTaskDeviceChecklist['remark'];
+      let temporaryCheckItemListGroupByCheckType = this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
+      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'] = [];
+      Object.keys(temporaryCheckItemListGroupByCheckType).forEach((item) => {
+        this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].push({
+          checkItemClassifyName: item,
+          checkItemClassifyContent: temporaryCheckItemListGroupByCheckType[item]
+        })
+      });
+      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach((item) => {
+        item['checkItemClassifyContent'].forEach((innerItem) => {
+          innerItem['checkResult'] = innerItem['checkResult'].toString()
+        })
+      })
     },
 
     // 确定退出
@@ -187,70 +193,41 @@ export default {
       this.$forceUpdate()
     },
 
-    // 判断该巡查项下是否有登记事件
-    queryIsHaveEventRegister (event,innerItem,innerIndex) {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.loadText = '查询中';
-      getIsHaveEventRegister(this.userInfo.proIds[0],6,innerItem.resultId).then((res) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        if (res && res.data.code == 200) {
-          // 该巡查项下面有登记事件该巡查项无法再由X改为√。如果把登记的事件全部删除了，那就可以由X改为√。
-          if (res.data.data == 1) {
-            this.$toast({
-              type: 'fail',
-              message: '该巡查项下面有异常记录,把该巡查项下登记的异常记录全部删除后,方能通过'
-            });
-            // 重置该检查项选中状态
-            item['innerItem'] = '3';
-            return
-          };
-          this.loadingShow = true;
-          this.overlayShow = true;
-          this.loadText = '反馈中';
-          checkItemPass({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
-            this.loadingShow = false;
-            this.overlayShow = false;
-            this.loadText = '';
-            if (res && res.data.code == 200) {
-              this.$toast({
-                type: 'success',
-                message: '反馈成功'
-              })
-            } else {
-              this.$toast({
-                type: 'fail',
-                message: res.data.msg
-              })
-            }
-          })
-          .catch((err) => {
-            this.loadingShow = false;
-            this.overlayShow = false;
-            this.loadText = '';
-            this.$toast({
-              type: 'fail',
-              message: err
-            })
-          })
-        } else {
-          this.$toast({
-            type: 'fail',
-            message: res.data.msg
-          })
-        }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
+    // 判断该巡查项下是否有异常记录
+    queryIsHaveEventRegister (event,item,innerItem,innerIndex) {
+      // 有异常记录
+      if (this.getData(innerItem)) {
+        // 将检查结果保存到当前设备数据里(patrolTaskDeviceChecklist)
+        let temporaryPatrolTaskDeviceChecklist = _.cloneDeep(this.patrolTaskDeviceChecklist);
+        let temporaryIndexFour = temporaryPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][item['checkItemClassifyName']].findIndex((itemOther) => {
+          return itemOther.resultId == innerItem['resultId']
+        });
+        // 将改检查项检查结果变为×(3)
+        temporaryPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][item['checkItemClassifyName']][temporaryIndexFour]['checkResult'] = '3';
+        this.changePatrolTaskDeviceChecklist(temporaryPatrolTaskDeviceChecklist);
+        this.currentPatrolTaskDeviceChecklist =  _.cloneDeep(this.patrolTaskDeviceChecklist);
+        this.getCurrentDeviceCheckData();
         this.$toast({
           type: 'fail',
-          message: err
+          message: '该检查项下面有异常记录,把该检查项下登记的异常记录全部删除后,方能通过'
         })
-      })
+      } else {
+        this.storeExamineData(item,innerItem)
+      }
+    },
+
+    // 获取该检查项下面的异常记录列表
+    getData (innerItem) {
+      let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
+      let temporaryEventList = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.filter((item) => { return item.showDate == this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
+      item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == innerItem.typeId && 
+      item.extendData.checkItemId == innerItem.itemId && item.checkResultId == innerItem.resultId
+      });
+      if (temporaryEventList.length > 0) {
+        return true
+      } else {
+        return false
+      }
     },
 
     // 保存选择的数据(选√还是×)
@@ -268,36 +245,51 @@ export default {
       temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']][temporaryIndexThree]['checkResult'] = data['checkResult'].toString();
       let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
       temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+      // 将检查结果保存到整体数据(patrolTaskListMessage)
       this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+      // 将检查结果保存到当前设备数据里(patrolTaskDeviceChecklist)
+      let temporaryPatrolTaskDeviceChecklist = _.cloneDeep(this.patrolTaskDeviceChecklist);
+      let temporaryIndexFour = temporaryPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']].findIndex((item) => {
+        return item.resultId == data['resultId']
+      });
+      temporaryPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']][temporaryIndexFour]['checkResult'] = data['checkResult'].toString();
+      this.changePatrolTaskDeviceChecklist(temporaryPatrolTaskDeviceChecklist);
       this.judgeIsAllCheck()
     },
 
     // 通过事件
     passEvent (event,item,innerItem,innerIndex) {
-      this.storeExamineData(item,innerItem)
       // 判断该巡查项下是否有登记事件
-      // this.queryIsHaveEventRegister(event,innerItem,innerIndex)
+      this.queryIsHaveEventRegister(event,item,innerItem,innerIndex)
     },
 
     // 不通过事件
-    noPassEvent (event,item,innerItem,innerIndex) {
-      this.storeExamineData(item,innerItem)
+    noPassEvent (event,itemArguments,innerItem,innerIndex) {
+      let temporaryPatrolTaskListMessage =  _.cloneDeep(this.patrolTaskListMessage);
+      let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate})[0]['content'];
+      let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet})[0];
+      let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite];
+      let temporaryDataFour = temporaryDataShree.filter((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId})[0];
+      let temporaryDataFive = temporaryDataFour['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']];
+      // 存储选中数据
+      let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet});
+      let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId});
+      let temporaryIndexThree = temporaryDataFive.findIndex((item) => { return item['resultId'] == innerItem['resultId']});
+      let temporaryCheckResult = temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkItemListGroupByCheckType'][itemArguments['checkItemClassifyName']][temporaryIndexThree]['checkResult'];
+      // 第一次点击X，直接进入异常记录表单填写页
+      if (temporaryCheckResult == 0 || temporaryCheckResult == 1) {
+        this.$router.push({path: '/patrolAbnormalRecord'})
+      } else {
+        // 第二次及以上再点击X，进入异常记录列表页
+        this.$router.push({path: '/patrolAbnormalCheckItemEventList'})
+      };
+      this.storeExamineData(itemArguments,innerItem)
       this.changePatrolTaskAbnormalCheckItemEventList(innerItem);
-      this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist');
-      // this.$router.push({path: '/patrolAbnormalRecord'});
-      this.$router.push({path: '/patrolAbnormalCheckItemEventList'});
-      // // 第一次点击X，直接选择事件类型进行登记
-      // if (this.departmentCheckList['checkItemList'][index]['checkResult'] == 0 || this.departmentCheckList['checkItemList'][index]['checkResult'] == 1) {
-      //   this.patrolItem = this.enterProblemRecordMessage['issueInfo']['name'];
-      //   this.eventTypeShow = true
-      // } else {
-      //   // 第二次及以上再点击X，进入异常巡查项事件列表页
-      //   this.$router.push({path: '/problemRecord'})
-      // }
+      this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist')
     },
 
-    // 保存备注事件
-    storeRemarkEvent () {
+    // 保存备注数据事件
+    storeRemarkDataEvent () {
       let temporaryPatrolTaskListMessage =  _.cloneDeep(this.patrolTaskListMessage);
       let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate})[0]['content'];
       let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet})[0];
@@ -309,7 +301,56 @@ export default {
       let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
       temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
       this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
-      console.log('数据',temporaryDataOne)
+      this.quitSure()
+    },
+
+    // 保存该设备下的检查数据
+     storeCheckResultDataEvent (checkResultDtoList) {
+      let temporaryPatrolTaskListMessage =  _.cloneDeep(this.patrolTaskListMessage);
+      let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate})[0]['content'];
+      let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet})[0];
+      let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite];
+      // 存储选中数据
+      let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet});
+      let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId});
+      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkResultDtoList'] = checkResultDtoList
+      let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
+      temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+      this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+      this.storeCheckAbnormalRecordDataEvent()
+    },
+
+    // 为每个检查项下的registerList字段添加该检查项下保存的异常记录
+    storeCheckAbnormalRecordDataEvent () {
+      let temporaryPatrolTaskListMessage =  _.cloneDeep(this.patrolTaskListMessage);
+      let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate})[0]['content'];
+      let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet})[0];
+      let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite];
+      // 存储选中数据
+      let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet});
+      let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId});
+      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkResultDtoList'].forEach((item) => {
+        item['registerList'] = this.getAbnormalListByCheckResultId(item.typeId,item.itemId,item.resultId)
+      });
+      let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
+      temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+      this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage)
+    },
+
+    // 根据检查项Id查询该检查项下保存的异常记录
+    getAbnormalListByCheckResultId (typeId,itemId,checkResultId) {
+      let eventList = [];
+      let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = _.cloneDeep(this.patrolTaskAbnormalRecordList);
+      let temporaryEventList = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.filter((item) => { return item.showDate == this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
+      item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == typeId && 
+      item.extendData.checkItemId == itemId && item.checkResultId == checkResultId
+      });
+      if (temporaryEventList.length > 0) {
+        eventList = temporaryEventList
+      } else {
+        eventList = []
+      };
+      return eventList
     },
 
     // 批量提交检查项事件
@@ -344,6 +385,8 @@ export default {
       mergeCheckData.forEach((el) => {
         submitData['checkResultDtoList'].push({
           resultId: el.resultId,
+          typeId: el.typeId,
+          itemId: el.itemId,
           taskId: el.taskId,
           taskNumber: el.taskNumber,
           checkResult: el.checkResult,
@@ -351,7 +394,9 @@ export default {
           registerList: []
         })
       });
-      console.log('拼接后的数据',submitData);
+      // 把检查结果数据和备注挂载到整体数据(patrolTaskListMessage)上,方便在设备巡检详情页面上传该设备下的巡检数据
+      this.storeCheckResultDataEvent(submitData['checkResultDtoList'])
+      // 拼接每个检查项下面保存的异常记录
       // submitCheckItem({resultId:innerItem.resultId,workerName: this.userInfo.name}).then((res) => {
       //   this.loadingShow = false;
       //   this.overlayShow = false;
@@ -384,7 +429,7 @@ export default {
       if (this.isAllCheck) {
         this.batchSubmitCheckItemEvent()
       } else {
-        this.storeRemarkEvent()
+        this.storeRemarkDataEvent()
       }
     }
   }

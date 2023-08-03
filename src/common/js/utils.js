@@ -689,6 +689,7 @@ export const removeAllLocalStorage = () => {
     removeStore('historyPatrolTaskDetails');
     removeStore('patrolTaskAbnormalCheckItemEventList');
     removeStore('historyPatrolTaskAbnormalCheckItemEventList');
+    removeStore('patrolTaskAbnormalRecordList');
     removeStore('permissionInfo');
     removeStore('roleNameList');
     removeStore('changeOverDueWay');
@@ -714,6 +715,7 @@ export const removeExceptLoginMessageLocalStorage = () => {
     removeStore('chooseProject');
     removeStore('patrolTaskListMessage');
     removeStore('patrolTaskDeviceChecklist');
+    removeStore('patrolTaskAbnormalRecordList');
     removeStore('historyPatrolTaskDetails');
     removeStore('patrolTaskAbnormalCheckItemEventList');
     removeStore('historyPatrolTaskAbnormalCheckItemEventList')

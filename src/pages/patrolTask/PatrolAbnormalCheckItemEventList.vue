@@ -41,33 +41,33 @@
             </div>
           </div>
           <div class="backlog-task-list-box" ref="scrollBacklogTask">
-              <div class="backlog-task-list">
+              <div class="backlog-task-list" v-for="(item,index) in eventList" :key="index">
                   <div class="backlog-task-top">
                       <div class="backlog-task-top-left">
                           <span>编号:</span>
-                          <span>q2121</span>
+                          <span>{{ item.storeId }}</span>
                       </div>
-                      <div class="backlog-task-top-right" @click="deleteEventListEvent">
+                      <div class="backlog-task-top-right" @click="deleteEventListEvent(item)">
                         <img :src="deletePng" alt="">
                       </div>
                   </div>
                   <div class="backlog-task-content" >
                       <div class="taskset-create-time-type taskset-create-time-other-type">
                           <span>记录时间:</span>
-                          <span>2023年6月12日 11:00</span>
+                          <span>{{ item.findTime }}</span>
                       </div>
                   </div>
                   <div class="backlog-task-content">
                       <div class="taskset-create-time-type">
                           <span>情况说明:</span>
-                          <span>sdasas</span>
+                          <span>{{ item.description }}</span>
                       </div>
                   </div>
-                  <div class="right-arrow-box" @click="taskDetailsEvent">
+                  <div class="right-arrow-box" @click="enterRecordDetailsEvent(item)">
                     <van-icon name="arrow" color="#1684FC" size="24" />
                   </div>
               </div>
-              <van-empty description="暂无数据" v-show="backlogEmptyShow" />
+              <van-empty description="暂无异常记录数据" v-show="eventList == 0" />
               <div class="no-more-data" v-show="isShowBacklogTaskNoMoreData">没有更多数据了</div>
           </div> 
         </div>
@@ -82,6 +82,7 @@
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
 import { mixinsDeviceReturn } from '@/mixins/deviceReturnFunction';
+import _ from 'lodash';
 import { getEventList, deleteDeviceAbnormalRecord } from '@/api/escortManagement.js'
 export default {
   name: "PatrolAbnormalCheckItemEventList",
@@ -100,6 +101,7 @@ export default {
       currentPage: 1,
       pageSize: 10,
       checkResultValue: '1',
+      eventList: [],
       eventTypeList: ['工程报修','拾金不昧','其他'],
       loadingShow: false,
       backlogTaskList: [],
@@ -119,7 +121,6 @@ export default {
   mounted() {
     // 控制设备物理返回按键
     this.deviceReturn('/equipmentChecklist');
-    // this.queryEventList(this.currentPage,this.pageSize,this.userName,1);
     this.$nextTick(()=> {
         try {
             this.initScrollChange()
@@ -130,7 +131,7 @@ export default {
             })
         }
     });
-    console.log('检查项事件列表信息',this.patrolTaskAbnormalCheckItemEventList)
+    this.getData()
   },
 
    beforeDestroy () {
@@ -142,52 +143,86 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage","patrolTaskAbnormalCheckItemEventList"]),
+    ...mapGetters(["userInfo","ossMessage","timeMessage","patrolTaskAbnormalRecordList","enterPatrolAbnormalRecordPageSource","patrolTaskAbnormalCheckItemEventList","patrolTaskDeviceChecklist","patrolTaskListMessage","devicePatrolDetailsSelectMessage"]),
     userName () {
       return this.userInfo.name
     }
   },
 
   methods: {
-    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource']),
+    ...mapMutations(['changeEnterPatrolAbnormalRecordPageSource','changePatrolTaskAbnormalRecordList']),
 
     // 顶部导航左边点击事件
     onClickLeft () {
       this.$router.push({path: '/equipmentChecklist'})
     },
 
+    // 获取该检查项下面的异常记录列表
+    getData () {
+      let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = _.cloneDeep(this.patrolTaskAbnormalRecordList);
+      let temporaryEventList = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.filter((item) => { return item.showDate == this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
+      item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == this.patrolTaskAbnormalCheckItemEventList.typeId && 
+      item.extendData.checkItemId == this.patrolTaskAbnormalCheckItemEventList.itemId && item.checkResultId == this.patrolTaskAbnormalCheckItemEventList.resultId
+      });
+      if (temporaryEventList.length > 0) {
+        this.eventList = temporaryEventList
+      } else {
+        this.eventList = []
+      }
+    },
+
     // 删除异常记录列表事件
-    deleteEventListEvent () {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.loadText = '删除中';
-      deleteDeviceAbnormalRecord()
-      .then((res) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        if (res && res.data.code == 200) {
-        } else {
-          this.$toast({
-            type: 'fail',
-            message: res.data.msg
-          })
-        }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
+    deleteEventListEvent (itemValue) {
+      let temporaryPatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
+      temporaryPatrolTaskAbnormalRecordList = temporaryPatrolTaskAbnormalRecordList.filter((item) => {
+        return item.storeId != itemValue.storeId &&
+        item.showDate ==  this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
+        item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == this.patrolTaskAbnormalCheckItemEventList.typeId && 
+        item.extendData.checkItemId == this.patrolTaskAbnormalCheckItemEventList.itemId && item.checkResultId == this.patrolTaskAbnormalCheckItemEventList.resultId
+      });
+      this.changePatrolTaskAbnormalRecordList(temporaryPatrolTaskAbnormalRecordList);
+      this.getData()
+      // this.loadingShow = true;
+      // this.overlayShow = true;
+      // this.loadText = '删除中';
+      // deleteDeviceAbnormalRecord()
+      // .then((res) => {
+      //   this.loadingShow = false;
+      //   this.overlayShow = false;
+      //   this.loadText = '';
+      //   if (res && res.data.code == 200) {
+      //   } else {
+      //     this.$toast({
+      //       type: 'fail',
+      //       message: res.data.msg
+      //     })
+      //   }
+      // })
+      // .catch((err) => {
+      //   this.loadingShow = false;
+      //   this.overlayShow = false;
+      //   this.loadText = '';
+      //   this.$toast({
+      //     type: 'fail',
+      //     message: err
+      //   })
+      // })
     },
 
     // 底部返回事件
     backEvent () {
       this.$router.push({path: '/equipmentChecklist'})
+    },
+
+    // 进入记录详情事件
+    enterRecordDetailsEvent (item) {
+      this.changeEnterPatrolAbnormalRecordPageSource('/patrolAbnormalCheckItemEventList');
+      this.$router.push({
+        path:'/patrolAbnormalRecord',
+        query: {
+          eventId : item.storeId
+        }
+      })
     },
 
     // 获取事件列表
