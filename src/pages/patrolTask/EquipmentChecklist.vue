@@ -313,7 +313,9 @@ export default {
       // 存储选中数据
       let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.devicePatrolDetailsSelectMessage.selectTaskSet});
       let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == this.devicePatrolDetailsSelectMessage.deviceId});
-      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkResultDtoList'] = checkResultDtoList
+      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkResultDtoList'] = checkResultDtoList;
+      // 为该设备添加是否全部勾选的字段,方便设备详情页判断该设备下的检查单是否可以提交
+      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['isAllCheck'] = true;
       let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
       temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
       this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
@@ -427,10 +429,12 @@ export default {
     // 保存或提交事件
     btnClickEvent () {
       if (this.isAllCheck) {
-        this.batchSubmitCheckItemEvent()
+        this.batchSubmitCheckItemEvent();
+        this.storeRemarkDataEvent()
       } else {
         this.storeRemarkDataEvent()
-      }
+      };
+      this.$router.push({path: '/equipmentPatrolDetails'})
     }
   }
 };

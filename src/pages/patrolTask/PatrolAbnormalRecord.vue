@@ -807,7 +807,6 @@ export default {
 
     // 暂存事件
     temporaryStorageEvent () {
-      // this.abnormalTypeOption = [{id: 3,text: '其他'},{ id: 4,text: '设备损坏'},{id: 5,text: '隐患排查'}];
       let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
       if (casuallyTemporaryStoragePatrolTaskAbnormalRecordList.length > 0 ) {
           let temporaryIndex = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.findIndex((item) => { return item.storeId == this.$route.query.eventId &&

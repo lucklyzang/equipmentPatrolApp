@@ -55,7 +55,7 @@
                         </div>
                         <div class="backlog-task-content">
                             <div class="equipment-name-list" @click="equipmentChecklistEvent(item,innerItem,innerIndex)" v-for="(innerItem,innerIndex) in item.taskContentList" :key="innerIndex">
-                                <div class="equipment-name">
+                                <div class="equipment-name" :class="{'equipmentNoCompleteStyle' : item.isClockIn == 1}">
                                     {{ `${innerItem.deviceName} ${innerItem.norms}` }}
                                 </div>
                                 <div class="operation-icon-box">
@@ -76,7 +76,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import {getPatrolTaskDetailsList, resetPatrolTaskCalendarData,patrolTaskPunchCard} from '@/api/escortManagement.js'
+import {getPatrolTaskDetailsList, resetPatrolTaskCalendarData,patrolTaskPunchCard,submitCheckItem} from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 import _ from 'lodash';
 import VueCalendar from '@/components/calendar/VueCalendar'
@@ -147,38 +147,7 @@ export default {
     };
     window['scanQRcodeCallbackCanceled'] = () => {
         me.scanQRcodeCallbackCanceled();
-    };
-    // 判断之前有无存过当前查询日期的任务，有存过就不再查询
-    let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
-    let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
-    if (temporaryIndex == -1) {
-        // 查询巡检任务详情
-        if (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}') {
-            this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'),false)
-        } else {
-            this.queryPatrolTaskDetailsList(this.devicePatrolDetailsSelectMessage.showDate,false)
-        }
-    }  else {
-        // 从store中取存储过的当前巡检任务信息
-        this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
-        // 获取当前任务集的时间点集合,做升序处理
-        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
-        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
-        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
-        this.echoSelectMessage();
-        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
-        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
-        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
-        // 判断之前有没有存储选中的时间信息
-        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
-        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
-        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
-        Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
-            taskSite: item,
-            isClockIn: currentTimeData[item][0]['isClockIn'],
-            taskContentList: currentTimeData[item]
-        })})
-    }  
+    }
   },
 
   beforeDestroy () {
@@ -192,11 +161,12 @@ export default {
 
   beforeRouteEnter(to, from, next) {
     next(vm=>{
-      if (from.path == '/home') {
-       
-      } else {
-       
-      }
+        // 处理初始展示数据
+        vm.disposeInitialData()
+        if (from.path == '/equipmentChecklist') {
+        // 从设备检查单界面进来时,则判断是否有检查完需要上传的检查单
+        vm.judgeIsHaveNeedUploadCheckList()
+        }
 	});
     next() 
   },
@@ -204,7 +174,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","devicePatrolDetailsSelectMessage","patrolTaskListMessage"])
+    ...mapGetters(["userInfo","devicePatrolDetailsSelectMessage","patrolTaskListMessage","patrolTaskDeviceChecklist"])
   },
 
   methods: {
@@ -233,6 +203,114 @@ export default {
         this.$router.push({path: '/historyEquipmPatroLTaskList'})
     },
 
+    // 处理初始展示数据
+    disposeInitialData () {
+        // 判断之前有无存过当前查询日期的任务，有存过就不再查询
+        let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        if (temporaryIndex == -1) {
+            // 查询巡检任务详情
+            if (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}') {
+                this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'),false)
+            } else {
+                this.queryPatrolTaskDetailsList(this.devicePatrolDetailsSelectMessage.showDate,false)
+            }
+        }  else {
+            // 从store中取存储过的当前巡检任务信息
+            this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
+            // 获取当前任务集的时间点集合,做升序处理
+            this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+            this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+            this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+            this.echoSelectMessage();
+            this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+            this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+            this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+            // 判断之前有没有存储选中的时间信息
+            this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+            this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+            let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
+            Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+                taskSite: item,
+                isClockIn: currentTimeData[item][0]['isClockIn'],
+                taskContentList: currentTimeData[item]
+            })})
+        }  
+    },
+
+    // 判断是否有需要上传的检查单
+    judgeIsHaveNeedUploadCheckList () {
+        let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        // 从store中取存储过的当前巡检任务信息
+        this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
+        // 获取当前任务集的时间点集合,做升序处理
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+        this.echoSelectMessage();
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+        // 判断之前有没有存储选中的时间信息
+        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
+        console.log('当前需要的数据',currentTimeData);
+        Object.keys(currentTimeData).forEach((item,index) => { 
+            currentTimeData[item].forEach((innerItem,innerIndex) => {
+                console.log('sas1',item,innerItem);
+                // 拼接上传的数据
+                let submitData = {
+                    taskId: this.patrolTaskDeviceChecklist.checkTaskId,
+                    deviceId: innerItem.deviceId,
+                    deviceName: innerItem.deviceName,
+                    norms: innerItem.norms,
+                    structId: innerItem.structId,
+                    structName: innerItem.structName,
+                    depId: innerItem.depId,
+                    depName: innerItem.depName,
+                    remark: innerItem.remark,
+                    collectId: this.devicePatrolDetailsSelectMessage.selectTaskSetId,
+                    proId: this.userInfo.proIds[0],
+                    system: 9,
+                    workerName: this.userInfo.name,
+                    deviceChecklistRemarkId: this.patrolTaskDeviceChecklist.deviceChecklistRemarkId,
+                    checkResultDtoList: [],
+                    allDevicesByCurrent: []
+                };
+                // 检查单都检查完毕后,才允许上传
+                if (innerItem['isAllCheck']) {
+                    submitData['checkResultDtoList'] = innerItem['checkResultDtoList'];
+                    submitData['allDevicesByCurrent'].push({
+                        id: innerItem['deviceId'],
+                        name: innerItem['deviceName'],
+                        norms: innerItem['norms'],
+                        depId: innerItem['depId'],
+                        depName: innerItem['depName'],
+                        structId: innerItem['structId'],
+                        structName: innerItem['structName']
+                    })
+                };
+                console.log('数据',submitData)
+                this.batchSubmitCheckItem(item,innerItem,submitData)    
+            })
+        })
+    },
+
+    // 批量提交检查项
+    batchSubmitCheckItem(item,innerItem,paramsData) {
+		submitCheckItem(paramsData)
+        .then((res) => {
+            if (res && res.data.code == 200) {
+            
+            } else {
+            }
+      })
+      .catch((err) => {
+      })
+    },
+
     // 任务集名称点击事件
     taskSetNameClickEvent (item,index) {
         this.taskSetNameIndex = index;
@@ -250,7 +328,13 @@ export default {
             taskSite: item,
             isClockIn: currentTimeData[item][0]['isClockIn'],
             taskContentList: currentTimeData[item]
-        })})
+        })});
+        let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
+        temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
+        temporaryDevicePatrolDetailsSelectMessage['selectTaskSetId'] = this.currentTaskSetId;
+        temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.taskSetTime;
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
+        this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage)
     },
 
     // 时间tab切换事件
@@ -264,12 +348,19 @@ export default {
             taskSite: item,
             isClockIn: currentTimeData[item][0]['isClockIn'],
             taskContentList: currentTimeData[item]
-        })})
+        })});
+        let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
+        temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
+        temporaryDevicePatrolDetailsSelectMessage['selectTaskSetId'] = this.currentTaskSetId;
+        temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.taskSetTime;
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
+        this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
     },
 
     // 日期图标点击事件
     dateClickEvent () {
         let temporaryDate = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
+        console.log('日期',temporaryDate);
         this.showDate = this.getNowFormatDate(new Date(temporaryDate),'month');
         this.initCalendarData(this.getNowFormatDate(new Date(temporaryDate),'month'))
     },
@@ -386,7 +477,12 @@ export default {
                         if (isClickDay) {
                             this.timeTabIndex = this.timeList.indexOf(this.disposeTime(this.timeList));
                             this.taskSetTime = this.disposeTime(this.timeList);
-                            this.showDate = this.devicePatrolDetailsSelectMessage['showDate']
+                            this.showDate = this.devicePatrolDetailsSelectMessage['showDate'];
+                            let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
+                            temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
+                            temporaryDevicePatrolDetailsSelectMessage['selectTaskSetId'] = this.currentTaskSetId;
+                            temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.disposeTime(this.timeList);
+                            this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
                         } else {
                             this.echoSelectMessage();
                             // 回显存储之前选中的时间点
@@ -468,6 +564,7 @@ export default {
         this.currentTaskItemMessage = item;
         console.log('任务打卡信息',item,index)
         // this.scanQRCode()
+        this.alterationTaskClockStatus(this.currentTaskItemMessage)
     },
 
     // 扫描二维码方法
@@ -486,6 +583,7 @@ export default {
                         taskId: this.currentTaskItemMessage['taskContentList'][0]['checkTaskId'],
                         workerId: this.userInfo.id,
                         workerName: this.userInfo.name,
+                        taskSite: this.currentTaskItemMessage['taskSite'],
                         deviceList: []
                     };
                     for (let item of this.currentTaskItemMessage['taskContentList']) {
@@ -522,29 +620,88 @@ export default {
 
     // 巡检任务打卡
     patrolTaskPunchCardEvent (data) {
-        this.loadingShow = true;
-        this.overlayShow = true;
-		patrolTaskPunchCard(data)
-        .then((res) => {
-            this.loadingShow = false;
-            this.overlayShow = false;
-            if (res && res.data.code == 200) {
+    //     this.loadingShow = true;
+    //     this.overlayShow = true;
+	// 	patrolTaskPunchCard(data)
+    //     .then((res) => {
+    //         this.loadingShow = false;
+    //         this.overlayShow = false;
+    //         if (res && res.data.code == 200) {
                
-            } else {
-                this.$toast({
-                    type: 'fail',
-                    message: res.data.msg
-                })
-            }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
+    //         } else {
+    //             this.$toast({
+    //                 type: 'fail',
+    //                 message: res.data.msg
+    //             })
+    //         }
+    //   })
+    //   .catch((err) => {
+    //     this.loadingShow = false;
+    //     this.overlayShow = false;
+    //     this.$toast({
+    //       type: 'fail',
+    //       message: err
+    //     })
+    //   })
+        // 此时为没网环境，直接在本地将该任务变更为已打卡
+        this.alterationTaskClockStatus(data)
+    },
+
+    // 本地变更任务打卡状态
+    alterationTaskClockStatus(data) {
+        // 获取存储的任务整体数据
+        let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        console.log('打拉搜',temporaryIndex);
+        this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
+        // 获取当前任务集的时间点集合,做升序处理
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+        this.echoSelectMessage();
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+        // 判断之前有没有存储选中的时间信息
+        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+        // 变更当前任务打卡状态为已打卡
+        let temporaryDataOne = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
+        let temporaryDataTwo = temporaryDataOne[this.taskSetNameIndex]['deviceListByTime'][this.taskSetTime][data.taskSite];
+        temporaryDataTwo.forEach((item) => {item.isClockIn = 1});
+        // 将变更任务打卡状态保存到本地
+        let storeIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        casuallyTemporaryStoragePatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+        this.changePatrolTaskListMessage(casuallyTemporaryStoragePatrolTaskListMessage);
+        this.getNeedTaskSetData()
+    },
+
+    // 获取任务集下需要展示的数据
+    getNeedTaskSetData () {
+        // 获取存储的任务整体数据
+        let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
+        // 获取当前任务集的时间点集合,做升序处理
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+        this.echoSelectMessage();
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+        // 判断之前有没有存储选中的时间信息
+        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+        // 处理当前展示的任务数据结构
+        this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
+        let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
+        this.currentTaskList = [];
+        Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
+            taskSite: item,
+            isClockIn: currentTimeData[item][0]['isClockIn'],
+            taskContentList: currentTimeData[item]
+        })})
     },
 
     // 获取当前日期(-)
@@ -622,6 +779,7 @@ export default {
 
     // 点击进入设备检查单事件
     equipmentChecklistEvent (item,innerItem,innerIndex) {
+        console.log('测试数据',innerItem);
         if (item.isClockIn == 0) { return };
         let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
         temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
@@ -886,12 +1044,12 @@ export default {
                                 color: #101010;
                                 flex: 1;
                                 margin-right: 6px;
-                                .equipmentNoCompleteStyle {
-                                    background: #F8CFAD
-                                };
-                                .equipmentCompletedStyle {
-                                    background: #C5E5E0
-                                }
+                            };
+                            .equipmentNoCompleteStyle {
+                                background: #F8CFAD
+                            };
+                            .equipmentCompletedStyle {
+                                background: #C5E5E0
                             };
                             .operation-icon-box {
                                 width: 70px;

@@ -175,10 +175,11 @@ export default {
     deleteEventListEvent (itemValue) {
       let temporaryPatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
       temporaryPatrolTaskAbnormalRecordList = temporaryPatrolTaskAbnormalRecordList.filter((item) => {
-        return item.storeId != itemValue.storeId &&
-        item.showDate ==  this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
-        item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == this.patrolTaskAbnormalCheckItemEventList.typeId && 
-        item.extendData.checkItemId == this.patrolTaskAbnormalCheckItemEventList.itemId && item.checkResultId == this.patrolTaskAbnormalCheckItemEventList.resultId
+        return item.storeId != itemValue.storeId
+        // return item.storeId != itemValue.storeId &&
+        // item.showDate ==  this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
+        // item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == this.patrolTaskAbnormalCheckItemEventList.typeId && 
+        // item.extendData.checkItemId == this.patrolTaskAbnormalCheckItemEventList.itemId && item.checkResultId == this.patrolTaskAbnormalCheckItemEventList.resultId
       });
       this.changePatrolTaskAbnormalRecordList(temporaryPatrolTaskAbnormalRecordList);
       this.getData()
