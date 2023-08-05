@@ -18,7 +18,7 @@ export function getDefaultLoginState() {
 // 巡检任务模块store的初始值
 export function getDefaultPatrolTaskState() {
     return {
-        patrolTaskListMessage: {}, //巡查任务列表信息
+        patrolTaskListMessage: [], //巡查任务列表信息
         currentElectronicSignature: null, // 工单完成时的签名信息
         originalSignature: null, // 工单完成时原始签名信息
         enterPatrolAbnormalRecordPageSource: '',

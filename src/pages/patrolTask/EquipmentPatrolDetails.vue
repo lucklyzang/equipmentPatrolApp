@@ -55,11 +55,11 @@
                         </div>
                         <div class="backlog-task-content">
                             <div class="equipment-name-list" @click="equipmentChecklistEvent(item,innerItem,innerIndex)" v-for="(innerItem,innerIndex) in item.taskContentList" :key="innerIndex">
-                                <div class="equipment-name" :class="{'equipmentNoCompleteStyle' : item.isClockIn == 1}">
+                                <div class="equipment-name" :class="{'equipmentNoCompleteStyle' : item.isClockIn == 1 && !innerItem.isAllCheck,'equipmentCompletedStyle':item.isClockIn == 1 && innerItem.isAllCheck}">
                                     {{ `${innerItem.deviceName} ${innerItem.norms}` }}
                                 </div>
                                 <div class="operation-icon-box">
-                                    <img :src="uploadingFailPng" alt="">
+                                    <img :src="innerItem.deviceUploadState == 1 ? uploadingGif : innerItem.deviceUploadState == 2 ? uploadingFailPng : innerItem.deviceUploadState == 3 ? uploadingSuccessPng : '' " @click.stop="againUploadEvent(item,innerItem,innerIndex)" alt="">
                                 </div>
                             </div>
                         </div>
@@ -230,6 +230,7 @@ export default {
             this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
             this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
             let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
+            this.currentTaskList = [];
             Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
                 taskSite: item,
                 isClockIn: currentTimeData[item][0]['isClockIn'],
@@ -256,7 +257,6 @@ export default {
         this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
         this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
         let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
-        console.log('当前需要的数据',currentTimeData);
         Object.keys(currentTimeData).forEach((item,index) => { 
             currentTimeData[item].forEach((innerItem,innerIndex) => {
                 console.log('sas1',item,innerItem);
@@ -271,11 +271,11 @@ export default {
                     depId: innerItem.depId,
                     depName: innerItem.depName,
                     remark: innerItem.remark,
-                    collectId: this.devicePatrolDetailsSelectMessage.selectTaskSetId,
+                    collectId: this.currentTaskSetId,
                     proId: this.userInfo.proIds[0],
                     system: 9,
                     workerName: this.userInfo.name,
-                    deviceChecklistRemarkId: this.patrolTaskDeviceChecklist.deviceChecklistRemarkId,
+                    deviceChecklistRemarkId: innerItem.deviceChecklistRemarkId,
                     checkResultDtoList: [],
                     allDevicesByCurrent: []
                 };
@@ -290,25 +290,103 @@ export default {
                         depName: innerItem['depName'],
                         structId: innerItem['structId'],
                         structName: innerItem['structName']
-                    })
-                };
-                console.log('数据',submitData)
-                this.batchSubmitCheckItem(item,innerItem,submitData)    
+                    });
+                    this.batchSubmitCheckItem(item,innerItem,submitData)  
+                }
             })
         })
     },
 
+    // 点击失败图标重新上传事件
+    againUploadEvent (itemA,innerItemB,innerIndex) {
+        if (innerItemB.deviceUploadState == 2) {
+            let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+            let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+            // 获取当前任务集的时间点集合,做升序处理
+            this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+            this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+            this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+            this.echoSelectMessage();
+            this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+            this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+            this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+            // 判断之前有没有存储选中的时间信息
+            this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+            this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+            let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
+            currentTimeData[itemA['taskSite']].forEach((item) => {
+                if (item.deviceId == innerItemB['deviceId']) {
+                    // 拼接上传的数据
+                    let submitData = {
+                        taskId: innerItemB.checkTaskId,
+                        deviceId: innerItemB.deviceId,
+                        deviceName: innerItemB.deviceName,
+                        norms: innerItemB.norms,
+                        structId: innerItemB.structId,
+                        structName: innerItemB.structName,
+                        depId: innerItemB.depId,
+                        depName: innerItemB.depName,
+                        remark: innerItemB.remark,
+                        collectId: this.currentTaskSetId,
+                        proId: this.userInfo.proIds[0],
+                        system: 9,
+                        workerName: this.userInfo.name,
+                        deviceChecklistRemarkId: innerItemB.deviceChecklistRemarkId,
+                        checkResultDtoList: [],
+                        allDevicesByCurrent: []
+                    };
+                    submitData['checkResultDtoList'] = innerItemB['checkResultDtoList'];
+                    submitData['allDevicesByCurrent'].push({
+                        id: innerItemB['deviceId'],
+                        name: innerItemB['deviceName'],
+                        norms: innerItemB['norms'],
+                        depId: innerItemB['depId'],
+                        depName: innerItemB['depName'],
+                        structId: innerItemB['structId'],
+                        structName: innerItemB['structName']
+                    });
+                    this.batchSubmitCheckItem(itemA['taskSite'],innerItemB,submitData)  
+                }
+            })
+        }
+    },
+
     // 批量提交检查项
     batchSubmitCheckItem(item,innerItem,paramsData) {
-		submitCheckItem(paramsData)
-        .then((res) => {
-            if (res && res.data.code == 200) {
-            
-            } else {
-            }
-      })
-      .catch((err) => {
-      })
+        // 为当前设备设置上传状态deviceUploadState: 1-上传中 2-上传失败 3-上传成功
+        // 获取当前任务集的时间点集合,做升序处理
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+        this.echoSelectMessage();
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+        // 判断之前有没有存储选中的时间信息
+        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+        let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)})[0]['content'];
+        let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.taskSetName})[0];
+        let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.taskSetTime][item];
+        let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.taskSetName});
+        let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == innerItem.deviceId});
+        temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 1;
+        let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+        this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+        // 初始展示最新数据
+        this.disposeInitialData();
+        console.log('最新数据',this.currentTaskList);
+		// submitCheckItem(paramsData)
+        // .then((res) => {
+        //     if (res && res.data.code == 200) {
+                
+        //     } else {
+        //     }
+        // })
+        // .catch((err) => {
+        // })
     },
 
     // 任务集名称点击事件
