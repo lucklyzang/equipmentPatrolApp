@@ -67,7 +67,7 @@
                 </div>    
             </div>
             <div class="complete-btn-box">
-                <div class="complete-btn" @click="completeTaskEvent">完成任务</div>
+                <div class="complete-btn" :class="{'completeBtnStyle': isAllUpload}" @click="completeTaskEvent">完成任务</div>
             </div>
         </div>
     </div> 
@@ -93,19 +93,19 @@ export default {
       loadingShow: false,
       calendarShow: false,
       overlayShow: false,
-      taskSetNameIndex: 0,
+      isAllUpload: false,
       showDate: this.getNowFormatDate(new Date(),'month'),
-      temporaryShowDate: new Date(),
-      taskSetTime: '',
-      taskSetName: '',
       currentTaskItemMessage: '',
       currentTaskSetId: '',
       timeTabIndex: 0,
+      taskSetTime: '',
+      taskSetName: '',
+      taskSetNameIndex: 0,
+      allPatrolTaskDetailsData: [],
+      timeList: [],
       noCompleteTaskDateList: [],
       hasTaskDate: [],
       completeTaskDateList: [],
-      allPatrolTaskDetailsData: [],
-      timeList: [],
       currentTaskList: [],
       calendarPng: require("@/common/images/home/calendar-other.png"),
       totalCount: '',
@@ -163,9 +163,15 @@ export default {
     next(vm=>{
         // 处理初始展示数据
         vm.disposeInitialData()
-        if (from.path == '/equipmentChecklist') {
-        // 从设备检查单界面进来时,则判断是否有检查完需要上传的检查单
-        vm.judgeIsHaveNeedUploadCheckList()
+        if (from.path == '/equipmentChecklist' || from.path == '/patrolTaskElectronicSignaturePage') {
+            // 从设备检查单界面进来时,则判断是否有检查完需要上传的检查单
+            vm.judgeIsHaveNeedUploadCheckList();
+            vm.judgeCurrentTaskAllCheckIsUpload()
+        } else {
+            if (vm.patrolTaskListMessage.length > 0) {
+                vm.judgeIsHaveNeedUploadCheckList();
+                vm.judgeCurrentTaskAllCheckIsUpload()
+            }
         }
 	});
     next() 
@@ -181,14 +187,12 @@ export default {
     ...mapMutations(["changePatrolTaskListMessage","changePatrolTaskDeviceChecklist","changeDevicePatrolDetailsSelectMessage"]),
 
     clickDay(data) {
-        this.temporaryShowDate = data;
         let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
-        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(data),'day');
         this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
         this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(data),'day'),true)
     },
     changeDate(data) {
-       this.temporaryShowDate = data;
        this.initCalendarData(this.getNowFormatDate(new Date(data),'month'))
     },
     clickToday(data) {
@@ -231,12 +235,26 @@ export default {
             this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
             let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
             this.currentTaskList = [];
+            console.log('当前数据',currentTimeData);
             Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
                 taskSite: item,
                 isClockIn: currentTimeData[item][0]['isClockIn'],
                 taskContentList: currentTimeData[item]
             })})
         }  
+    },
+
+    // 判断当前任务集下的任务的检查单是否全部上传成功
+    judgeCurrentTaskAllCheckIsUpload () {
+        for (let i = 0,len = this.currentTaskList.length;i<len;i++) {
+            for (let innerI = 0,innerLen = this.currentTaskList[i]['taskContentList'].length;innerI<innerLen;innerI++) {
+                if (!this.currentTaskList[i]['taskContentList'][innerI]['deviceUploadState'] || this.currentTaskList[i]['taskContentList'][innerI]['deviceUploadState'] == 1 || this.currentTaskList[i]['taskContentList'][innerI]['deviceUploadState'] == 2) {
+                    this.isAllUpload = false
+                    break;
+                };
+                this.isAllUpload = true
+            }
+        }
     },
 
     // 判断是否有需要上传的检查单
@@ -279,8 +297,8 @@ export default {
                     checkResultDtoList: [],
                     allDevicesByCurrent: []
                 };
-                // 检查单都检查完毕后,才允许上传
-                if (innerItem['isAllCheck']) {
+                // 检查单都检查完毕并且有修改,才允许上传
+                if (innerItem['isAllCheck'] && innerItem['isHaveChanged']) {
                     submitData['checkResultDtoList'] = innerItem['checkResultDtoList'];
                     submitData['allDevicesByCurrent'].push({
                         id: innerItem['deviceId'],
@@ -375,22 +393,36 @@ export default {
         let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
         temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
         this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
-        // 初始展示最新数据
-        this.disposeInitialData();
-        console.log('最新数据',this.currentTaskList);
+        this.getNeedTaskSetData();
+        console.log('最新数据',paramsData);
+        this.judgeCurrentTaskAllCheckIsUpload()
 		// submitCheckItem(paramsData)
         // .then((res) => {
         //     if (res && res.data.code == 200) {
-                
+                // 上传成功的设备，将其下的是否修改字段isHaveChanged改为false，防止下次没有修改修改检查结果或备注时，回到该界面或点击任务集和时间点切换后重复上传此设备检查单
+                temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 3;
+                temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['isHaveChanged'] = false;
+                temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+                this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+                this.getNeedTaskSetData();
         //     } else {
+                    // temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
+                    // temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+                    // this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+                    // this.getNeedTaskSetData()
         //     }
         // })
         // .catch((err) => {
+            // temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
+            // temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+            // this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+            // this.getNeedTaskSetData()
         // })
     },
 
     // 任务集名称点击事件
     taskSetNameClickEvent (item,index) {
+        this.isAllUpload = false;
         this.taskSetNameIndex = index;
         this.taskSetName = item.configName;
         this.currentTaskList = [];
@@ -411,12 +443,15 @@ export default {
         temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
         temporaryDevicePatrolDetailsSelectMessage['selectTaskSetId'] = this.currentTaskSetId;
         temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.taskSetTime;
-        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
-        this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage)
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
+        this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
+        this.judgeCurrentTaskAllCheckIsUpload();
+        this.judgeIsHaveNeedUploadCheckList()
     },
 
     // 时间tab切换事件
     timeTabClickEvent (item,index) {
+        this.isAllUpload = false;
         this.timeTabIndex = index;
         this.taskSetTime = item;
         this.currentTaskList = [];
@@ -431,8 +466,11 @@ export default {
         temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
         temporaryDevicePatrolDetailsSelectMessage['selectTaskSetId'] = this.currentTaskSetId;
         temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.taskSetTime;
-        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
+        console.log('当前时间',this.devicePatrolDetailsSelectMessage.showDate);
         this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
+        this.judgeCurrentTaskAllCheckIsUpload();
+        this.judgeIsHaveNeedUploadCheckList()
     },
 
     // 日期图标点击事件
@@ -441,11 +479,6 @@ export default {
         console.log('日期',temporaryDate);
         this.showDate = this.getNowFormatDate(new Date(temporaryDate),'month');
         this.initCalendarData(this.getNowFormatDate(new Date(temporaryDate),'month'))
-    },
-
-    // 完成任务事件
-    completeTaskEvent () {
-        this.$router.push({path: '/patrolTaskElectronicSignaturePage'})
     },
 
     // 任务状态转换
@@ -510,8 +543,7 @@ export default {
                 content: messageContent
             })
       };
-      this.changePatrolTaskListMessage(casuallyTemporaryStoragePatrolTaskListMessage);
-      console.log('村上',casuallyTemporaryStoragePatrolTaskListMessage);
+      this.changePatrolTaskListMessage(casuallyTemporaryStoragePatrolTaskListMessage)
     },
 
     // 获取巡检任务详情
@@ -548,7 +580,9 @@ export default {
                             taskSite: item,
                             isClockIn: currentTimeData[item][0]['isClockIn'],
                             taskContentList: currentTimeData[item]
-                        })})
+                        })});
+                        this.judgeIsHaveNeedUploadCheckList();
+                        this.judgeCurrentTaskAllCheckIsUpload()
                     } else {
                         // 获取当前任务集的时间点集合,做升序处理
                         this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
@@ -573,7 +607,9 @@ export default {
                             taskSite: item,
                             isClockIn: currentTimeData[item][0]['isClockIn'],
                             taskContentList: currentTimeData[item]
-                        })})
+                        })});
+                        this.judgeIsHaveNeedUploadCheckList();
+                        this.judgeCurrentTaskAllCheckIsUpload()
                     }
                 } else {
                     this.isShowNoMoreData = true
@@ -857,7 +893,6 @@ export default {
 
     // 点击进入设备检查单事件
     equipmentChecklistEvent (item,innerItem,innerIndex) {
-        console.log('测试数据',innerItem);
         if (item.isClockIn == 0) { return };
         let temporaryDevicePatrolDetailsSelectMessage =  _.cloneDeep(this.devicePatrolDetailsSelectMessage);
         temporaryDevicePatrolDetailsSelectMessage['selectTaskSet'] = this.taskSetName;
@@ -865,10 +900,23 @@ export default {
         temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.taskSetTime;
         temporaryDevicePatrolDetailsSelectMessage['taskSite'] = item.taskSite;
         temporaryDevicePatrolDetailsSelectMessage['deviceId'] = innerItem['deviceId'];
-        temporaryDevicePatrolDetailsSelectMessage['showDate'] = this.getNowFormatDate(new Date(this.temporaryShowDate),'day');
+        temporaryDevicePatrolDetailsSelectMessage['showDate'] = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
         this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
         this.changePatrolTaskDeviceChecklist(innerItem);
         this.$router.push('/equipmentChecklist')
+    },
+
+    // 完成任务事件
+    completeTaskEvent () {
+        if (this.isAllUpload) {
+            this.$router.push({
+                path:'/patrolTaskElectronicSignaturePage',
+                query: {
+                    taskId : this.currentTaskList[0]['taskContentList'][0]['checkTaskId'],
+                    date: JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate
+                }
+            })
+        }
     }
   }
 };
@@ -1169,7 +1217,8 @@ export default {
             };
             .completeBtnStyle {
                 background: linear-gradient(to right, #6cd2f8, #2390fe) !important;
-                box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1) !important
+                box-shadow: 0px 2px 6px 0 rgba(36, 149, 213, 1) !important;
+                color: #fff !important
             }
         }
     }

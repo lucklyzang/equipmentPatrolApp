@@ -40,7 +40,7 @@ import ElectronicSignature from '@/components/ElectronicSignature'
 import { mapGetters, mapMutations } from "vuex";
 import { taskComplete } from '@/api/escortManagement.js'
 import {getAliyunSign} from '@/api/login.js'
-import { base64ImgtoFile } from '@/common/js/utils'
+import { base64ImgtoFile,arrDateTimeSort } from '@/common/js/utils'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 import axios from 'axios'
 export default {
@@ -58,6 +58,13 @@ export default {
       loadText: '提交中',
       fromPathSource: '',
       imgOnlinePathArr: [],
+      currentTaskSetId: '',
+      timeTabIndex: 0,
+      taskSetTime: '',
+      taskSetName: '',
+      taskSetNameIndex: 0,
+      allPatrolTaskDetailsData: [],
+      timeList: []
     }
   },
 
@@ -67,6 +74,8 @@ export default {
     // this.$nextTick(()=> {
     //   this.resizeScreen()
     // })
+    this.addSuccessSign();
+    console.log('任务id',this.$route.query.date)
   },
 
   beforeRouteEnter(to, from, next) {
@@ -79,11 +88,11 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","currentElectronicSignature","patrolTaskListMessage","ossMessage","timeMessage","originalSignature"])
+    ...mapGetters(["userInfo","currentElectronicSignature","patrolTaskListMessage","ossMessage","timeMessage","originalSignature","devicePatrolDetailsSelectMessage"])
   },
 
   methods: {
-    ...mapMutations(["changeOssMessage","changeTimeMessage"]),
+    ...mapMutations(["changeOssMessage","changeTimeMessage","changePatrolTaskListMessage"]),
 
 
     resizeScreen() {
@@ -155,7 +164,7 @@ export default {
       };
       // 完成任务接口
       taskComplete({
-        taskId: this.patrolTaskListMessage.id, // 当前任务id
+        taskId: this.$route.query.taskId, // 当前任务id
         signImage: this.imgOnlinePathArr[0], // 签名路径
         workerName: this.userInfo.name // 当前登陆员工
       }).then((res) => {
@@ -261,12 +270,105 @@ export default {
       })
     },
 
+    // 获取当前日期(-)
+    getNowFormatDate(currentDate,type) {
+        let currentdate;
+        let strDate;
+        let seperator1 = "-";
+        let month = currentDate.getMonth() + 1;
+        strDate = currentDate.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        };
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        };
+        if ( type == 'month') {
+            currentdate = currentDate.getFullYear() + seperator1 + month
+        } else {
+            currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+        };
+        return currentdate
+    },
+
+    // 拼接完整时间
+    getFullDate(hourTime) {
+      let currentdate;
+      let strDate;
+      let seperator1 = "-";
+      let month = new Date().getMonth() + 1;
+      strDate = new Date().getDate();
+      if (month >= 1 && month <= 9) {
+          month = "0" + month;
+      };
+      if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+      };
+      currentdate = new Date().getFullYear() + seperator1 + month + seperator1 + strDate
+      return currentdate + ' ' + hourTime
+    },
+
+    // 获取当前离任务开始时间最近的时间点
+    disposeTime (item) {
+      if (Object.prototype.toString.call(item) === '[object Array]') {
+        if (item.length > 0) {
+          let temporaryArr = [];
+          if (item.length == 1) { temporaryArr.push(item[item.length-1]);return temporaryArr.join(',') };
+          // 当当前时间大于或等于开始时间集合里最大的时间(时间集合的最后一位)时,就显示开始时间集合里最大的时间
+          if (new Date().getTime() >= new Date(this.getFullDate(item[item.length-1])).getTime()) {
+            temporaryArr.push(item[item.length-1])
+          } else {        
+            for (let i=0, len = item.length; i<len; i++) {
+              if (i > 0) {
+                if (new Date().getTime() < new Date(this.getFullDate(item[i])).getTime()) {
+                  temporaryArr.push(item[i-1])
+                  break
+                }
+              }    
+            }
+          };
+          return temporaryArr.join(',')
+        }
+      }
+    },
+
+    echoSelectMessage () {
+      this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+      this.timeTabIndex = this.timeList.indexOf(this.devicePatrolDetailsSelectMessage['selectTime'])
+    },
+
+    // 为提交成功的任务添加成功标记
+    addSuccessSign () {
+        let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let temporaryIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        // 从store中取存储过的当前巡检任务信息
+        this.allPatrolTaskDetailsData = temporaryPatrolTaskListMessage[temporaryIndex]['content'];
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+        this.echoSelectMessage();
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+        // 判断之前有没有存储选中的时间信息
+        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+        let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)})[0]['content'];
+        let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.taskSetName});
+        Object.keys(temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime]).forEach((item) => {
+          temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item].forEach((item) => {
+            item['isTaskComplete'] = true
+          })
+        });
+        let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+        this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+    },
+
     // 签名取消
     cancel () {
       this.$refs.mychild.overwrite();
-      this.$router.push({
-        path: `${this.fromPathSource}`
-      })
+      this.$router.push({path: '/equipmentPatrolDetails'})
     },
   }
 };

@@ -316,6 +316,8 @@ export default {
       temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['checkResultDtoList'] = checkResultDtoList;
       // 为该设备添加是否全部勾选的字段,方便设备详情页判断该设备下的检查单是否可以提交
       temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['isAllCheck'] = true;
+      // 为该设备添加是否修改字段,方便设备详情页判断该设备下的检查单是否可以再次提交
+      temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['isHaveChanged'] = true;
       let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
       temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
       this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
