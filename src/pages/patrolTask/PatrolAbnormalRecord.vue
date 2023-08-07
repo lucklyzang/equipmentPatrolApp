@@ -35,9 +35,27 @@
         <div class="photo-cancel" @click="photoCancel">取消</div>
       </div>
     </transition>
+    <transition name="van-slide-up">
+      <div class="choose-photo-box" v-show="videoBox">
+        <div class="choose-photo">
+          <van-icon name="photo" />
+          <input name="uploadImg1" ref="inputFileThree" id="demo3" @change="previewFileThree" type="file" accept="video/mp4"/>从图库中选择
+        </div>
+        <div class="photo-graph">
+          <van-icon name="photograph" />
+          <input name="uploadImg2" ref="inputFileFour" id="demo4"  @change="previewFileFour" type="file" accept="video/mp4" capture="camcorder" />拍摄
+        </div>
+        <div class="photo-cancel" @click="videoCancel">取消</div>
+      </div>
+    </transition>
     <van-dialog v-model="deleteInfoDialogShow" title="确定删除此图片?" 
       confirm-button-color="#218FFF" show-cancel-button
       @confirm="sureDeleteEvent"
+      >
+    </van-dialog>
+    <van-dialog v-model="deleteVideoInfoDialogShow" title="确定删除此视频?" 
+      confirm-button-color="#218FFF" show-cancel-button
+      @confirm="sureDeleteVideoEvent"
       >
     </van-dialog>
     <!-- 退出提示框   -->
@@ -61,7 +79,17 @@
         <van-dialog v-model="imgBoxShow" width="98%" :close-on-click-overlay="true" confirm-button-text="关闭">
             <img :src="currentImgUrl" />
         </van-dialog> 
-    </div>  
+    </div>
+    
+    <div class="img-dislog-box">
+        <van-dialog v-model="videoBoxShow" width="98%" :close-on-click-overlay="true" confirm-button-text="关闭">
+          <video controls
+            width="100%"
+            :src="currentVideoUrl"
+            poster="">
+          </video>
+        </van-dialog> 
+    </div>    
     <van-loading size="35px" vertical color="#e6e6e6" v-show="loadingShow">{{loadingText}}</van-loading>
     <van-overlay :show="overlayShow" z-index="100000" />
     <!-- 异常类型 -->
@@ -180,6 +208,7 @@
             </div>
           </div>
           <div class="result-picture">
+            <div class="title-picture">图片</div>
             <div class="image-list">
                 <div v-for="(item, index) in problemPicturesList" :key='index'>
                     <img :src="item" @click="enlareEvent(item)" />
@@ -191,6 +220,28 @@
                     </div>
                 </div>
                 <div @click="issueClickEvent">
+                    <van-icon name="plus" size="30" color="#101010" />
+                </div>
+            </div>
+         </div>
+         <div class="result-picture">
+            <div class="title-picture">视频</div>
+            <div class="image-list">
+                <div v-for="(item, index) in problemVideosList" :key='index' @click="enlareVideoEvent(item)">
+                  <video
+                    width="100%"
+                    height="70px"
+                    :src="item"
+                    poster="">
+                  </video>
+                    <div class="icon-box" @click.stop="issueVideoDelete(index,item)">
+                        <van-icon
+                        name="delete"
+                        color="#d70000"
+                        />
+                    </div>
+                </div>
+                <div @click="issueVideoClickEvent">
                     <van-icon name="plus" size="30" color="#101010" />
                 </div>
             </div>
@@ -231,6 +282,7 @@ import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
 import ScrollSelection from "@/components/ScrollSelection";
 import BottomSelect from "@/components/BottomSelect";
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 export default {
   name: "PatrolAbnormalRecord",
   components: {
@@ -241,22 +293,30 @@ export default {
   data() {
     return {
       loadingShow: false,
+      msg: null,
       quitInfoShow: false,
       showFindTime: false,
       problemPicturesList: [],
+      problemVideosList: [],
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 10, 1),
       currentFindTime: new Date(),
       currentImgUrl: '',
+      currentVideoUrl: '',
       photoBox: false,
+      videoBox: false,
       imgBoxShow: false,
+      videoBoxShow: false,
       imgIndex: '',
+      videoIndex: '',
       checkResultId: '',
       imgOnlinePathArr: [],
       imgDeleteUrlArr: [],
       existOnlineImgPath: [],
       imgDeleteUrl: '',
+      videoDeleteUrl: '',
       deleteInfoDialogShow: false,
+      deleteVideoInfoDialogShow: false,
       loadingText: '加载中...',
       problemOverview: '',
       taskDescribe: '',
@@ -382,17 +442,33 @@ export default {
       this.imgBoxShow = true
     },
 
+    // 视频放大播放事件
+    enlareVideoEvent (item) {
+      this.currentVideoUrl = item;
+      this.videoBoxShow = true
+    },
+
     // 拍照点击
     issueClickEvent () {
-      if (this.problemPicturesList.length >= 5) {
-        this.$toast('至多只能上传5张图片!');
+      if (this.problemPicturesList.length + this.problemVideosList.length >= 9) {
+        this.$toast('至多总共只能上传9张图片或视频!');
         return
       };
       this.photoBox = true;
       this.overlayShow = true
     },
 
-    // 确定删除提示框确定事件
+    // 拍摄点击
+    issueVideoClickEvent () {
+      if (this.problemVideosList.length >= 9) {
+        this.$toast('至多总共只能上传9张图片或视频!');
+        return
+      };
+      this.videoBox = true;
+      this.overlayShow = true
+    },
+
+    // 确定删除图片提示框确定事件
     sureDeleteEvent () {
       this.imgDeleteUrlArr.push(this.imgDeleteUrl);
       this.problemPicturesList.splice(this.imgIndex, 1);
@@ -401,8 +477,12 @@ export default {
         if (temporaryIndex > -1) {
           this.existOnlineImgPath.splice(this.existOnlineImgPath.indexOf(item),1)
         }
-      };
-      console.log('sas1',this.problemPicturesList,this.existOnlineImgPath);
+      }
+    },
+
+    // 确定删除视频提示框事件
+    sureDeleteVideoEvent () {
+      this.problemVideosList.splice(this.videoIndex, 1)
     },
 
     // 拍照照片删除
@@ -410,6 +490,13 @@ export default {
       this.deleteInfoDialogShow = true;
       this.imgIndex = index;
       this.imgDeleteUrl = item
+    },
+
+    // 视频删除
+    issueVideoDelete (index,item) {
+      this.deleteVideoInfoDialogShow = true;
+      this.videoIndex = index;
+      this.videoDeleteUrl = item
     },
 
     // 回显暂存的信息
@@ -582,9 +669,89 @@ export default {
       };
     },
 
+    // 视频上传预览
+    previewFileThree () {
+      let file = document.getElementById("demo3").files[0];
+      this.temporaryFile = file;
+      let _this = this;
+      let reader = new FileReader();
+      let isLt2M = file.size/1024/1024 < 16;
+      if (!isLt2M) {
+        this.$dialog.alert({
+          message: '上传视频大小不能超过16MB!',
+          closeOnPopstate: true
+        }).then(() => {
+        })
+        return
+      };  
+      reader.addEventListener("load", function () {
+        _this.videoBox = false;
+        _this.overlayShow = false;
+        let result = reader.result;
+        _this.problemVideosList.push(result);
+        _this.$refs.inputFileThree.value = null;
+        console.log('资源3',result)
+      }, false);
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    },
+
+    // 视频拍摄预览
+    async previewFileFour () {
+      let file = document.getElementById("demo4").files[0];
+      this.temporaryFile = file;
+      let _this = this;
+      let reader = new FileReader();
+      let isLt2M = file.size/1024/1024 < 16;
+      if (!isLt2M) {
+        this.$dialog.alert({
+          message: '上传视频大小不能超过16MB!',
+          closeOnPopstate: true
+        }).then(() => {
+        })
+        return
+      };  
+      const ffmpeg = createFFmpeg({
+        log: true,
+        progress: ({ ratio }) => {
+          _this.msg = `完成率: ${(ratio * 100.0).toFixed(2)}%`;
+        }
+      });
+      let { name } = file;
+      this.msg = '正在加载 ffmpeg-core.js'
+      await ffmpeg.load();
+      this.msg = "开始压缩";
+      ffmpeg.FS('writeFile', name, await fetchFile(e.target.files[0]));
+      await ffmpeg.run('-i', name, '-b', '2000000', 'put.mp4');
+      this.msg = '压缩完成';
+      const data = ffmpeg.FS('readFile', 'put.mp4');
+      const video = document.getElementById('video');
+      video.src = URL.createObjectURL(new Blob([data.buffer], {
+        type: 'video/mp4'
+      }))
+        // _this.videoBox = false;
+        // _this.overlayShow = false;
+        // let result = reader.result;
+        // _this.problemVideosList.push(result);
+        // _this.$refs.inputFileFour.value = null;
+        // console.log('资源4',result)
+    ;
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    },
+
+
     // 拍照取消
     photoCancel () {
       this.photoBox = false;
+      this.overlayShow = false
+    },
+
+    // 拍摄视频取消
+    videoCancel () {
+      this.videoBox = false;
       this.overlayShow = false
     },
 
@@ -1358,13 +1525,19 @@ export default {
             }
           };
           .result-picture {
-            padding: 14px 8px;
+            padding: 0 8px 14px 8px;
             margin-top: 6px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             background: #fff;
             justify-content: space-between;
+            .title-picture {
+              font-size: 14px;
+              height: 30px;
+              line-height: 30px;
+              color: #9E9E9A
+            };
             .image-list {
               width: 100%;
               flex-wrap: wrap;
@@ -1372,6 +1545,10 @@ export default {
               >div {
                   width: 23.5%;
                   height: 70px;
+                  video {
+                    width: 100%;
+                    height: 70px;
+                  };
                   vertical-align: top;
                   margin-right: 2%;
                   margin-top: 2%;

@@ -55,6 +55,7 @@ export default {
       overlayShow: false,
       loadingShow: false,
       isExpire: false,
+      isAllTaskComplete: true,
       loadText: '提交中',
       fromPathSource: '',
       imgOnlinePathArr: [],
@@ -75,7 +76,11 @@ export default {
     //   this.resizeScreen()
     // })
     this.addSuccessSign();
-    console.log('任务id',this.$route.query.date)
+    this.judgeCurrentDateTaskIsAllComplete();
+    if (this.isAllTaskComplete) {
+      this.deleteCompleteEntiretyTask()
+    };
+    console.log('任务id',this.$route.query.date,this.patrolTaskListMessage)
   },
 
   beforeRouteEnter(to, from, next) {
@@ -171,6 +176,11 @@ export default {
       if (res && res.data.code == 200) {
         this.loadingShow = false;
         this.overlayShow = false;
+        this.addSuccessSign();
+        this.judgeCurrentDateTaskIsAllComplete();
+        if (this.isAllTaskComplete) {
+          this.deleteCompleteEntiretyTask()
+        };
         this.$router.push({path: '/patrolTasklist'})
       } else {
         this.$toast({
@@ -188,6 +198,35 @@ export default {
       })
     });
     console.log('签名',this.currentElectronicSignature)
+  },
+
+  // 判断当前日期的任务是否全部完成
+  judgeCurrentDateTaskIsAllComplete () {
+    let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+    let temporaryIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+    // 从store中取存储过的当前巡检任务信息
+    this.allPatrolTaskDetailsData = temporaryPatrolTaskListMessage[temporaryIndex]['content'];
+    for (let i = 0,len = this.allPatrolTaskDetailsData.length;i<len;i++) {
+      Object.keys(this.allPatrolTaskDetailsData[i]['deviceListByTime']).forEach((item) => {
+        Object.keys(this.allPatrolTaskDetailsData[i]['deviceListByTime'][item]).forEach((itemTwo) => {
+          for (let innerI = 0,innerLen = this.allPatrolTaskDetailsData[i]['deviceListByTime'][item][itemTwo].length;innerI<innerLen;innerI++) {
+            if (!this.allPatrolTaskDetailsData[i]['deviceListByTime'][item][itemTwo][innerI]['isTaskComplete']) {
+              this.isAllTaskComplete = false;
+              break
+            }
+          }
+        })
+      })
+    };
+    console.log('sa',this.isAllTaskComplete);
+  },
+
+  // 删除所有任务集的任务都完成的存储的所属日期的任务
+  deleteCompleteEntiretyTask () {
+    let currentDate = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
+    let temporaryData = _.cloneDeep(this.patrolTaskListMessage);
+    temporaryData = temporaryData.filter((item) => { return item.date != currentDate });
+    this.changePatrolTaskListMessage(temporaryData)
   },
 
     // 获取阿里云签名接口

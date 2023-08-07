@@ -103,6 +103,21 @@
             </div>
           </div>
           <div class="result-picture">
+            <div class="title-picture">图片</div>
+            <div class="image-list">
+                <div v-for="(item, index) in problemPicturesList" :key='index'>
+                    <img :src="item" @click="enlareEvent(item)" />
+                    <div class="icon-box" @click="issueDelete(index,item)">
+                        <van-icon
+                        name="delete"
+                        color="#d70000"
+                        />
+                    </div>
+                </div>
+            </div>
+         </div>
+         <div class="result-picture">
+            <div class="title-picture">视频</div>
             <div class="image-list">
                 <div v-for="(item, index) in problemPicturesList" :key='index'>
                     <img :src="item" @click="enlareEvent(item)" />
@@ -472,13 +487,19 @@ export default {
             }
           };
           .result-picture {
-            padding: 14px 8px;
+            padding: 0 8px 14px 8px;
             margin-top: 6px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             background: #fff;
             justify-content: space-between;
+            .title-picture {
+              font-size: 14px;
+              height: 30px;
+              line-height: 30px;
+              color: #9E9E9A
+            };
             .image-list {
               width: 100%;
               flex-wrap: wrap;

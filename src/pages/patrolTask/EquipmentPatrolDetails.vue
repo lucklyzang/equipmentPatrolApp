@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="task-content-box">
-                <van-empty description="无巡检任务" v-if="isShowNoMoreData" />
+                <van-empty description="无巡检任务" v-if="isShowNoMoreData || allPatrolTaskDetailsData.length == 0" />
                 <div class="backlog-task-list-box">
                     <div class="backlog-task-list" v-for="(item,index) in currentTaskList" :key="index">
                         <div class="backlog-task-top">
@@ -66,7 +66,7 @@
                     </div>
                 </div>    
             </div>
-            <div class="complete-btn-box">
+            <div class="complete-btn-box" v-if="isShowNoMoreData || allPatrolTaskDetailsData.length > 0">
                 <div class="complete-btn" :class="{'completeBtnStyle': isAllUpload}" @click="completeTaskEvent">完成任务</div>
             </div>
         </div>
@@ -93,7 +93,7 @@ export default {
       loadingShow: false,
       calendarShow: false,
       overlayShow: false,
-      isAllUpload: false,
+      isAllUpload: true,
       showDate: this.getNowFormatDate(new Date(),'month'),
       currentTaskItemMessage: '',
       currentTaskSetId: '',
@@ -124,6 +124,7 @@ export default {
   },
 
   mounted() {
+      console.log('整体数据',this.patrolTaskListMessage);
     // 控制设备物理返回按键
     if (!IsPC()) {
       let that = this;
@@ -161,13 +162,26 @@ export default {
 
   beforeRouteEnter(to, from, next) {
     next(vm=>{
-        // 处理初始展示数据
-        vm.disposeInitialData()
         if (from.path == '/equipmentChecklist' || from.path == '/patrolTaskElectronicSignaturePage') {
             // 从设备检查单界面进来时,则判断是否有检查完需要上传的检查单
-            vm.judgeIsHaveNeedUploadCheckList();
-            vm.judgeCurrentTaskAllCheckIsUpload()
+            if (from.path == '/patrolTaskElectronicSignaturePage') {
+                let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(vm.patrolTaskListMessage);
+                let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(vm.devicePatrolDetailsSelectMessage) == '{}' ? vm.getNowFormatDate(new Date(),'day') : vm.devicePatrolDetailsSelectMessage.showDate)});
+                if (temporaryIndex != -1) {
+                    // 处理初始展示数据
+                    vm.disposeInitialData();
+                    vm.judgeIsHaveNeedUploadCheckList();
+                    vm.judgeCurrentTaskAllCheckIsUpload()
+                }
+            } else {
+                // 处理初始展示数据
+                vm.disposeInitialData();
+                vm.judgeIsHaveNeedUploadCheckList();
+                vm.judgeCurrentTaskAllCheckIsUpload()
+            }
         } else {
+            // 处理初始展示数据
+            vm.disposeInitialData();
             if (vm.patrolTaskListMessage.length > 0) {
                 vm.judgeIsHaveNeedUploadCheckList();
                 vm.judgeCurrentTaskAllCheckIsUpload()
@@ -201,6 +215,22 @@ export default {
     onClickLeft () {
         this.changeDevicePatrolDetailsSelectMessage({});
         this.$router.push({path: '/home'})
+    },
+    // 上传视频
+    previewFileOne() {
+      let file = document.getElementById("demo1").files[0];
+      this.temporaryFile = file;
+      let _this = this;
+      let reader = new FileReader();
+      let isLt2M = file.size/1024/1024 < 16;
+      reader.addEventListener("load", function () {
+        // 压缩图片
+        let result = reader.result;
+        console.log('视频',result)
+      }, false);
+      if (file) {
+        reader.readAsDataURL(file);
+      };
     },
 
     onClickRight () {
@@ -246,13 +276,13 @@ export default {
 
     // 判断当前任务集下的任务的检查单是否全部上传成功
     judgeCurrentTaskAllCheckIsUpload () {
+        this.isAllUpload = true;
         for (let i = 0,len = this.currentTaskList.length;i<len;i++) {
             for (let innerI = 0,innerLen = this.currentTaskList[i]['taskContentList'].length;innerI<innerLen;innerI++) {
                 if (!this.currentTaskList[i]['taskContentList'][innerI]['deviceUploadState'] || this.currentTaskList[i]['taskContentList'][innerI]['deviceUploadState'] == 1 || this.currentTaskList[i]['taskContentList'][innerI]['deviceUploadState'] == 2) {
                     this.isAllUpload = false
-                    break;
-                };
-                this.isAllUpload = true
+                    break
+                }
             }
         }
     },
@@ -297,8 +327,8 @@ export default {
                     checkResultDtoList: [],
                     allDevicesByCurrent: []
                 };
-                // 检查单都检查完毕并且有修改,才允许上传
-                if (innerItem['isAllCheck'] && innerItem['isHaveChanged']) {
+                // 检查单都检查完毕、并且有修改、该设备所属的任务没有完成时才允许上传
+                if (innerItem['isAllCheck'] && innerItem['isHaveChanged'] && !innerItem['isTaskComplete']) {
                     submitData['checkResultDtoList'] = innerItem['checkResultDtoList'];
                     submitData['allDevicesByCurrent'].push({
                         id: innerItem['deviceId'],
@@ -422,7 +452,6 @@ export default {
 
     // 任务集名称点击事件
     taskSetNameClickEvent (item,index) {
-        this.isAllUpload = false;
         this.taskSetNameIndex = index;
         this.taskSetName = item.configName;
         this.currentTaskList = [];
@@ -451,7 +480,6 @@ export default {
 
     // 时间tab切换事件
     timeTabClickEvent (item,index) {
-        this.isAllUpload = false;
         this.timeTabIndex = index;
         this.taskSetTime = item;
         this.currentTaskList = [];
@@ -467,7 +495,6 @@ export default {
         temporaryDevicePatrolDetailsSelectMessage['selectTaskSetId'] = this.currentTaskSetId;
         temporaryDevicePatrolDetailsSelectMessage['selectTime'] = this.taskSetTime;
         temporaryDevicePatrolDetailsSelectMessage['showDate'] = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
-        console.log('当前时间',this.devicePatrolDetailsSelectMessage.showDate);
         this.changeDevicePatrolDetailsSelectMessage(temporaryDevicePatrolDetailsSelectMessage);
         this.judgeCurrentTaskAllCheckIsUpload();
         this.judgeIsHaveNeedUploadCheckList()
@@ -476,7 +503,6 @@ export default {
     // 日期图标点击事件
     dateClickEvent () {
         let temporaryDate = JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate;
-        console.log('日期',temporaryDate);
         this.showDate = this.getNowFormatDate(new Date(temporaryDate),'month');
         this.initCalendarData(this.getNowFormatDate(new Date(temporaryDate),'month'))
     },
@@ -766,7 +792,6 @@ export default {
         // 获取存储的任务整体数据
         let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
         let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
-        console.log('打拉搜',temporaryIndex);
         this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
         // 获取当前任务集的时间点集合,做升序处理
         this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
@@ -908,6 +933,36 @@ export default {
 
     // 完成任务事件
     completeTaskEvent () {
+        // 已经完成的任务不允许在次完成
+        let isCanSubmit = true;
+        this.taskSetNameIndex = this.allPatrolTaskDetailsData.indexOf(this.allPatrolTaskDetailsData.filter((item) => { return item.configName == this.devicePatrolDetailsSelectMessage['selectTaskSet']})[0]);
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.timeList = arrDateTimeSort(Object.keys(this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime']));
+        this.echoSelectMessage();
+        this.taskSetNameIndex =  this.taskSetNameIndex == -1 ? 0 : this.taskSetNameIndex;
+        this.currentTaskSetId = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configId'];
+        this.taskSetName = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['configName'];
+        // 判断之前有没有存储选中的时间信息
+        this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
+        this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
+        let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)})[0]['content'];
+        let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.taskSetName})[0];
+        let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.taskSetTime];
+        Object.keys(temporaryDataShree).forEach((item) => { 
+            for (let i = 0, len = temporaryDataShree[item].length; i<len; i++) {
+                if (!temporaryDataShree[item][i]['isTaskComplete']) {
+                    isCanSubmit = false;
+                    break
+                }
+            }
+        });
+        if (isCanSubmit) {
+            return  this.$toast({
+                type: 'fail',
+                message: '该设备所属任务已完成,不允许在次完成!'
+            })
+        };
         if (this.isAllUpload) {
             this.$router.push({
                 path:'/patrolTaskElectronicSignaturePage',

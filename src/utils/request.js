@@ -53,8 +53,8 @@ service.interceptors.response.use(
     (error) => {
         if (Object.prototype.toString.call(error.response) === '[object Object]') {
             if (error.response.hasOwnProperty('status')) {
-                if (error.response.status === 401) {
-                    this.$store.dispatch('resetPatrolTaskStore');
+                if (error.response.status == 401) {
+                    store.dispatch('resetPatrolTaskStore');
                     removeAllLocalStorage();
                     if(store.getters.globalTimer) {window.clearInterval(this.globalTimer)};
                     if (!store.getters.overDueWay) {

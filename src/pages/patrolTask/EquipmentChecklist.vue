@@ -212,7 +212,10 @@ export default {
           message: '该检查项下面有异常记录,把该检查项下登记的异常记录全部删除后,方能通过'
         })
       } else {
-        this.storeExamineData(item,innerItem)
+        if (!this.patrolTaskDeviceChecklist['isTaskComplete']) {
+          this.storeExamineData(item,innerItem)
+          this.changePatrolTaskAbnormalCheckItemEventList(innerItem)
+        }
       }
     },
 
@@ -283,8 +286,10 @@ export default {
         // 第二次及以上再点击X，进入异常记录列表页
         this.$router.push({path: '/patrolAbnormalCheckItemEventList'})
       };
-      this.storeExamineData(itemArguments,innerItem)
-      this.changePatrolTaskAbnormalCheckItemEventList(innerItem);
+      if (!this.patrolTaskDeviceChecklist['isTaskComplete']) {
+        this.storeExamineData(itemArguments,innerItem)
+        this.changePatrolTaskAbnormalCheckItemEventList(innerItem)
+      };
       this.changeEnterPatrolAbnormalRecordPageSource('/equipmentChecklist')
     },
 
@@ -430,13 +435,21 @@ export default {
 
     // 保存或提交事件
     btnClickEvent () {
-      if (this.isAllCheck) {
-        this.batchSubmitCheckItemEvent();
-        this.storeRemarkDataEvent()
+      // 该设备所属的任务没有完成时才允许提交
+      if (!this.patrolTaskDeviceChecklist['isTaskComplete']) {
+        if (this.isAllCheck) {
+          this.batchSubmitCheckItemEvent();
+          this.storeRemarkDataEvent()
+        } else {
+          this.storeRemarkDataEvent()
+        };
+        this.$router.push({path: '/equipmentPatrolDetails'})
       } else {
-        this.storeRemarkDataEvent()
-      };
-      this.$router.push({path: '/equipmentPatrolDetails'})
+        this.$toast({
+          type: 'fail',
+          message: '该设备所属任务已完成,不允许提交!'
+        })
+      }  
     }
   }
 };
