@@ -282,7 +282,6 @@ import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
 import ScrollSelection from "@/components/ScrollSelection";
 import BottomSelect from "@/components/BottomSelect";
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 export default {
   name: "PatrolAbnormalRecord",
   components: {
@@ -390,7 +389,6 @@ export default {
         that.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})
       })
     };
-    console.log('检查项事件列表信息',this.$route.query.eventId,this.patrolTaskAbnormalCheckItemEventList,this.patrolTaskDeviceChecklist,this.patrolTaskListMessage,this.devicePatrolDetailsSelectMessage);
     let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
     let temporaryIndex = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.findIndex((item) => { return item.storeId == this.$route.query.eventId &&
     item.showDate ==  this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
@@ -712,31 +710,12 @@ export default {
         })
         return
       };  
-      const ffmpeg = createFFmpeg({
-        log: true,
-        progress: ({ ratio }) => {
-          _this.msg = `完成率: ${(ratio * 100.0).toFixed(2)}%`;
-        }
-      });
-      let { name } = file;
-      this.msg = '正在加载 ffmpeg-core.js'
-      await ffmpeg.load();
-      this.msg = "开始压缩";
-      ffmpeg.FS('writeFile', name, await fetchFile(e.target.files[0]));
-      await ffmpeg.run('-i', name, '-b', '2000000', 'put.mp4');
-      this.msg = '压缩完成';
-      const data = ffmpeg.FS('readFile', 'put.mp4');
-      const video = document.getElementById('video');
-      video.src = URL.createObjectURL(new Blob([data.buffer], {
-        type: 'video/mp4'
-      }))
-        // _this.videoBox = false;
-        // _this.overlayShow = false;
-        // let result = reader.result;
-        // _this.problemVideosList.push(result);
-        // _this.$refs.inputFileFour.value = null;
-        // console.log('资源4',result)
-    ;
+      _this.videoBox = false;
+      _this.overlayShow = false;
+      let result = reader.result;
+      _this.problemVideosList.push(result);
+      _this.$refs.inputFileFour.value = null;
+      console.log('资源4',result);
       if (file) {
         reader.readAsDataURL(file);
       }

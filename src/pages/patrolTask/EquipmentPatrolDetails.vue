@@ -291,6 +291,7 @@ export default {
     judgeIsHaveNeedUploadCheckList () {
         let casuallyTemporaryStoragePatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
         let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+        if (temporaryIndex == -1) { return };
         // 从store中取存储过的当前巡检任务信息
         this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
         // 获取当前任务集的时间点集合,做升序处理
@@ -425,7 +426,7 @@ export default {
         this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
         this.getNeedTaskSetData();
         console.log('最新数据',paramsData);
-        this.judgeCurrentTaskAllCheckIsUpload()
+        this.judgeCurrentTaskAllCheckIsUpload();
 		// submitCheckItem(paramsData)
         // .then((res) => {
         //     if (res && res.data.code == 200) {
@@ -960,7 +961,7 @@ export default {
         if (isCanSubmit) {
             return  this.$toast({
                 type: 'fail',
-                message: '该设备所属任务已完成,不允许在次完成!'
+                message: '该任务集下当前时间点的任务已完成,不允许在次完成!'
             })
         };
         if (this.isAllUpload) {
@@ -1236,7 +1237,7 @@ export default {
                                 width: 70px;
                                 text-align: left;
                                 img {
-                                    width: 20px
+                                    width: 21px
                                 }
                             };
                             &:last-child {

@@ -181,7 +181,7 @@ export default {
         if (this.isAllTaskComplete) {
           this.deleteCompleteEntiretyTask()
         };
-        this.$router.push({path: '/patrolTasklist'})
+        this.$router.push({path: '/equipmentPatrolDetails'})
       } else {
         this.$toast({
           type: 'fail',
