@@ -113,6 +113,7 @@ export default {
 
         // 保存进入历史设备检查单页面的信息
         changePatrolHistoryTaskDeviceChecklist(state, playLoad) {
+            console.log('调一给');
             setStore('historyPatrolTaskDeviceChecklist', playLoad);
             state.historyPatrolTaskDeviceChecklist = playLoad
         },

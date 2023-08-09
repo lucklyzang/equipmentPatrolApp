@@ -75,12 +75,6 @@ export default {
     // this.$nextTick(()=> {
     //   this.resizeScreen()
     // })
-    this.addSuccessSign();
-    this.judgeCurrentDateTaskIsAllComplete();
-    if (this.isAllTaskComplete) {
-      this.deleteCompleteEntiretyTask()
-    };
-    console.log('任务id',this.$route.query.date,this.patrolTaskListMessage)
   },
 
   beforeRouteEnter(to, from, next) {

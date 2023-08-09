@@ -191,7 +191,7 @@ export default {
       pushHistory();
       that.gotoURL(() => {
         pushHistory();
-        that.$router.push({path: '/historyEquipmentChecklist'})
+        that.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
       })
     }
   },
@@ -213,12 +213,12 @@ export default {
     ...mapMutations([]),
 
     onClickLeft() {
-      this.$router.push({path: '/historyEquipmentChecklist'})
+      this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
     },
 
     // 返回事件
     backEvent () {
-        this.$router.push({path: '/historyEquipmentChecklist'})
+        this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
     },
 
     // 图片放大事件

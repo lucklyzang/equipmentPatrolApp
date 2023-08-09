@@ -506,7 +506,8 @@ export default {
       this.problemOverview = casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['description'];
       this.currentFindTime = new Date(casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['findTime']);
       this.taskDescribe = casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['remark'];
-      this.problemPicturesList = casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['images']
+      this.problemPicturesList = casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['images'];
+      this.problemVideosList = casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['videos']
     },
 
     // 处理维修任务参与者
@@ -953,24 +954,60 @@ export default {
 
     // 暂存事件
     temporaryStorageEvent () {
-      let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
-      if (casuallyTemporaryStoragePatrolTaskAbnormalRecordList.length > 0 ) {
-          let temporaryIndex = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.findIndex((item) => { return item.storeId == this.$route.query.eventId &&
-          item.showDate ==  this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
-          item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == this.patrolTaskAbnormalCheckItemEventList.typeId && 
-          item.extendData.checkItemId == this.patrolTaskAbnormalCheckItemEventList.itemId && item.checkResultId == this.patrolTaskAbnormalCheckItemEventList.resultId
-          });
-          if (temporaryIndex != -1) {
-            casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['eventType'] = this.currentAbnormalType == '请选择' ? '' : this.abnormalTypeOption.filter((item) => { return item.text == this.currentAbnormalType })[0]['value'];
-            casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['registerSeverity'] = this.currentSeverityLevel == '请选择' ? '' : this.severityLevelOption.filter((item) => { return item.text == this.currentSeverityLevel })[0]['id'];
-            casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['registerState'] = this.currentEquipmentStatus == '请选择' ? '' : this.equipmentStatusOption.filter((item) => { return item.text == this.currentEquipmentStatus })[0]['id'];
-            casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['description'] = this.problemOverview;
-            casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['findTime'] = this.getNowFormatDate(this.currentFindTime);
-            casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['remark'] = this.taskDescribe;
-            casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['images'] = this.problemPicturesList
+      try {
+        let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
+        if (casuallyTemporaryStoragePatrolTaskAbnormalRecordList.length > 0 ) {
+            let temporaryIndex = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.findIndex((item) => { return item.storeId == this.$route.query.eventId &&
+            item.showDate ==  this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
+            item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == this.patrolTaskAbnormalCheckItemEventList.typeId && 
+            item.extendData.checkItemId == this.patrolTaskAbnormalCheckItemEventList.itemId && item.checkResultId == this.patrolTaskAbnormalCheckItemEventList.resultId
+            });
+            if (temporaryIndex != -1) {
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['eventType'] = this.currentAbnormalType == '请选择' ? '' : this.abnormalTypeOption.filter((item) => { return item.text == this.currentAbnormalType })[0]['value'];
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['registerSeverity'] = this.currentSeverityLevel == '请选择' ? '' : this.severityLevelOption.filter((item) => { return item.text == this.currentSeverityLevel })[0]['id'];
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['registerState'] = this.currentEquipmentStatus == '请选择' ? '' : this.equipmentStatusOption.filter((item) => { return item.text == this.currentEquipmentStatus })[0]['id'];
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['description'] = this.problemOverview;
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['findTime'] = this.getNowFormatDate(this.currentFindTime);
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['remark'] = this.taskDescribe;
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['images'] = this.problemPicturesList;
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['videos'] = this.problemPicturesList
+            } else {
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList.push({
+                storeId: uuidv4(), 
+                eventType: this.currentAbnormalType == '请选择' ? '' : this.abnormalTypeOption.filter((item) => { return item.text == this.currentAbnormalType })[0]['value'],
+                registerSeverity: this.currentSeverityLevel == '请选择' ? '' : this.severityLevelOption.filter((item) => { return item.text == this.currentSeverityLevel })[0]['id'],
+                registerState: this.currentEquipmentStatus == '请选择' ? '' : this.equipmentStatusOption.filter((item) => { return item.text == this.currentEquipmentStatus })[0]['id'],
+                checkResultId: this.patrolTaskAbnormalCheckItemEventList.resultId,
+                depId: this.patrolTaskDeviceChecklist.deviceId,
+                depName: this.patrolTaskDeviceChecklist.deviceName,
+                findTime: this.getNowFormatDate(this.currentFindTime),
+                description: this.problemOverview,
+                remark: this.taskDescribe,
+                selectTime: this.devicePatrolDetailsSelectMessage.selectTime,
+                showDate: this.devicePatrolDetailsSelectMessage.showDate,
+                taskSite: this.devicePatrolDetailsSelectMessage.taskSite,
+                extendData: {
+                  colName: this.patrolTaskDeviceChecklist.configName,
+                  deviceId: this.patrolTaskDeviceChecklist.deviceId,
+                  deviceName: this.patrolTaskDeviceChecklist.deviceName,
+                  checkItemId: this.patrolTaskAbnormalCheckItemEventList.itemId,
+                  checkTypeId: this.patrolTaskAbnormalCheckItemEventList.typeId,
+                  deviceNorms: this.patrolTaskDeviceChecklist.norms,
+                  checkItemName: this.patrolTaskAbnormalCheckItemEventList.itemName,
+                  checkTypeName: this.patrolTaskAbnormalCheckItemEventList.typeName
+                },
+                images: this.problemPicturesList,
+                videos: this.problemVideosList,
+                collect: this.devicePatrolDetailsSelectMessage.selectTaskSetId,
+                proId: this.userInfo.proIds[0],
+                system: 9,
+                createName: this.userInfo.name,
+                taskNumber: this.patrolTaskAbnormalCheckItemEventList.taskNumber
+              })
+            }
           } else {
             casuallyTemporaryStoragePatrolTaskAbnormalRecordList.push({
-              storeId: uuidv4(), 
+              storeId: uuidv4(),
               eventType: this.currentAbnormalType == '请选择' ? '' : this.abnormalTypeOption.filter((item) => { return item.text == this.currentAbnormalType })[0]['value'],
               registerSeverity: this.currentSeverityLevel == '请选择' ? '' : this.severityLevelOption.filter((item) => { return item.text == this.currentSeverityLevel })[0]['id'],
               registerState: this.currentEquipmentStatus == '请选择' ? '' : this.equipmentStatusOption.filter((item) => { return item.text == this.currentEquipmentStatus })[0]['id'],
@@ -994,49 +1031,24 @@ export default {
                 checkTypeName: this.patrolTaskAbnormalCheckItemEventList.typeName
               },
               images: this.problemPicturesList,
+              videos: this.problemVideosList,
               collect: this.devicePatrolDetailsSelectMessage.selectTaskSetId,
               proId: this.userInfo.proIds[0],
               system: 9,
               createName: this.userInfo.name,
               taskNumber: this.patrolTaskAbnormalCheckItemEventList.taskNumber
             })
-          }
-        } else {
-          casuallyTemporaryStoragePatrolTaskAbnormalRecordList.push({
-            storeId: uuidv4(),
-            eventType: this.currentAbnormalType == '请选择' ? '' : this.abnormalTypeOption.filter((item) => { return item.text == this.currentAbnormalType })[0]['value'],
-            registerSeverity: this.currentSeverityLevel == '请选择' ? '' : this.severityLevelOption.filter((item) => { return item.text == this.currentSeverityLevel })[0]['id'],
-            registerState: this.currentEquipmentStatus == '请选择' ? '' : this.equipmentStatusOption.filter((item) => { return item.text == this.currentEquipmentStatus })[0]['id'],
-            checkResultId: this.patrolTaskAbnormalCheckItemEventList.resultId,
-            depId: this.patrolTaskDeviceChecklist.deviceId,
-            depName: this.patrolTaskDeviceChecklist.deviceName,
-            findTime: this.getNowFormatDate(this.currentFindTime),
-            description: this.problemOverview,
-            remark: this.taskDescribe,
-            selectTime: this.devicePatrolDetailsSelectMessage.selectTime,
-            showDate: this.devicePatrolDetailsSelectMessage.showDate,
-            taskSite: this.devicePatrolDetailsSelectMessage.taskSite,
-            extendData: {
-              colName: this.patrolTaskDeviceChecklist.configName,
-              deviceId: this.patrolTaskDeviceChecklist.deviceId,
-              deviceName: this.patrolTaskDeviceChecklist.deviceName,
-              checkItemId: this.patrolTaskAbnormalCheckItemEventList.itemId,
-              checkTypeId: this.patrolTaskAbnormalCheckItemEventList.typeId,
-              deviceNorms: this.patrolTaskDeviceChecklist.norms,
-              checkItemName: this.patrolTaskAbnormalCheckItemEventList.itemName,
-              checkTypeName: this.patrolTaskAbnormalCheckItemEventList.typeName
-            },
-            images: this.problemPicturesList,
-            collect: this.devicePatrolDetailsSelectMessage.selectTaskSetId,
-            proId: this.userInfo.proIds[0],
-            system: 9,
-            createName: this.userInfo.name,
-            taskNumber: this.patrolTaskAbnormalCheckItemEventList.taskNumber
-          })
-      };
-      this.changePatrolTaskAbnormalRecordList(casuallyTemporaryStoragePatrolTaskAbnormalRecordList);
-      this.$Alert({message:"暂存成功",duration:3000,type:'success'});
-      this.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})
+        };
+        this.changePatrolTaskAbnormalRecordList(casuallyTemporaryStoragePatrolTaskAbnormalRecordList);
+        this.$Alert({message:"暂存成功",duration:3000,type:'success'});
+        this.$router.push({path: `${this.enterPatrolAbnormalRecordPageSource}`})
+      } catch (err) {
+        this.$dialog.alert({
+          message: `${err}`,
+          closeOnPopstate: true
+        }).then(() => {
+        })
+      }  
     }
   }
 };

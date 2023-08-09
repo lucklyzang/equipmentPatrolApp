@@ -425,30 +425,29 @@ export default {
         temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
         this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
         this.getNeedTaskSetData();
-        console.log('最新数据',paramsData);
-        this.judgeCurrentTaskAllCheckIsUpload();
-		// submitCheckItem(paramsData)
-        // .then((res) => {
-        //     if (res && res.data.code == 200) {
+		submitCheckItem(paramsData)
+        .then((res) => {
+            if (res && res.data.code == 200) {
                 // 上传成功的设备，将其下的是否修改字段isHaveChanged改为false，防止下次没有修改修改检查结果或备注时，回到该界面或点击任务集和时间点切换后重复上传此设备检查单
                 temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 3;
                 temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['isHaveChanged'] = false;
                 temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
                 this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
                 this.getNeedTaskSetData();
-        //     } else {
-                    // temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
-                    // temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
-                    // this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
-                    // this.getNeedTaskSetData()
-        //     }
-        // })
-        // .catch((err) => {
-            // temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
-            // temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
-            // this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
-            // this.getNeedTaskSetData()
-        // })
+                this.judgeCurrentTaskAllCheckIsUpload()
+             } else {
+                temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
+                temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+                this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+                this.getNeedTaskSetData()
+             }
+         })
+        .catch((err) => {
+            temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
+            temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
+            this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
+            this.getNeedTaskSetData()
+        })
     },
 
     // 任务集名称点击事件

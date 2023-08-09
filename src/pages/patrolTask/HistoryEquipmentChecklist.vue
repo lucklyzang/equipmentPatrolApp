@@ -27,12 +27,12 @@
                     </div>
                     <div class="operation-right">
                       <van-radio-group v-model="innerItem.checkResult" direction="horizontal" disabled>
-                          <van-radio name="1" v-show="innerItem.checkResult == 1">
+                          <van-radio name="1" v-if="innerItem.checkResult == 1"  @click.stop.native="()=>{}">
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
                               </template>
                           </van-radio>
-                          <van-radio name="3" v-show="innerItem.checkResult == 3" @click="(event) => noPassEvent(event,innerItem,innerIndex)" disabled>
+                          <van-radio name="3" v-if="innerItem.checkResult == 3"  @click.stop.native="()=>{}" @click="(event) => noPassEvent(event,innerItem,innerIndex)" disabled>
                               <template #icon="props">
                                 <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
                               </template>
@@ -64,8 +64,8 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import { } from '@/api/escortManagement.js'
-import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
+import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
+import _ from 'lodash';
 export default {
   name: "HistoryEquipmentChecklist",
   components: {
@@ -91,12 +91,13 @@ export default {
   },
 
   mounted() {
-    console.log('数据',this.historyPatrolTaskDeviceChecklist);
     // 控制设备物理返回按键
     this.deviceReturn("/historyEquipmentPatrolDetails");
     this.initTaskDeviceChecklistData();
     this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach(el => {
+      console.log('遍历数据',el);
       el.checkItemClassifyContent.forEach((innerEl) => {
+        innerEl.checkResult =  innerEl.checkResult.toString();
         innerEl.unfold = false
       })
     })
@@ -122,8 +123,8 @@ export default {
     },
 
     initTaskDeviceChecklistData () {
-      this.currentPatrolTaskDeviceChecklist = this.historyPatrolTaskDeviceChecklist;
-      let temporaryCheckItemListGroupByCheckType = this.historyPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
+      this.currentPatrolTaskDeviceChecklist = _.cloneDeep(this.historyPatrolTaskDeviceChecklist);
+      let temporaryCheckItemListGroupByCheckType = this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'];
       this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'] = [];
       Object.keys(temporaryCheckItemListGroupByCheckType).forEach((item) => {
         this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].push({
@@ -148,8 +149,8 @@ export default {
 
     // 不通过事件
     noPassEvent (event,innerItem,innerIndex) {
-      this.changeHistoryPatrolTaskAbnormalCheckItemEventList(item);
-      this.$router.push({path: '/historyPatrolAbnormalRecord'})
+      this.changeHistoryPatrolTaskAbnormalCheckItemEventList(innerItem);
+      this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
     }
   }
 };

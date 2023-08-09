@@ -25,7 +25,7 @@
                   <span>{{ historyPatrolTaskAbnormalCheckItemEventList.itemName }}</span>
               </div>
               <div class="patrol-item-list-right">
-                  <van-radio-group v-model="historyPatrolTaskAbnormalCheckItemEventList.checkResult" direction="horizontal" disabled>
+                  <van-radio-group v-model="checkResultValue" direction="horizontal" disabled>
                       <van-radio name="1" v-show="historyPatrolTaskAbnormalCheckItemEventList.checkResult == 1">
                           <template #icon="props">
                               <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
@@ -60,7 +60,7 @@
                           <span>sdasas</span>
                       </div>
                   </div>
-                  <div class="right-arrow-box" @click="taskDetailsEvent">
+                  <div class="right-arrow-box" @click="enterAbnormalRecordRetailsEvent">
                     <van-icon name="arrow" color="#1684FC" size="24" />
                   </div>
               </div>
@@ -113,9 +113,9 @@ export default {
 
   mounted() {
     console.log('sa',this.historyPatrolTaskAbnormalCheckItemEventList);
+    this.checkResultValue = this.historyPatrolTaskAbnormalCheckItemEventList['checkResult'].toString();
     // 控制设备物理返回按键
-    this.deviceReturn('/equipmentChecklist');
-    // this.queryEventList(this.currentPage,this.pageSize,this.userName,1);
+    this.deviceReturn('/historyEquipmentChecklist');
     this.$nextTick(()=> {
         try {
             this.initScrollChange()
@@ -125,9 +125,7 @@ export default {
                 message: error
             })
         }
-    });
-    // 回显勾选的检查项状态
-    // this.checkResultValue = this.departmentCheckList['checkItemList'][this.enterProblemRecordMessage['index']]['checkResult']
+    })
   },
 
    beforeDestroy () {
@@ -233,9 +231,9 @@ export default {
       }  
     },
 
-    // 进入事件详情事件
-    taskDetailsEvent () {
-      
+    // 进入历史异常记录详情事件
+    enterAbnormalRecordRetailsEvent () {
+      this.$router.push({path: '/historyPatrolAbnormalRecord'})
     }
   }
 };
