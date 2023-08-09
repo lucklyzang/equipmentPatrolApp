@@ -26,12 +26,12 @@
               </div>
               <div class="patrol-item-list-right">
                   <van-radio-group v-model="checkResultValue" direction="horizontal" disabled>
-                      <van-radio name="1" v-show="historyPatrolTaskAbnormalCheckItemEventList.checkResult == 1">
+                      <van-radio name="1" v-if="historyPatrolTaskAbnormalCheckItemEventList.checkResult == 1">
                           <template #icon="props">
                               <img class="img-icon" :src="props.checked ? checkCheckboxPng : checkboxPng" />
                           </template>
                       </van-radio>
-                      <van-radio name="3" v-show="historyPatrolTaskAbnormalCheckItemEventList.checkResult == 3">
+                      <van-radio name="3" v-if="historyPatrolTaskAbnormalCheckItemEventList.checkResult == 3">
                           <template #icon="props">
                               <img class="img-icon" :src="props.checked ? checkCloseCirclePng : closeCirclePng" />
                           </template>
