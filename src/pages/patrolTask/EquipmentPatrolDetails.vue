@@ -66,7 +66,7 @@
                     </div>
                 </div>    
             </div>
-            <div class="complete-btn-box" v-if="isShowNoMoreData || allPatrolTaskDetailsData.length > 0">
+            <div class="complete-btn-box" v-if="!isShowNoMoreData && allPatrolTaskDetailsData.length > 0">
                 <div class="complete-btn" :class="{'completeBtnStyle': isAllUpload}" @click="completeTaskEvent">完成任务</div>
             </div>
         </div>
@@ -579,7 +579,7 @@ export default {
         this.calendarShow = false;
         this.currentTaskList = [];
         this.taskSetNameIndex = 0;
-		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate:'2023-07-20'})
+		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate})
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
@@ -1035,16 +1035,7 @@ export default {
         }
       };
       /deep/ .wh_container {
-      .wh_content_all {
-        .wh_content {
-            .wh_content_item {
-                .wh_isToday {
-                    background: transparent
-                }
-            }
-        }
       }
-    }
   };
   /deep/ .van-loading {
     z-index: 1000000
@@ -1160,6 +1151,14 @@ export default {
             padding: 12px 4px 0px 4px;
             box-sizing: border-box;
             background: #f7f7f7;
+            position: relative;
+            /deep/ .van-empty {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 100%;
+                transform: translate(-50%,-50%)
+            };
             .backlog-task-list-box {
                 overflow: scroll;
                 height: 100%;

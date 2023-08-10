@@ -210,7 +210,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([]),
+    ...mapMutations(['historyPatrolTaskAbnormalRecordDetails']),
 
     onClickLeft() {
       this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})

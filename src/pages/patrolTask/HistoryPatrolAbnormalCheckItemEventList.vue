@@ -144,7 +144,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations([]),
+    ...mapMutations(['changePatrolHistoryTaskAbnormalRecordDetails']),
 
     // 顶部导航左边点击事件
     onClickLeft () {
@@ -233,6 +233,7 @@ export default {
 
     // 进入历史异常记录详情事件
     enterAbnormalRecordRetailsEvent () {
+      this.changePatrolHistoryTaskAbnormalRecordDetails();
       this.$router.push({path: '/historyPatrolAbnormalRecord'})
     }
   }

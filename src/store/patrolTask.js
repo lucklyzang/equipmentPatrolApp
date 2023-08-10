@@ -9,12 +9,10 @@ export default {
         },
 
         patrolTaskListMessage: (state) => {
-            state.patrolTaskListMessage = getStore('patrolTaskListMessage') ? JSON.parse(getStore('patrolTaskListMessage')) : [];
             return state.patrolTaskListMessage
         },
 
         patrolTaskAbnormalRecordList: (state) => {
-            state.patrolTaskAbnormalRecordList = getStore('patrolTaskAbnormalRecordList') ? JSON.parse(getStore('patrolTaskAbnormalRecordList')) : [];
             return state.patrolTaskAbnormalRecordList
         },
 
@@ -27,7 +25,6 @@ export default {
         },
 
         patrolTaskDeviceChecklist: (state) => {
-            state.patrolTaskDeviceChecklist = getStore('patrolTaskDeviceChecklist') ? JSON.parse(getStore('patrolTaskDeviceChecklist')) : [];
             return state.patrolTaskDeviceChecklist
         },
 
@@ -35,23 +32,23 @@ export default {
             return state.devicePatrolDetailsSelectMessage
         },
 
+        historyPatrolTaskAbnormalRecordDetails: (state) => {
+            return state.historyPatrolTaskAbnormalRecordDetails
+        },
+
         patrolTaskAbnormalCheckItemEventList: (state) => {
-            state.patrolTaskAbnormalCheckItemEventList = getStore('patrolTaskAbnormalCheckItemEventList') ? JSON.parse(getStore('patrolTaskAbnormalCheckItemEventList')) : [];
             return state.patrolTaskAbnormalCheckItemEventList
         },
 
         historyPatrolTaskAbnormalCheckItemEventList: (state) => {
-            state.patrolTaskAbnormalCheckItemEventList = getStore('historyPatrolTaskAbnormalCheckItemEventList') ? JSON.parse(getStore('historyPatrolTaskAbnormalCheckItemEventList')) : [];
             return state.historyPatrolTaskAbnormalCheckItemEventList
         },
 
         historyPatrolTaskDetails: (state) => {
-            state.historyPatrolTaskDetails = getStore('historyPatrolTaskDetails') ? JSON.parse(getStore('historyPatrolTaskDetails')) : [];
             return state.historyPatrolTaskDetails
         },
 
         historyPatrolTaskDeviceChecklist: (state) => {
-            state.historyPatrolTaskDeviceChecklist = getStore('historyPatrolTaskDeviceChecklist') ? JSON.parse(getStore('historyPatrolTaskDeviceChecklist')) : [];
             return state.historyPatrolTaskDeviceChecklist
         }
 
@@ -100,27 +97,27 @@ export default {
 
         // 保存进入历史异常检查项事件列表页面的信息
         changeHistoryPatrolTaskAbnormalCheckItemEventList(state, playLoad) {
-            setStore('historyPatrolTaskAbnormalCheckItemEventList', playLoad);
             state.historyPatrolTaskAbnormalCheckItemEventList = playLoad
         },
 
 
         // 保存进入历史巡检任务详情页面的信息
         changeHistoryPatrolTaskDetails(state, playLoad) {
-            setStore('historyPatrolTaskDetails', playLoad);
             state.historyPatrolTaskDetails = playLoad
         },
 
         // 保存进入历史设备检查单页面的信息
         changePatrolHistoryTaskDeviceChecklist(state, playLoad) {
-            console.log('调一给');
-            setStore('historyPatrolTaskDeviceChecklist', playLoad);
             state.historyPatrolTaskDeviceChecklist = playLoad
+        },
+
+        // 保存进入历史异常记录详情页面的信息
+        changePatrolHistoryTaskAbnormalRecordDetails(state, playLoad) {
+            state.historyPatrolTaskAbnormalRecordDetails = playLoad
         },
 
         // 保存异常记录信息
         changePatrolTaskAbnormalRecordList(state, playLoad) {
-            setStore('patrolTaskAbnormalRecordList', playLoad);
             state.patrolTaskAbnormalRecordList = playLoad
         },
 

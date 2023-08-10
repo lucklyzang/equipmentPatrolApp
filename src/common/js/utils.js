@@ -685,21 +685,11 @@ export const removeAllLocalStorage = () => {
     removeStore('isLogin');
     removeStore('token');
     removeStore('isLogin');
-    removeStore('patrolTaskDeviceChecklist');
-    removeStore('historyPatrolTaskDetails');
-    removeStore('patrolTaskAbnormalCheckItemEventList');
-    removeStore('historyPatrolTaskAbnormalCheckItemEventList');
-    removeStore('patrolTaskAbnormalRecordList');
     removeStore('permissionInfo');
     removeStore('roleNameList');
     removeStore('changeOverDueWay');
     removeStore('timeMessage');
-    removeStore('ossMessage');
-    removeStore('patrolTaskListMessage');
-    removeStore('temporaryStorageClaimRegisterMessage');
-    removeStore('temporaryStorageRepairsRegisterMessage');
-    removeStore('temporaryStorageOtherRegisterMessage');
-    removeStore('temporaryStorageHistoryClaimRegisterMessage')
+    removeStore('ossMessage')
 }
 
 /*
@@ -712,13 +702,7 @@ export const removeAllLocalStorage = () => {
 export const removeExceptLoginMessageLocalStorage = () => {
     removeStore('timeMessage');
     removeStore('ossMessage');
-    removeStore('chooseProject');
-    removeStore('patrolTaskListMessage');
-    removeStore('patrolTaskDeviceChecklist');
-    removeStore('patrolTaskAbnormalRecordList');
-    removeStore('historyPatrolTaskDetails');
-    removeStore('patrolTaskAbnormalCheckItemEventList');
-    removeStore('historyPatrolTaskAbnormalCheckItemEventList')
+    removeStore('chooseProject')
 }
 
 /*

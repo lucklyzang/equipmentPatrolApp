@@ -710,13 +710,15 @@ export default {
         }).then(() => {
         })
         return
-      };  
-      _this.videoBox = false;
-      _this.overlayShow = false;
-      let result = reader.result;
-      _this.problemVideosList.push(result);
-      _this.$refs.inputFileFour.value = null;
-      console.log('资源4',result);
+      };
+      reader.addEventListener("load", function () {
+        _this.videoBox = false;
+        _this.overlayShow = false;
+        let result = reader.result;
+        _this.problemVideosList.push(result);
+        _this.$refs.inputFileFour.value = null;
+        console.log('资源4',result);
+      }, false)
       if (file) {
         reader.readAsDataURL(file);
       }
@@ -970,7 +972,7 @@ export default {
               casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['findTime'] = this.getNowFormatDate(this.currentFindTime);
               casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['remark'] = this.taskDescribe;
               casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['images'] = this.problemPicturesList;
-              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['videos'] = this.problemPicturesList
+              casuallyTemporaryStoragePatrolTaskAbnormalRecordList[temporaryIndex]['videos'] = this.problemVideosList
             } else {
               casuallyTemporaryStoragePatrolTaskAbnormalRecordList.push({
                 storeId: uuidv4(), 

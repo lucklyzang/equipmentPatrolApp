@@ -149,7 +149,8 @@ li {
   color: #bfbfbf;
 }
 .wh_content_item .wh_isToday {
-  background: yellow;
+  background: #0052D9 !important;
+  color: #fff;
   border-radius: 100px;
 }
 .wh_content_item .wh_chose_day {
