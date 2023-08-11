@@ -127,208 +127,31 @@ export function getIsHaveEventRegister(proId,system,resultId) {
 }
 
 
-// 事件登记
+// 设备管理
 
-// 获取事件列表
-export function getEventList(data) {
+// 设备列表查询
+export function getdevicesList(data) {
     return request({
-        url: 'nblink/patrol/eventregister/listForApp',
+        url: 'nblink/patrol/device/initAllByPage',
         method: 'get',
         params: data
     })
 }
 
-// 获取事件详情
-export function getEventDetails(id) {
+// 设备操作记录添加
+export function addDeviceOperateRecord(data) {
     return request({
-        url: `nblink/patrol/eventregister/${id}`,
-        method: 'get'
-    })
-}
-
-// 登记事件
-export function eventregister(data) {
-    return request({
-        url: 'nblink/patrol/eventregister/',
+        url: 'nblink/patrol/deviceOperateRecord',
         method: 'post',
         data
     })
 }
 
-// 拾金不昧交接
-export function eventHandover(data) {
+// 设备操作记录添加
+export function getDeviceOperateRecordList(data) {
     return request({
-        url: 'nblink/patrol/eventregister/handover',
-        method: 'put',
-        data
+        url: 'nblink/patrol/deviceOperateRecord/getList',
+        method: 'get',
+        params: data
     })
 }
-
-// 拾金不昧联系
-export function eventContact(data) {
-    return request({
-        url: 'nblink/patrol/eventregister/contact',
-        method: 'put',
-        data
-    })
-}
-
-// 拾金不昧领取
-export function eventReceive(data) {
-    return request({
-        url: 'nblink/patrol/eventregister/receive',
-        method: 'put',
-        data
-    })
-}
-
-// 事件删除
-export function eventDelete(id) {
-    return request({
-        url: `nblink/patrol/eventregister/${id}`,
-        method: 'delete'
-    })
-}
-
-// 查询建筑信息
-export function queryStructure(proId) {
-    return request({
-        url: `nblink/hospital/structures/${proId}`,
-        method: 'get'
-    })
-};
-
-// 查询科室信息
-export function queryDepartment(data) {
-    return request({
-        url: 'nblink/hospital/departments',
-        method: 'get',
-        params: data
-    })
-};
-
-// 查询空间信息
-export function querySpace(data) {
-    return request({
-        url: 'nblink/hospital/spaces',
-        method: 'get',
-        params: data
-    })
-};
-
-// 查询登记用户
-export function queryRegisterUser(data) {
-    return request({
-        url: 'nblink/patrol/eventregister/queryRegisterUser',
-        method: 'get',
-        params: data
-    })
-};
-
-
-// 留言簿
-
-// 留言查询
-export function queryGuestBook(data) {
-    return request({
-        url: 'nblink/patrol/guestBook/initAllByPage',
-        method: 'get',
-        params: data
-    })
-};
-
-// 查询新留言数量
-export function queryNewCount(data) {
-    return request({
-        url: 'nblink/patrol/guestBook/app/newCount',
-        method: 'get',
-        params: data
-    })
-};
-
-// 留言删除
-export function guestBookDelete(id) {
-    return request({
-        url: `nblink/patrol/guestBook/${id}`,
-        method: 'delete'
-    })
-};
-
-// 评论删除
-export function guestCommentDelete(id) {
-    return request({
-        url: `nblink/patrol/guestComment/${id}`,
-        method: 'delete'
-    })
-};
-
-// 评论添加
-export function guestCommentAdd(data) {
-    return request({
-        url: 'nblink/patrol/guestComment/',
-        method: 'post',
-        data
-    })
-};
-
-// 留言添加
-export function guestBookAdd(data) {
-    return request({
-        url: 'nblink/patrol/guestBook/',
-        method: 'post',
-        data
-    })
-};
-
-// 点赞
-export function guestSupport(data) {
-    return request({
-        url: 'nblink/patrol/guestSupport/',
-        method: 'post',
-        data
-    })
-};
-
-// 取消点赞
-export function guestCancel(id) {
-    return request({
-        url: `nblink/patrol/guestSupport/${id}`,
-        method: 'delete'
-    })
-};
-
-// 查询信标列表
-export function queryBeaconList(data) {
-    return request({
-        url: 'nblink/hospital/beacon/config',
-        method: 'get',
-        params: data
-    })
-};
-
-// 设置信标打开范围
-export function setBeaconConfigRange(data) {
-    return request({
-        url: 'nblink/hospital/beacon/configRange',
-        method: 'put',
-        data
-    })
-};
-
-// 清空打卡点
-export function clearBeaconRange(data) {
-    return request({
-        url: 'nblink/hospital/beacon/clearRange',
-        method: 'delete',
-        params: data
-    })
-};
-
-// 信标打卡测试
-export function beaconTest(data) {
-    return request({
-        url: 'nblink/hospital/beacon/checkInTest',
-        method: 'get',
-        params: data
-    })
-};

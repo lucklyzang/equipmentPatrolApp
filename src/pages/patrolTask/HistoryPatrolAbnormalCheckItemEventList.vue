@@ -41,26 +41,26 @@
             </div>
           </div>
           <div class="backlog-task-list-box" ref="scrollBacklogTask">
-              <div class="backlog-task-list">
+              <div class="backlog-task-list" v-for="(item,index) in backlogTaskList" :key="index" @click="enterAbnormalRecordRetailsEvent(item)">
                   <div class="backlog-task-top">
                       <div class="backlog-task-top-left">
                           <span>编号:</span>
-                          <span>q2121</span>
+                          <span>{{ item.number }}</span>
                       </div>
                   </div>
                   <div class="backlog-task-content" >
                       <div class="taskset-create-time-type taskset-create-time-other-type">
                           <span>记录时间:</span>
-                          <span>2023年6月12日 11:00</span>
+                          <span>{{ item.findTime }}</span>
                       </div>
                   </div>
                   <div class="backlog-task-content">
                       <div class="taskset-create-time-type">
                           <span>情况说明:</span>
-                          <span>sdasas</span>
+                          <span>{{ item.description }}</span>
                       </div>
                   </div>
-                  <div class="right-arrow-box" @click="enterAbnormalRecordRetailsEvent">
+                  <div class="right-arrow-box">
                     <van-icon name="arrow" color="#1684FC" size="24" />
                   </div>
               </div>
@@ -78,7 +78,6 @@
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
 import { mixinsDeviceReturn } from '@/mixins/deviceReturnFunction';
-import { getEventList } from '@/api/escortManagement.js'
 export default {
   name: "HistoryPatrolAbnormalCheckItemEventList",
   components: {
@@ -96,7 +95,6 @@ export default {
       currentPage: 1,
       pageSize: 10,
       checkResultValue: '1',
-      eventTypeList: ['工程报修','拾金不昧','其他'],
       loadingShow: false,
       backlogTaskList: [],
       fullBacklogTaskList: [],
@@ -114,6 +112,12 @@ export default {
   mounted() {
     console.log('sa',this.historyPatrolTaskAbnormalCheckItemEventList);
     this.checkResultValue = this.historyPatrolTaskAbnormalCheckItemEventList['checkResult'].toString();
+    this.backlogTaskList = this.historyPatrolTaskAbnormalCheckItemEventList['registerList'];
+    if (this.backlogTaskList.length == 0) {
+      this.backlogEmptyShow = true
+    } else {
+      this.backlogEmptyShow = false
+    };
     // 控制设备物理返回按键
     this.deviceReturn('/historyEquipmentChecklist');
     this.$nextTick(()=> {
@@ -156,53 +160,53 @@ export default {
       this.$router.push({path: '/historyEquipmentChecklist'})
     },
 
-    // 获取事件列表
-    queryEventList (page,pageSize,name,registerType) {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.loadText = '加载中';
-      this.backlogEmptyShow = false;
-      this.isShowBacklogTaskNoMoreData = false;
-      getEventList({proId:this.userInfo.proIds[0], system: 6, page,
-        name,limit:pageSize,registerType,checkResultId:this.enterProblemRecordMessage['issueInfo']['resultId']
-      })
-      .then((res) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        if (res && res.data.code == 200) {
-          this.backlogTaskList = res.data.data.list;
-          this.totalCount = res.data.data.total;
-          // 加载第一页时,合并该巡查项下暂存的事件列表
-          if (page == 1) {
-            this.fullBacklogTaskList = [].concat();
-            this.fullBacklogTaskList = this.fullBacklogTaskList.filter((item) => { return item['checkItemId'] == this.enterProblemRecordMessage['issueInfo']['id'] && item['registerType'] == 1 
-            && item['depId'] == this.departmentCheckList['depId'] && item['taskId'] == this.patrolTaskListMessage['id']
-            });
-            this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
-          } else {
-            this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
-          };
-          if (this.fullBacklogTaskList.length == 0) {
-            this.backlogEmptyShow = true
-          }
-        } else {
-          this.$toast({
-            type: 'fail',
-            message: res.data.msg
-          })
-        }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
-    },
+    // // 获取事件列表
+    // queryEventList (page,pageSize,name,registerType) {
+    //   this.loadingShow = true;
+    //   this.overlayShow = true;
+    //   this.loadText = '加载中';
+    //   this.backlogEmptyShow = false;
+    //   this.isShowBacklogTaskNoMoreData = false;
+    //   getEventList({proId:this.userInfo.proIds[0], system: 6, page,
+    //     name,limit:pageSize,registerType,checkResultId:this.enterProblemRecordMessage['issueInfo']['resultId']
+    //   })
+    //   .then((res) => {
+    //     this.loadingShow = false;
+    //     this.overlayShow = false;
+    //     this.loadText = '';
+    //     if (res && res.data.code == 200) {
+    //       this.backlogTaskList = res.data.data.list;
+    //       this.totalCount = res.data.data.total;
+    //       // 加载第一页时,合并该巡查项下暂存的事件列表
+    //       if (page == 1) {
+    //         this.fullBacklogTaskList = [].concat();
+    //         this.fullBacklogTaskList = this.fullBacklogTaskList.filter((item) => { return item['checkItemId'] == this.enterProblemRecordMessage['issueInfo']['id'] && item['registerType'] == 1 
+    //         && item['depId'] == this.departmentCheckList['depId'] && item['taskId'] == this.patrolTaskListMessage['id']
+    //         });
+    //         this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
+    //       } else {
+    //         this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
+    //       };
+    //       if (this.fullBacklogTaskList.length == 0) {
+    //         this.backlogEmptyShow = true
+    //       }
+    //     } else {
+    //       this.$toast({
+    //         type: 'fail',
+    //         message: res.data.msg
+    //       })
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     this.loadingShow = false;
+    //     this.overlayShow = false;
+    //     this.loadText = '';
+    //     this.$toast({
+    //       type: 'fail',
+    //       message: err
+    //     })
+    //   })
+    // },
 
     // 异常检查项列表绑定滚动事件
     initScrollChange () {
@@ -211,29 +215,29 @@ export default {
     },
 
     // 异常检查查项列表加载方法
-    questionListLoad () {
-      let boxBackScroll = this.$refs['scrollBacklogTask'];
-      if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
-        if (this.questionListTimer) {return};
-        this.questionListTimer = 1;
-        this.timeOne = setTimeout(()=> {
-          this.questionListTimer = 0;
-           let totalPage = Math.ceil(this.totalCount/this.pageSize);
-          if (this.currentPage >= totalPage) {
-            this.isShowBacklogTaskNoMoreData = true
-          } else {
-            this.isShowBacklogTaskNoMoreData = false;
-            this.currentPage = this.currentPage + 1;
-            this.queryEventList(this.currentPage,this.pageSize,this.userName,1)
-          };
-          this.questionListTimer = 0
-        },300)
-      }  
-    },
+    // questionListLoad () {
+    //   let boxBackScroll = this.$refs['scrollBacklogTask'];
+    //   if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
+    //     if (this.questionListTimer) {return};
+    //     this.questionListTimer = 1;
+    //     this.timeOne = setTimeout(()=> {
+    //       this.questionListTimer = 0;
+    //        let totalPage = Math.ceil(this.totalCount/this.pageSize);
+    //       if (this.currentPage >= totalPage) {
+    //         this.isShowBacklogTaskNoMoreData = true
+    //       } else {
+    //         this.isShowBacklogTaskNoMoreData = false;
+    //         this.currentPage = this.currentPage + 1;
+    //         this.queryEventList(this.currentPage,this.pageSize,this.userName,1)
+    //       };
+    //       this.questionListTimer = 0
+    //     },300)
+    //   }  
+    // },
 
     // 进入历史异常记录详情事件
-    enterAbnormalRecordRetailsEvent () {
-      this.changePatrolHistoryTaskAbnormalRecordDetails();
+    enterAbnormalRecordRetailsEvent (item) {
+      this.changePatrolHistoryTaskAbnormalRecordDetails(item);
       this.$router.push({path: '/historyPatrolAbnormalRecord'})
     }
   }

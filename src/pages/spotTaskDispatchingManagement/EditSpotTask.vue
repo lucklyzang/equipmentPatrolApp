@@ -167,7 +167,6 @@
 <script>
 import { mapGetters, mapMutations } from "vuex";
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
-import { queryStructure} from '@/api/escortManagement.js'
 import { v4 as uuidv4 } from 'uuid'
 import _ from 'lodash'
 import ScrollSelection from "@/components/ScrollSelection";

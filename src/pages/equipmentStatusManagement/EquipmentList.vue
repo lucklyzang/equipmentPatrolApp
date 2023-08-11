@@ -102,7 +102,7 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import { getEventList } from '@/api/escortManagement.js'
+import { getdevicesList, addDeviceOperateRecord, getDeviceOperateRecordList} from '@/api/escortManagement.js';
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 import SelectSearch from '@/components/SelectSearch'
 export default {
@@ -362,47 +362,6 @@ export default {
           console.log('事件列表滚动了',boxBackScroll.scrollTop, boxBackScroll.offsetHeight, boxBackScroll.scrollHeight)
         },300)
       }
-    },
-
-    // 获取历史任务列表
-    queryEventList (page,pageSize,name='',startDate='',endDate='',eventType=[],registerType=[]) {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.loadText = '加载中';
-      this.equipmentStatusListEmptyShow = false;
-      this.isShowBacklogTaskNoMoreData = false;
-      getEventList({proId:this.userInfo.proIds[0], system: 6, 
-        workerId: this.userInfo.id,page, limit:pageSize, name,
-        startDate,endDate,eventType:eventType,registerType
-      })
-        .then((res) => {
-            this.loadingShow = false;
-            this.overlayShow = false;
-            this.loadText = '';
-            if (res && res.data.code == 200) {
-                  this.equipmentStatusList = res.data.data.list;
-                  this.totalCount = res.data.data.total;
-                  this.fullEquipmentStatusList = this.fullEquipmentStatusList.concat(this.equipmentStatusList);
-                  this.echoFullEquipmentStatusList = this.fullEquipmentStatusList;
-                  if (this.fullEquipmentStatusList.length == 0) {
-                    this.equipmentStatusListEmptyShow = true
-                  }
-            } else {
-              this.$toast({
-                  type: 'fail',
-                  message: res.data.msg
-              })
-            }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
     }
   }
 };

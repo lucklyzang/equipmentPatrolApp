@@ -58,7 +58,6 @@ export default {
         // 保存巡查任务列表页的信息
         changePatrolTaskListMessage(state, playLoad) {
             if (playLoad && playLoad != 'null') {
-                setStore('patrolTaskListMessage', playLoad);
                 state.patrolTaskListMessage = playLoad
             }
         },
@@ -85,7 +84,6 @@ export default {
 
         // 保存进入设备检查单页面的信息
         changePatrolTaskDeviceChecklist(state, playLoad) {
-            setStore('patrolTaskDeviceChecklist', playLoad);
             state.patrolTaskDeviceChecklist = playLoad
         },
 

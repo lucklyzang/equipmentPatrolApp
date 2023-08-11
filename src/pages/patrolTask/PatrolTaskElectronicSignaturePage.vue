@@ -177,6 +177,7 @@ export default {
         };
         this.$router.push({path: '/equipmentPatrolDetails'})
       } else {
+        this.imgOnlinePathArr = [];
         this.$toast({
           type: 'fail',
           message: res.data.msg
@@ -184,6 +185,7 @@ export default {
       }
     })
     .catch((err) => {
+      this.imgOnlinePathArr = [];
       this.loadingShow = false;
       this.overlayShow = false;
       this.$toast({
@@ -288,8 +290,7 @@ export default {
           headers: {'Content-Type': 'multipart/form-data'}
       }).then((res) => {
           this.imgOnlinePathArr.push(`${aliyunServerURL}/${aliyunFileKey}`);
-          resolve();
-          console.log(this.imgOnlinePathArr);
+          resolve()
       })
       .catch((err) => {
         this.overlayShow = false;

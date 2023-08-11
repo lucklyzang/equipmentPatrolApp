@@ -579,7 +579,7 @@ export default {
         this.calendarShow = false;
         this.currentTaskList = [];
         this.taskSetNameIndex = 0;
-		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate})
+		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate:'2023-08-10'})
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
@@ -702,9 +702,7 @@ export default {
         // 0-未打卡 1-已打卡
         if (item.isClockIn == 1) { return };
         this.currentTaskItemMessage = item;
-        console.log('任务打卡信息',item,index)
-        // this.scanQRCode()
-        this.alterationTaskClockStatus(this.currentTaskItemMessage)
+        this.scanQRCode()
     },
 
     // 扫描二维码方法

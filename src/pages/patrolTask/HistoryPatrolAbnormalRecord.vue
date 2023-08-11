@@ -1,6 +1,15 @@
 <template>
   <div class="page-box" ref="wrapper">
     <div class="img-dislog-box">
+        <van-dialog v-model="videoBoxShow" width="98%" :close-on-click-overlay="true" confirm-button-text="关闭">
+          <video controls
+            width="100%"
+            :src="currentVideoUrl"
+            poster="">
+          </video>
+        </van-dialog> 
+    </div>    
+    <div class="img-dislog-box">
         <van-dialog v-model="imgBoxShow" width="98%" :close-on-click-overlay="true" confirm-button-text="关闭">
             <img :src="currentImgUrl" />
         </van-dialog> 
@@ -42,7 +51,7 @@
             <span>检查项类型</span>
           </div>
           <div class="select-box-right">
-            <span>{{ checkItemType }}</span>
+            <span>{{ typeName }}</span>
           </div>
         </div>
         <div class="select-box event-type">
@@ -51,7 +60,7 @@
             <span>检查项</span>
           </div>
           <div class="select-box-right">
-            <span>{{ checkItem }}</span>
+            <span>{{ itemName }}</span>
           </div>
         </div>
         <div class="select-box end-select-box">
@@ -60,7 +69,7 @@
             <span>记录时间</span>
           </div>
           <div class="select-box-right" @click="showFindTime = true">
-            2023-06-12 11:00
+            {{ recordTime }}
           </div>
         </div>
         <div class="select-box end-select-box end-select-box-room">
@@ -68,7 +77,7 @@
             <span>异常类型</span>
           </div>
           <div class="select-box-right">
-            <span>设备损坏</span>
+            <span>{{ registerType }}</span>
           </div>
         </div>
         <div class="select-box end-select-box end-select-box-room">
@@ -76,7 +85,7 @@
             <span>严重程度</span>
           </div>
           <div class="select-box-right">
-            <span>普通</span>
+            <span>{{ registerSeverity }}</span>
           </div>
         </div>
         <div class="select-box end-select-box end-select-box-room">
@@ -84,7 +93,7 @@
             <span>设备状态</span>
           </div>
           <div class="select-box-right">
-            <span>停机待修</span>
+            <span>{{ registerState }}</span>
           </div>
         </div>
         <div class="transport-type problem-overview">
@@ -106,27 +115,20 @@
             <div class="title-picture">图片</div>
             <div class="image-list">
                 <div v-for="(item, index) in problemPicturesList" :key='index'>
-                    <img :src="item" @click="enlareEvent(item)" />
-                    <div class="icon-box" @click="issueDelete(index,item)">
-                        <van-icon
-                        name="delete"
-                        color="#d70000"
-                        />
-                    </div>
+                  <img :src="item" @click="enlareEvent(item)" />
                 </div>
             </div>
          </div>
          <div class="result-picture">
             <div class="title-picture">视频</div>
             <div class="image-list">
-                <div v-for="(item, index) in problemPicturesList" :key='index'>
-                    <img :src="item" @click="enlareEvent(item)" />
-                    <div class="icon-box" @click="issueDelete(index,item)">
-                        <van-icon
-                        name="delete"
-                        color="#d70000"
-                        />
-                    </div>
+               <div v-for="(item, index) in problemVideosList" :key='index' @click="enlareVideoEvent(item)">
+                  <video
+                    width="100%"
+                    height="70px"
+                    :src="item"
+                    poster="">
+                  </video>
                 </div>
             </div>
          </div>
@@ -165,11 +167,19 @@ export default {
     return {
       loadingShow: false,
       quitInfoShow: false,
-      checkItem: '2#',
-      number: 'q12',
-      checkItemType: '其他',
+      checkItem: '',
+      number: '',
+      typeName: '',
+      itemName: '',
+      recordTime: '',
       showFindTime: false,
+      videoBoxShow: false,
+      currentVideoUrl: '',
+      registerSeverity: '',
+      registerState: '',
+      registerType: '',
       problemPicturesList: [],
+      problemVideosList: [],
       currentImgUrl: '',
       photoBox: false,
       imgBoxShow: false,
@@ -185,6 +195,7 @@ export default {
   },
 
   mounted() {
+    console.log('异常记录性情',this.historyPatrolTaskAbnormalRecordDetails);
     // 控制设备物理返回按键
     if (!IsPC()) {
       let that = this;
@@ -193,11 +204,12 @@ export default {
         pushHistory();
         that.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
       })
-    }
+    };
+    this.echoAbnormalRecoedMessage()
   },
 
   computed: {
-    ...mapGetters(["userInfo"]),
+    ...mapGetters(["userInfo","historyPatrolTaskAbnormalRecordDetails","historyPatrolTaskAbnormalCheckItemEventList"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -210,7 +222,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(['historyPatrolTaskAbnormalRecordDetails']),
+    ...mapMutations([]),
 
     onClickLeft() {
       this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
@@ -218,7 +230,76 @@ export default {
 
     // 返回事件
     backEvent () {
-        this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
+      this.$router.push({path: '/historyPatrolAbnormalCheckItemEventList'})
+    },
+
+    // 视频放大播放事件
+    enlareVideoEvent (item) {
+      this.currentVideoUrl = item;
+      this.videoBoxShow = true
+    },
+
+    // 异常类型转换
+    abnormalTypeTransition (num) {
+      let temoraryNum = num.toString();
+      switch(temoraryNum) {
+          case '3' :
+              return '其他'
+              break;
+          case '4' :
+              return '设备损坏'
+              break;
+          case '5' :
+              return '隐患排查'
+              break;
+      }
+    },
+
+    // 严重程度转换
+    registerSeverityTransition (num) {
+      let temoraryNum = num.toString();
+      switch(temoraryNum) {
+          case '0' :
+              return '普通'
+              break;
+          case '1' :
+              return '严重'
+              break
+      }
+    },
+
+    // 设备状态转换
+    registerStateTransition (num) {
+      let temoraryNum = num.toString();
+      switch(temoraryNum) {
+          case '0' :
+              return '正常使用'
+              break;
+          case '1' :
+              return '停机待修'
+              break;
+          case '2' :
+              return '停用'
+              break;
+          case '3' :
+              return '报废'
+              break;
+      }
+    },
+
+    // 回显异常记录信息
+    echoAbnormalRecoedMessage () {
+      this.number = this.historyPatrolTaskAbnormalRecordDetails.number;
+      this.typeName = this.historyPatrolTaskAbnormalCheckItemEventList.typeName;
+      this.itemName = this.historyPatrolTaskAbnormalCheckItemEventList.itemName;
+      this.recordTime = this.historyPatrolTaskAbnormalRecordDetails.findTime;
+      this.registerSeverity = this.registerSeverityTransition(this.historyPatrolTaskAbnormalRecordDetails.registerSeverity);;
+      this.registerState = this.registerStateTransition(this.historyPatrolTaskAbnormalRecordDetails.registerState);
+      this.registerType = this.abnormalTypeTransition(this.historyPatrolTaskAbnormalRecordDetails.eventType);;
+      this.problemOverview = this.historyPatrolTaskAbnormalRecordDetails.description;
+      this.problemPicturesList = this.historyPatrolTaskAbnormalRecordDetails.images;
+      this.problemVideosList = !this.historyPatrolTaskAbnormalRecordDetails.videos ? [] : this.historyPatrolTaskAbnormalRecordDetails.videos;
+      this.taskDescribe = this.historyPatrolTaskAbnormalRecordDetails.remark
     },
 
     // 图片放大事件

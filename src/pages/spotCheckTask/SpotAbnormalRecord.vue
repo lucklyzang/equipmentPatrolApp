@@ -215,7 +215,6 @@
 import { mapGetters, mapMutations } from "vuex";
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction'
 import {getAliyunSign} from '@/api/login.js'
-import { eventregister,queryStructure} from '@/api/escortManagement.js'
 import { compress, base64ImgtoFile } from '@/common/js/utils'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'

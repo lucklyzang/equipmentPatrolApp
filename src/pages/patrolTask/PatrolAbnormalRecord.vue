@@ -234,12 +234,12 @@
                     :src="item"
                     poster="">
                   </video>
-                    <div class="icon-box" @click.stop="issueVideoDelete(index,item)">
-                        <van-icon
-                        name="delete"
-                        color="#d70000"
-                        />
-                    </div>
+                  <div class="icon-box" @click.stop="issueVideoDelete(index,item)">
+                      <van-icon
+                      name="delete"
+                      color="#d70000"
+                      />
+                  </div>
                 </div>
                 <div @click="issueVideoClickEvent">
                     <van-icon name="plus" size="30" color="#101010" />

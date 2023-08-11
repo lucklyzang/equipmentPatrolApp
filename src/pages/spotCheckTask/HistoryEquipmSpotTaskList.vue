@@ -59,7 +59,6 @@
 <script>
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
-import { getEventList } from '@/api/escortManagement.js'
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 export default {
   name: "HistoryEquipmSpotTaskList",
@@ -196,37 +195,37 @@ export default {
     },
 
     // 事件列表加载事件
-    eventListLoadMore () {
-      // 暂存的数据不进行上拉加载
-      if (this.storageRadio) {return};
-      let boxBackScroll = this.$refs['scrollBacklogTask'];
-      if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
-        // 点击筛选确定后，不加载数据
-        if (!this.isLoadData) {return};
-        if (this.eventTime) {return};
-        this.eventTime = 1;
-        this.timeTwo = setTimeout(() => {
-          let totalPage = Math.ceil(this.totalCount/this.pageSize);
-          if (this.currentPage >= totalPage) {
-            if (this.isOnlyMe && this.fullBacklogTaskList.length == 0) {
-              this.isShowBacklogTaskNoMoreData = false
-            } else {
-              this.isShowBacklogTaskNoMoreData = true
-            }
-          } else {
-            this.isShowBacklogTaskNoMoreData = false;
-            this.currentPage = this.currentPage + 1;
-            if (this.isOnlyMe) {
-              this.queryEventList(this.currentPage,this.pageSize,this.userName)
-            } else {
-              this.queryEventList(this.currentPage,this.pageSize)
-            }
-          };
-          this.eventTime = 0;
-          console.log('事件列表滚动了',boxBackScroll.scrollTop, boxBackScroll.offsetHeight, boxBackScroll.scrollHeight)
-        },300)
-      }
-    },
+    // eventListLoadMore () {
+    //   // 暂存的数据不进行上拉加载
+    //   if (this.storageRadio) {return};
+    //   let boxBackScroll = this.$refs['scrollBacklogTask'];
+    //   if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
+    //     // 点击筛选确定后，不加载数据
+    //     if (!this.isLoadData) {return};
+    //     if (this.eventTime) {return};
+    //     this.eventTime = 1;
+    //     this.timeTwo = setTimeout(() => {
+    //       let totalPage = Math.ceil(this.totalCount/this.pageSize);
+    //       if (this.currentPage >= totalPage) {
+    //         if (this.isOnlyMe && this.fullBacklogTaskList.length == 0) {
+    //           this.isShowBacklogTaskNoMoreData = false
+    //         } else {
+    //           this.isShowBacklogTaskNoMoreData = true
+    //         }
+    //       } else {
+    //         this.isShowBacklogTaskNoMoreData = false;
+    //         this.currentPage = this.currentPage + 1;
+    //         if (this.isOnlyMe) {
+    //           this.queryEventList(this.currentPage,this.pageSize,this.userName)
+    //         } else {
+    //           this.queryEventList(this.currentPage,this.pageSize)
+    //         }
+    //       };
+    //       this.eventTime = 0;
+    //       console.log('事件列表滚动了',boxBackScroll.scrollTop, boxBackScroll.offsetHeight, boxBackScroll.scrollHeight)
+    //     },300)
+    //   }
+    // },
 
     // 进入历史巡检任务详情事件
     taskDetailsEvent () {
@@ -234,45 +233,45 @@ export default {
     },
 
     // 获取历史任务列表
-    queryEventList (page,pageSize,name='',startDate='',endDate='',eventType=[],registerType=[]) {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.loadText = '加载中';
-      this.backlogEmptyShow = false;
-      this.isShowBacklogTaskNoMoreData = false;
-      getEventList({proId:this.userInfo.proIds[0], system: 6, 
-        workerId: this.userInfo.id,page, limit:pageSize, name,
-        startDate,endDate,eventType:eventType,registerType
-      })
-        .then((res) => {
-            this.loadingShow = false;
-            this.overlayShow = false;
-            this.loadText = '';
-            if (res && res.data.code == 200) {
-                  this.backlogTaskList = res.data.data.list;
-                  this.totalCount = res.data.data.total;
-                  this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList);
-                  this.echoFullBacklogTaskList = this.fullBacklogTaskList;
-                  if (this.fullBacklogTaskList.length == 0) {
-                    this.backlogEmptyShow = true
-                  }
-            } else {
-              this.$toast({
-                  type: 'fail',
-                  message: res.data.msg
-              })
-            }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
-    }
+    // queryEventList (page,pageSize,name='',startDate='',endDate='',eventType=[],registerType=[]) {
+    //   this.loadingShow = true;
+    //   this.overlayShow = true;
+    //   this.loadText = '加载中';
+    //   this.backlogEmptyShow = false;
+    //   this.isShowBacklogTaskNoMoreData = false;
+    //   getEventList({proId:this.userInfo.proIds[0], system: 6, 
+    //     workerId: this.userInfo.id,page, limit:pageSize, name,
+    //     startDate,endDate,eventType:eventType,registerType
+    //   })
+    //     .then((res) => {
+    //         this.loadingShow = false;
+    //         this.overlayShow = false;
+    //         this.loadText = '';
+    //         if (res && res.data.code == 200) {
+    //               this.backlogTaskList = res.data.data.list;
+    //               this.totalCount = res.data.data.total;
+    //               this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList);
+    //               this.echoFullBacklogTaskList = this.fullBacklogTaskList;
+    //               if (this.fullBacklogTaskList.length == 0) {
+    //                 this.backlogEmptyShow = true
+    //               }
+    //         } else {
+    //           this.$toast({
+    //               type: 'fail',
+    //               message: res.data.msg
+    //           })
+    //         }
+    //   })
+    //   .catch((err) => {
+    //     this.loadingShow = false;
+    //     this.overlayShow = false;
+    //     this.loadText = '';
+    //     this.$toast({
+    //       type: 'fail',
+    //       message: err
+    //     })
+    //   })
+    // }
   }
 };
 </script>

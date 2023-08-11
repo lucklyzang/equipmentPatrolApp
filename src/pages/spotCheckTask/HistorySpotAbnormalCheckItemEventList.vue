@@ -153,53 +153,53 @@ export default {
       this.$router.push({path: '/historyEquipmentSpotCheckTaskDetails'})
     },
 
-    // 获取事件列表
-    queryEventList (page,pageSize,name,registerType) {
-      this.loadingShow = true;
-      this.overlayShow = true;
-      this.loadText = '加载中';
-      this.backlogEmptyShow = false;
-      this.isShowBacklogTaskNoMoreData = false;
-      getEventList({proId:this.userInfo.proIds[0], system: 6, page,
-        name,limit:pageSize,registerType,checkResultId:this.enterProblemRecordMessage['issueInfo']['resultId']
-      })
-      .then((res) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        if (res && res.data.code == 200) {
-          this.backlogTaskList = res.data.data.list;
-          this.totalCount = res.data.data.total;
-          // 加载第一页时,合并该巡查项下暂存的事件列表
-          if (page == 1) {
-            this.fullBacklogTaskList = [].concat();
-            this.fullBacklogTaskList = this.fullBacklogTaskList.filter((item) => { return item['checkItemId'] == this.enterProblemRecordMessage['issueInfo']['id'] && item['registerType'] == 1 
-            && item['depId'] == this.departmentCheckList['depId'] && item['taskId'] == this.patrolTaskListMessage['id']
-            });
-            this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
-          } else {
-            this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
-          };
-          if (this.fullBacklogTaskList.length == 0) {
-            this.backlogEmptyShow = true
-          }
-        } else {
-          this.$toast({
-            type: 'fail',
-            message: res.data.msg
-          })
-        }
-      })
-      .catch((err) => {
-        this.loadingShow = false;
-        this.overlayShow = false;
-        this.loadText = '';
-        this.$toast({
-          type: 'fail',
-          message: err
-        })
-      })
-    },
+    // // 获取事件列表
+    // queryEventList (page,pageSize,name,registerType) {
+    //   this.loadingShow = true;
+    //   this.overlayShow = true;
+    //   this.loadText = '加载中';
+    //   this.backlogEmptyShow = false;
+    //   this.isShowBacklogTaskNoMoreData = false;
+    //   getEventList({proId:this.userInfo.proIds[0], system: 6, page,
+    //     name,limit:pageSize,registerType,checkResultId:this.enterProblemRecordMessage['issueInfo']['resultId']
+    //   })
+    //   .then((res) => {
+    //     this.loadingShow = false;
+    //     this.overlayShow = false;
+    //     this.loadText = '';
+    //     if (res && res.data.code == 200) {
+    //       this.backlogTaskList = res.data.data.list;
+    //       this.totalCount = res.data.data.total;
+    //       // 加载第一页时,合并该巡查项下暂存的事件列表
+    //       if (page == 1) {
+    //         this.fullBacklogTaskList = [].concat();
+    //         this.fullBacklogTaskList = this.fullBacklogTaskList.filter((item) => { return item['checkItemId'] == this.enterProblemRecordMessage['issueInfo']['id'] && item['registerType'] == 1 
+    //         && item['depId'] == this.departmentCheckList['depId'] && item['taskId'] == this.patrolTaskListMessage['id']
+    //         });
+    //         this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
+    //       } else {
+    //         this.fullBacklogTaskList = this.fullBacklogTaskList.concat(this.backlogTaskList)
+    //       };
+    //       if (this.fullBacklogTaskList.length == 0) {
+    //         this.backlogEmptyShow = true
+    //       }
+    //     } else {
+    //       this.$toast({
+    //         type: 'fail',
+    //         message: res.data.msg
+    //       })
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     this.loadingShow = false;
+    //     this.overlayShow = false;
+    //     this.loadText = '';
+    //     this.$toast({
+    //       type: 'fail',
+    //       message: err
+    //     })
+    //   })
+    // },
 
     // 异常检查项列表绑定滚动事件
     initScrollChange () {
@@ -208,25 +208,25 @@ export default {
     },
 
     // 异常检查查项列表加载方法
-    questionListLoad () {
-      let boxBackScroll = this.$refs['scrollBacklogTask'];
-      if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
-        if (this.questionListTimer) {return};
-        this.questionListTimer = 1;
-        this.timeOne = setTimeout(()=> {
-          this.questionListTimer = 0;
-           let totalPage = Math.ceil(this.totalCount/this.pageSize);
-          if (this.currentPage >= totalPage) {
-            this.isShowBacklogTaskNoMoreData = true
-          } else {
-            this.isShowBacklogTaskNoMoreData = false;
-            this.currentPage = this.currentPage + 1;
-            this.queryEventList(this.currentPage,this.pageSize,this.userName,1)
-          };
-          this.questionListTimer = 0
-        },300)
-      }  
-    },
+    // questionListLoad () {
+    //   let boxBackScroll = this.$refs['scrollBacklogTask'];
+    //   if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
+    //     if (this.questionListTimer) {return};
+    //     this.questionListTimer = 1;
+    //     this.timeOne = setTimeout(()=> {
+    //       this.questionListTimer = 0;
+    //        let totalPage = Math.ceil(this.totalCount/this.pageSize);
+    //       if (this.currentPage >= totalPage) {
+    //         this.isShowBacklogTaskNoMoreData = true
+    //       } else {
+    //         this.isShowBacklogTaskNoMoreData = false;
+    //         this.currentPage = this.currentPage + 1;
+    //         this.queryEventList(this.currentPage,this.pageSize,this.userName,1)
+    //       };
+    //       this.questionListTimer = 0
+    //     },300)
+    //   }  
+    // },
 
     // 进入事件详情事件
     taskDetailsEvent () {
