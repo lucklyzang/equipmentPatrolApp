@@ -28,10 +28,10 @@
                 <span>当前状态</span>
             </div>
             <div class="backlog-task-list-box" ref="equipmentStatusList">
-              <div class="backlog-task-list" :class="{'listNameStyle':currentListNameIndex == index}" v-for="(item,index) in equipmentStatusList" :key="index" @click="listNameClickEvent(item,index)">
+              <div class="backlog-task-list" :class="{'listNameStyle':currentListNameIndex == index}" v-for="(item,index) in fullEquipmentStatusList" :key="index" @click="listNameClickEvent(item,index)">
                 <span>{{ item.name }}</span>
-                <span>{{ item.model }}</span>
-                <span>{{ item.status }}</span>
+                <span>{{ item.norms }}</span>
+                <span>{{ registerStateTransition(item.status) }}</span>
               </div>
               <van-empty description="暂无数据" v-show="equipmentStatusListEmptyShow" />
               <div class="no-more-data" v-show="isShowEquipmentStatusNoMoreData">没有更多数据了!</div>
@@ -65,10 +65,10 @@
           </div>
           <div class="timer-shaft-list-box">
             <div class="timer-shaft-list" v-for="(item,index) in timerShaftList" :key="index">
-                <p>{{ item.status }}</p>
+                <p>{{ registerStateTransition(item.status) }}</p>
                 <p>
-                    <span>{{ item.date }}</span>
-                    <span>{{ item.name }}</span>
+                  <span>{{ item.createTime }}</span>
+                  <span>{{ item.createName }}</span>
                 </p>
             </div>
           </div>
@@ -123,7 +123,6 @@ export default {
       maxDate: new Date(2100, 10, 1),
       currentDate: new Date(),
       timeOne: null,
-      isLoadDataTime: null,
       totalCount: '',
       screenDialogShow: false,
       currentPage: 1,
@@ -131,68 +130,16 @@ export default {
       nameValue: '',
       isLoadData: true,
       currentListNameIndex: null,
+      currentDeviceId: '',
+      equipmentStatusList: [],
       fullEquipmentStatusList: [],
-      echoFullEquipmentStatusList: [],
-      equipmentStatusList: [
-        {
-            name: '电梯',
-            model: 'LEHY-II',
-            status: '停机'
-        },
-        {
-            name: '电梯2',
-            model: 'LEHY',
-            status: '停机待修'
-        }
-      ],
-      timerShaftList: [
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        },
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        },
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        },
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        },
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        },
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        },
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        },
-        {
-            status: '正常运行',
-            date: '2023-12-23',
-            name: '张三'
-        }
-      ],
+      timerShaftList: [],
       statusValue: null,
-      statusOption: [{text: '请选择',value: null},{text: '正常运行',value: 1},{text: '停机待续',value: 2}],
+      statusOption: [{text: '请选择',value: null},{text: '正常运行',value: 1},{text: '停机维修',value: 2},{text: '停用',value: 3},{text: '报废',value: 4}],
       selectStatusValue: {},
-      statusDialogValue: null,
-      statusDialogOption: [{text: '请选择',value: null},{text: '正常运行',value: 1},{text: '停机待续',value: 2}],
-      selectStatusDialogReason: {},
+      statusDialogValue: 1,
+      statusDialogOption: [{text: '正常运行',value: 1},{text: '停机维修',value: 2},{text: '停用',value: 3},{text: '报废',value: 4}],
+      selectStatusDialogValue: {},
       loadingShow: false,
       loadText: '加载中',
       calendarPng: require("@/common/images/home/calendar.png"),
@@ -206,7 +153,9 @@ export default {
     this.deviceReturn("/home");
     this.$nextTick(()=> {
       this.initScrollChange()
-    })
+    });
+    // 查询设备列表
+    this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,false)
   },
 
   beforeRouteEnter(to, from, next) {
@@ -218,9 +167,6 @@ export default {
   beforeDestroy () {
     if (this.timeOne) {
       clearTimeout(this.timeOne)
-    };
-    if (this.isLoadDataTime) {
-      clearTimeout(this.isLoadDataTime)
     }
   },
 
@@ -248,28 +194,29 @@ export default {
     },
 
     // 搜索事件
-    searchEvent () {},
+    searchEvent () {
+      this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,true)
+    },
 
     // 状态弹框下拉框选值变化事件
     statusOptionChange (item) {
-      this.selectStatusValue = item
+      this.selectStatusValue = item;
+      this.statusValue = this.selectStatusValue.value
     },
 
     // 弹框中的状态弹框下拉框选值变化事件
     statusDialogOptionChange (item) {
-      this.selectStatusDialogValue = item
+      this.selectStatusDialogValue = item;
+      this.statusDialogValue = this.selectStatusDialogValue.value
     },
 
     // 设备名称列点击事件
     listNameClickEvent (item,index) {
       this.currentListNameIndex = index;
-      this.screenDialogShow = true;
-      this.currentDate = new Date()
-    },
-
-    // 添加设备状态事件
-    addEquipmentStatusEvent () {
-
+      this.currentDeviceId = item.id;
+      this.statusDialogValue = 1;
+      this.currentDate = new Date();
+      this.queryDeviceOperateRecordList()
     },
 
     // 格式化时间
@@ -323,6 +270,7 @@ export default {
       this.screenDialogShow = false;
       this.dateShow = false
     },
+
     // 时间弹框确认事件
      onConDayFirm() {
       this.dateShow = false
@@ -340,28 +288,166 @@ export default {
     // 事件列表注册滚动事件
     initScrollChange () {
       let boxBackScroll = this.$refs['equipmentStatusList'];
-      boxBackScroll.addEventListener('scroll',this.eventListLoadMore,true)
+      boxBackScroll.addEventListener('scroll',this.devicesListLoadMore,true)
     },
 
     // 设备列表加载事件
-    eventListLoadMore () {
+    devicesListLoadMore () {
       let boxBackScroll = this.$refs['equipmentStatusList'];
       if (Math.ceil(boxBackScroll.scrollTop) + boxBackScroll.offsetHeight >= boxBackScroll.scrollHeight) {
-        // 点击筛选确定后，不加载数据
-        if (!this.isLoadData) {return};
         if (this.eventTime) {return};
         this.eventTime = 1;
-        this.timeTwo = setTimeout(() => {
+        this.timeOne = setTimeout(() => {
           let totalPage = Math.ceil(this.totalCount/this.pageSize);
           if (this.currentPage >= totalPage) {
+            this.isShowEquipmentStatusNoMoreData = true
           } else {
             this.isShowEquipmentStatusNoMoreData = false;
             this.currentPage = this.currentPage + 1;
+            this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,false)
           };
-          this.eventTime = 0;
-          console.log('事件列表滚动了',boxBackScroll.scrollTop, boxBackScroll.offsetHeight, boxBackScroll.scrollHeight)
+          this.eventTime = 0
         },300)
       }
+    },
+
+    // 设备状态转换
+    registerStateTransition (num) {
+      let temoraryNum = num.toString();
+      switch(temoraryNum) {
+          case '1' :
+              return '正常运行'
+              break;
+          case '2' :
+              return '停机待修'
+              break;
+          case '3' :
+              return '停用'
+              break;
+          case '4' :
+              return '报废'
+              break;
+      }
+    },
+
+    // 获取设备列表
+    queryDevicesList (page,pageSize,status,name='',flag) {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.loadText = '加载中';
+      if (flag) {
+        this.equipmentStatusList = [];
+        this.fullEquipmentStatusList = []
+      };
+      this.equipmentStatusListEmptyShow = false;
+      this.isShowEquipmentStatusNoMoreData = false;
+      getdevicesList({proId:this.userInfo.proIds[0], system: 9,page, limit:pageSize, name,status
+      })
+      .then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+          this.equipmentStatusList = res.data.data.list;
+          this.totalCount = res.data.data.currentPageCount;
+          this.fullEquipmentStatusList = this.fullEquipmentStatusList.concat(this.equipmentStatusList);
+          if (this.fullEquipmentStatusList.length == 0) {
+            this.equipmentStatusListEmptyShow = true
+          }
+        } else {
+          this.$toast({
+            type: 'fail',
+            message: res.data.msg
+          })
+        }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
+    },
+
+    // 设备状态变更
+    addEquipmentStatusEvent () {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.loadText = '状态变更中';
+      addDeviceOperateRecord({
+        deviceId: this.currentDeviceId,
+        status: this.statusDialogValue,
+        system: 9,
+        proId: this.proId,
+        createName: this.userName
+      }).then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+          this.screenDialogShow = false;
+          // 实时变更设备状态
+          let currentDeviceIndex = this.fullEquipmentStatusList.findIndex((item) => { return item.id == this.currentDeviceId});
+          this.fullEquipmentStatusList[currentDeviceIndex]['status'] = this.statusDialogValue;
+          this.$toast({
+            type: 'fail',
+            message: res.data.msg
+          })
+        } else {
+          this.$toast({
+            type: 'fail',
+            message: res.data.msg
+          })
+        }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
+    },
+
+    // 获取设备操作记录列表
+    queryDeviceOperateRecordList () {
+      this.loadingShow = true;
+      this.overlayShow = true;
+      this.loadText = '加载中';
+      this.timerShaftList = [];
+      getDeviceOperateRecordList({
+        deviceId: this.currentDeviceId,
+        system: 9,
+        proId: this.proId
+      })
+      .then((res) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        if (res && res.data.code == 200) {
+          this.screenDialogShow = true;
+          this.timerShaftList = res.data.data
+        } else {
+          this.$toast({
+            type: 'fail',
+            message: res.data.msg
+          })
+        }
+      })
+      .catch((err) => {
+        this.loadingShow = false;
+        this.overlayShow = false;
+        this.loadText = '';
+        this.$toast({
+          type: 'fail',
+          message: err
+        })
+      })
     }
   }
 };
