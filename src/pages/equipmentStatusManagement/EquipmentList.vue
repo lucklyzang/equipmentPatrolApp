@@ -423,7 +423,8 @@ export default {
       getDeviceOperateRecordList({
         deviceId: this.currentDeviceId,
         system: 9,
-        proId: this.proId
+        proId: this.proId,
+        order: 'create_time'
       })
       .then((res) => {
         this.loadingShow = false;

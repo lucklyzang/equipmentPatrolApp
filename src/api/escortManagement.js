@@ -150,7 +150,7 @@ export function addDeviceOperateRecord(data) {
 // 设备操作记录添加
 export function getDeviceOperateRecordList(data) {
     return request({
-        url: 'nblink/patrol/deviceOperateRecord/getList',
+        url: 'nblink/patrol/deviceOperateRecord/list',
         method: 'get',
         params: data
     })
