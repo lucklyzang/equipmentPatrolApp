@@ -579,7 +579,7 @@ export default {
         this.calendarShow = false;
         this.currentTaskList = [];
         this.taskSetNameIndex = 0;
-		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate:'2023-08-10'})
+		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate:this.getNowFormatDate(new Date(),'day')})
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;

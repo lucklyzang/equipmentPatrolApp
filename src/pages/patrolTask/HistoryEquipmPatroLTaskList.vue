@@ -14,9 +14,9 @@
             <div class="content-top" ref="dateBox">
                 <div class="date-box">
                     <div class="date-title">日期查询</div>
-                    <div class="date-content">
+                    <div class="date-content"  @click="dateQueryRangeShow = true">
                         <span>{{`${currentStartDate.replaceAll("-","/")}${!currentEndDate ? '' : '-'}${currentEndDate.replaceAll("-","/")}`}}</span>
-                        <img :src="calendarPng" alt="" @click="dateQueryRangeShow = true" />
+                        <img :src="calendarPng" alt="" />
                     </div>
                 </div>
             </div>

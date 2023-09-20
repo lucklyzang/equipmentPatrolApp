@@ -317,6 +317,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            height: 0;
             .content-top-area {
                 position: relative;
                 width: 100%;
@@ -392,6 +393,7 @@
                 margin: 0 auto;
                 margin-top: 40px;
                 padding-bottom: 10px;
+                overflow: auto;
                 box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
@@ -452,11 +454,9 @@
                 }
             };
             .quit-btn-box {
-                height: 300px;
+                height: 80px;
                 display: flex;
-                align-items: flex-end;
-                padding-bottom: 60px;
-                box-sizing: border-box;
+                align-items: center;
                 .quit-btn {
                     height: 40px;
                     width: 70%;
