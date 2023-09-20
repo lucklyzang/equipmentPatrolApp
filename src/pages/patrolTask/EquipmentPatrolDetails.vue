@@ -577,9 +577,10 @@ export default {
         this.loadingShow = true;
         this.overlayShow = true;
         this.calendarShow = false;
+        this.isShowNoMoreData = false;
         this.currentTaskList = [];
         this.taskSetNameIndex = 0;
-		getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate:this.getNowFormatDate(new Date(),'day')})
+		getPatrolTaskDetailsList({ proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate })
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
@@ -649,6 +650,7 @@ export default {
       })
       .catch((err) => {
         this.loadingShow = false;
+        this.isShowNoMoreData = false;
         this.overlayShow = false;
         this.$toast({
           type: 'fail',
