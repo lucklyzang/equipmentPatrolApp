@@ -47,7 +47,7 @@
                     </div>
                     <div class="examine-standard-bottom">
                       <p>检查方法及工具:</p>
-                      <p>触摸、听音、目视</p>
+                      <p>{{ innerItem.method }}</p>
                     </div>
                   </div>
                 </div>

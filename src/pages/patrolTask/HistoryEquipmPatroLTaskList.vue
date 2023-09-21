@@ -287,14 +287,13 @@ export default {
       this.loadingShow = true;
       this.overlayShow = true;
       this.taskSetList = [];
-      getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: 6,state:4,system:9,startDate:'2023-07-20',endDate:'2023-07-21'})
+      getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: this.workerId,state:4,system:9,startDate,endDate})
           .then((res) => {
               this.loadingShow = false;
               this.overlayShow = false;
               if (res && res.data.code == 200) {
                   if (res.data.data.length > 0) {
                     this.temporaryTaskSetList = res.data.data;
-                    console.log('历史任务集数据',this.temporaryTaskSetList);
                     this.totalCount = res.data.data.length;
                     this.taskSetList = this.temporaryTaskSetList.slice((this.currentPage - 1) * this.pageSize,(this.currentPage - 1) * this.pageSize + this.pageSize);
                     this.$forceUpdate()
