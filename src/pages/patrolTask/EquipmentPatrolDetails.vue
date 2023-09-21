@@ -580,7 +580,7 @@ export default {
         this.isShowNoMoreData = false;
         this.currentTaskList = [];
         this.taskSetNameIndex = 0;
-		getPatrolTaskDetailsList({ proId : this.userInfo.proIds[0], workerId: 6,state:-1,system:9,queryDate })
+		getPatrolTaskDetailsList({ proId : this.userInfo.proIds[0], workerId: this.userInfo.id,state:-1,system:9,queryDate })
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
@@ -663,7 +663,7 @@ export default {
     initCalendarData (queryTime) {
         this.loadingShow = true;
         this.overlayShow = true;
-		resetPatrolTaskCalendarData({proId : this.userInfo.proIds[0], workerId: 6,system:9,queryTime})
+		resetPatrolTaskCalendarData({proId : this.userInfo.proIds[0], workerId: this.userInfo.id,system:9,queryTime})
         .then((res) => {
             this.loadingShow = false;
             this.overlayShow = false;
