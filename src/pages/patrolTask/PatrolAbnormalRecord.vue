@@ -26,11 +26,13 @@
       <div class="choose-photo-box" v-show="photoBox">
         <div class="choose-photo">
           <van-icon name="photo" />
-          <input name="uploadImg1" ref="inputFile" id="demo1" @change="previewFileOne" type="file" accept="image/album"/>从图库中选择
+          <!-- accept="image/album" -->
+          <input name="uploadImg1" ref="inputFile" id="demo1" @change="previewFileOne" type="file" accept="image/*" />从图库中选择
         </div>
         <div class="photo-graph">
+          <!-- accept="image/camera" -->
           <van-icon name="photograph" />
-          <input name="uploadImg2" id="demo2"  @change="previewFileTwo" type="file" accept="image/camera" capture="camera"/>拍照
+          <input name="uploadImg2" id="demo2"  @change="previewFileTwo" type="file" capture="camera" accept="image/*,.camera" />拍照
         </div>
         <div class="photo-cancel" @click="photoCancel">取消</div>
       </div>
@@ -38,12 +40,14 @@
     <transition name="van-slide-up">
       <div class="choose-photo-box" v-show="videoBox">
         <div class="choose-photo">
+          <!-- accept="video/mp4" -->
           <van-icon name="photo" />
-          <input name="uploadImg1" ref="inputFileThree" id="demo3" @change="previewFileThree" type="file" accept="video/mp4"/>从图库中选择
+          <input name="uploadImg1" ref="inputFileThree" id="demo3" @change="previewFileThree" type="file" accept="video/*" />从图库中选择
         </div>
         <div class="photo-graph">
+          <!-- accept="video/mp4" -->
           <van-icon name="photograph" />
-          <input name="uploadImg2" ref="inputFileFour" id="demo4"  @change="previewFileFour" type="file" accept="video/mp4" capture="camcorder" />拍摄
+          <input name="uploadImg2" ref="inputFileFour" id="demo4"  @change="previewFileFour" type="file" accept="video/*,.camera"  capture="camcorder" />拍摄
         </div>
         <div class="photo-cancel" @click="videoCancel">取消</div>
       </div>
