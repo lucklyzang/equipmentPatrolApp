@@ -588,6 +588,7 @@ export default {
                 if (res.data.data.length > 0) {
                     // 存储查询的巡检任务
                     this.storePatrolTaskMessage(res.data.data);
+                    console.log('巡检任务详情',this.patrolTaskListMessage);
                     let casuallyTemporaryStoragePatrolTaskListMessage = this.patrolTaskListMessage;
                     let temporaryIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
                     this.allPatrolTaskDetailsData = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
@@ -738,6 +739,12 @@ export default {
                         })
                     };
                     this.patrolTaskPunchCardEvent(temporaryData)
+                } else {
+                    this.$dialog.alert({
+                        message: '当前扫描科室与任务科室不一致,请重新扫描!'
+                    }).then(() => {
+                        this.scanQRCode()
+                    })
                 }
             } catch (err) {
                 this.$toast({
@@ -747,7 +754,7 @@ export default {
             }  
         } else {
             this.$dialog.alert({
-                message: '当前没有扫描到任何信息,请重新扫描'
+                message: '当前没有扫描到任何信息,请重新扫描!'
             }).then(() => {
                 this.scanQRCode()
             })
