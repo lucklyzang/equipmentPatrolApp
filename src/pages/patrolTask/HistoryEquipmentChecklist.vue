@@ -13,7 +13,7 @@
         <div class="content-box">
           <div class="current-area">
             <van-icon name="location" color="#1684FC" size="25" />
-            <span>当前检查设备: {{ currentPatrolTaskDeviceChecklist.deviceName }}</span>
+            <span>当前检查设备: {{ `${currentPatrolTaskDeviceChecklist.deviceName} ${currentPatrolTaskDeviceChecklist.norms}` }}</span>
           </div>
           <div class="equipment-list-box">
             <div class="equipment-classification-box">
