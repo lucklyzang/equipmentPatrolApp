@@ -741,7 +741,7 @@ export default {
                     this.patrolTaskPunchCardEvent(temporaryData)
                 } else {
                     this.$dialog.alert({
-                        message: '当前扫描科室与任务科室不一致,请重新扫描!'
+                        message: '巡检区域与打卡区域不一致!'
                     }).then(() => {
                         this.scanQRCode()
                     })
