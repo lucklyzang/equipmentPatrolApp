@@ -960,6 +960,18 @@ export default {
 
     // 暂存事件
     temporaryStorageEvent () {
+      if (this.currentAbnormalType == '请选择') {
+        this.$toast('异常类型不能为空');
+        return
+      };
+      if (this.currentSeverityLevel == '请选择') {
+        this.$toast('严重程度不能为空');
+        return
+      };
+      if (this.currentEquipmentStatus == '请选择') {
+        this.$toast('设备状态不能为空');
+        return
+      };
       try {
         let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = this.patrolTaskAbnormalRecordList;
         if (casuallyTemporaryStoragePatrolTaskAbnormalRecordList.length > 0 ) {
