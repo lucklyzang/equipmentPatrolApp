@@ -24,7 +24,7 @@
                             <div class="backlog-task-content">
                                <div class="equipment-name-list" v-for="(innerItem,innerIndex) in item.taskContentList" @click="equipmentChecklistEvent(innerItem)" :key="innerIndex">
                                    <div class="equipment-name">
-                                       {{ `${innerItem.deviceName} ${innerItem.norms}` }}
+                                      {{ `${innerItem.deviceName} ${innerItem.norms}` }}
                                    </div>
                                </div>
                             </div>

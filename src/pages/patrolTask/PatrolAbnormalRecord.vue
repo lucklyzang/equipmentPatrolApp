@@ -128,7 +128,7 @@
 		</div>
       <div class="content-box">
         <div class="message-box">
-         <div class="select-box event-type">
+         <!-- <div class="select-box event-type">
             <div class="select-box-left">
               <span>*</span>
               <span>编号</span>
@@ -136,7 +136,7 @@
             <div class="select-box-right event-type-right">
               <span>{{ patrolTaskAbnormalCheckItemEventList.taskNumber }}</span>
             </div>
-        </div>
+        </div> -->
         <div class="select-box event-type">
           <div class="select-box-left">
             <span>*</span>

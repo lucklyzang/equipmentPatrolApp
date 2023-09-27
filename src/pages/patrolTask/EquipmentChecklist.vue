@@ -119,7 +119,6 @@ export default {
   },
 
   mounted() {
-    console.log('啥叫',this.patrolTaskDeviceChecklist,this.patrolTaskListMessage,this.devicePatrolDetailsSelectMessage);
     // 控制设备物理返回按键
     this.deviceReturn("/equipmentPatrolDetails");
     this.getCurrentDeviceCheckData();

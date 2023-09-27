@@ -13,7 +13,7 @@
         <div class="content-box">
           <div class="current-area">
             <van-icon name="location" color="#1684FC" size="22" />
-            <span>当前检查设备: {{ patrolTaskAbnormalCheckItemEventList.spaceName }}</span>
+            <span>当前检查设备: {{ `${currentPatrolTaskDeviceChecklist.deviceName} ${currentPatrolTaskDeviceChecklist.norms}` }}</span>
           </div>
           <div class="classification-box">
             {{ `#${patrolTaskAbnormalCheckItemEventList.typeName}`}}
@@ -105,6 +105,7 @@ export default {
       eventTypeList: ['工程报修','拾金不昧','其他'],
       loadingShow: false,
       backlogTaskList: [],
+      currentPatrolTaskDeviceChecklist: {},
       fullBacklogTaskList: [],
       temporaryStorageCurrentCheckItemEventList: [],
       loadText: '加载中',
@@ -159,6 +160,7 @@ export default {
 
     // 获取该检查项下面的异常记录列表
     getData () {
+      this.currentPatrolTaskDeviceChecklist =  _.cloneDeep(this.patrolTaskDeviceChecklist);
       let casuallyTemporaryStoragePatrolTaskAbnormalRecordList = _.cloneDeep(this.patrolTaskAbnormalRecordList);
       let temporaryEventList = casuallyTemporaryStoragePatrolTaskAbnormalRecordList.filter((item) => { return item.showDate == this.devicePatrolDetailsSelectMessage.showDate && item.collect == this.devicePatrolDetailsSelectMessage.selectTaskSetId && item.selectTime == this.devicePatrolDetailsSelectMessage.selectTime &&
       item.taskSite == this.devicePatrolDetailsSelectMessage.taskSite && item.extendData.deviceId == this.patrolTaskDeviceChecklist.deviceId && item.extendData.checkTypeId == this.patrolTaskAbnormalCheckItemEventList.typeId && 

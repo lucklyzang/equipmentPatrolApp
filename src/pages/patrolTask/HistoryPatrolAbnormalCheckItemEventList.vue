@@ -13,7 +13,7 @@
         <div class="content-box">
           <div class="current-area">
             <van-icon name="location" color="#1684FC" size="22" />
-            <span>当前检查设备: {{ historyPatrolTaskAbnormalCheckItemEventList.spaceName }}</span>
+            <span>当前检查设备: {{ `${currentPatrolTaskDeviceChecklist.deviceName} ${currentPatrolTaskDeviceChecklist.norms}` }}</span>
           </div>
           <div class="classification-box">
             {{ `#${historyPatrolTaskAbnormalCheckItemEventList.typeName}` }}
@@ -78,6 +78,7 @@
 import NavBar from "@/components/NavBar";
 import { mapGetters, mapMutations } from "vuex";
 import { mixinsDeviceReturn } from '@/mixins/deviceReturnFunction';
+import _ from 'lodash';
 export default {
   name: "HistoryPatrolAbnormalCheckItemEventList",
   components: {
@@ -96,6 +97,7 @@ export default {
       pageSize: 10,
       checkResultValue: '1',
       loadingShow: false,
+      currentPatrolTaskDeviceChecklist: {},
       backlogTaskList: [],
       fullBacklogTaskList: [],
       temporaryStorageCurrentCheckItemEventList: [],
@@ -110,7 +112,7 @@ export default {
   },
 
   mounted() {
-    console.log('sa',this.historyPatrolTaskAbnormalCheckItemEventList);
+    this.currentPatrolTaskDeviceChecklist = _.cloneDeep(this.historyPatrolTaskDeviceChecklist);
     this.checkResultValue = this.historyPatrolTaskAbnormalCheckItemEventList['checkResult'].toString();
     this.backlogTaskList = this.historyPatrolTaskAbnormalCheckItemEventList['registerList'];
     if (this.backlogTaskList.length == 0) {
