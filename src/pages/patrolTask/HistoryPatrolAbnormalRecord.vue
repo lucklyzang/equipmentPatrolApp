@@ -103,9 +103,8 @@
             <div class="transport-type-right">
               <van-field
                 v-model="problemOverview"
-                rows="1"
-                autosize
-                maxlength="200"
+                rows="2"
+                maxlength="500"
                 disabled
                 type="textarea"
               />
@@ -140,8 +139,8 @@
               <van-field
                 v-model="taskDescribe"
                 disabled
-                rows="3"
-                autosize
+                rows="2"
+                maxlength="500"
                 type="textarea"
               />
             </div>

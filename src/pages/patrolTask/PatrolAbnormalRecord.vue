@@ -203,7 +203,6 @@
               <van-field
                 v-model="problemOverview"
                 rows="2"
-                autosize
                 maxlength="500"
                 show-word-limit
                 type="textarea"
@@ -260,7 +259,6 @@
                 rows="2"
                 maxlength="500"
                 show-word-limit
-                autosize
                 type="textarea"
                 placeholder="请输入"
               />
