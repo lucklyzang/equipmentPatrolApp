@@ -59,7 +59,7 @@
               <van-field
                 v-model="remarkContent"
                 rows="2"
-                maxlength="500"
+                maxlength="5000"
                 show-word-limit
                 type="textarea"
                 placeholder="请输入"
@@ -547,6 +547,7 @@ export default {
     display: flex;
     flex-direction: column;
     position: relative;
+    height: 0;
     .content-top-area {
       width: 100%;
       margin: 0 auto;
@@ -566,12 +567,8 @@ export default {
       background: #F7F7F7;
       display: flex;
       flex-direction: column;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding-bottom: 50px;
+      z-index: 10;
+      height: 0;
       .current-area {
         height: 54px;
         line-height: 54px;
