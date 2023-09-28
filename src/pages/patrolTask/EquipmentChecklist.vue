@@ -61,7 +61,6 @@
                 rows="2"
                 maxlength="500"
                 show-word-limit
-                autosize
                 type="textarea"
                 placeholder="请输入"
               />
