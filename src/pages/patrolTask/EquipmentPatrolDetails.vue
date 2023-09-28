@@ -717,41 +717,49 @@ export default {
     scanQRcodeCallback(code) {
         if (code) {
             let codeData = code.split('|');
-            try {
-                // 判断当前扫码科室是否为任务科室
-                if (codeData[0] == this.currentTaskItemMessage['taskContentList'][0]['depId']) {
-                    let temporaryData = {
-                        taskId: this.currentTaskItemMessage['taskContentList'][0]['checkTaskId'],
-                        workerId: this.userInfo.id,
-                        workerName: this.userInfo.name,
-                        taskSite: this.currentTaskItemMessage['taskSite'],
-                        deviceList: []
-                    };
-                    for (let item of this.currentTaskItemMessage['taskContentList']) {
-                        temporaryData['deviceList'].push({
-                            id: item.deviceId,
-                            name: item.deviceName,
-                            depId: item.depId,
-                            depName: item.depName,
-                            structId: item.structId,
-                            structName: item.structName,
-                            norms: item.norms
+            if (codeData.length > 0) {
+                try {
+                    // 判断当前扫码科室是否为任务科室
+                    if (codeData[0] == this.currentTaskItemMessage['taskContentList'][0]['depId']) {
+                        let temporaryData = {
+                            taskId: this.currentTaskItemMessage['taskContentList'][0]['checkTaskId'],
+                            workerId: this.userInfo.id,
+                            workerName: this.userInfo.name,
+                            taskSite: this.currentTaskItemMessage['taskSite'],
+                            deviceList: []
+                        };
+                        for (let item of this.currentTaskItemMessage['taskContentList']) {
+                            temporaryData['deviceList'].push({
+                                id: item.deviceId,
+                                name: item.deviceName,
+                                depId: item.depId,
+                                depName: item.depName,
+                                structId: item.structId,
+                                structName: item.structName,
+                                norms: item.norms
+                            })
+                        };
+                        this.patrolTaskPunchCardEvent(temporaryData)
+                    } else {
+                        this.$dialog.alert({
+                            message: '巡检区域与打卡区域不一致!'
+                        }).then(() => {
+                            this.scanQRCode()
                         })
-                    };
-                    this.patrolTaskPunchCardEvent(temporaryData)
-                } else {
-                    this.$dialog.alert({
-                        message: '巡检区域与打卡区域不一致!'
-                    }).then(() => {
-                        this.scanQRCode()
+                    }
+                } catch (err) {
+                    this.$toast({
+                        message: `${err}`,
+                        type: 'fail'
                     })
-                }
-            } catch (err) {
-                this.$toast({
-                    message: `${err}`,
-                    type: 'fail'
+                }  
+            } else {
+                this.$dialog.alert({
+                    message: '当前二维码数据格式不正确,请重新扫描!'
+                }).then(() => {
+                    this.scanQRCode()
                 })
-            }  
+            }
         } else {
             this.$dialog.alert({
                 message: '当前没有扫描到任何信息,请重新扫描!'
