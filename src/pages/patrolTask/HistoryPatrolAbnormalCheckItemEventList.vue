@@ -494,7 +494,11 @@ export default {
                   };
                   .taskset-create-time-type {
                     display: flex;
-                    flex-direction: column
+                    flex-direction: column;
+                    max-height: 70px;
+                    padding-right: 30px;
+                    box-sizing: border-box;
+                    overflow: auto;
                   };
                   .taskset-create-time-other-type {
                     flex-direction: row;

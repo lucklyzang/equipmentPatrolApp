@@ -80,7 +80,7 @@ import {getPatrolTaskDetailsList, resetPatrolTaskCalendarData,patrolTaskPunchCar
 import {mixinsDeviceReturn} from '@/mixins/deviceReturnFunction';
 import _ from 'lodash';
 import VueCalendar from '@/components/calendar/VueCalendar'
-import { arrDateTimeSort } from "@/common/js/utils";
+import { arrDateTimeSort, formatTime } from "@/common/js/utils";
 export default {
   name: "EquipmentPatrolDetails",
   components: {
@@ -124,7 +124,7 @@ export default {
   },
 
   mounted() {
-      console.log('整体数据',this.patrolTaskListMessage);
+    console.log('整体数据',formatTime('YYYY-MM-DD HH:mm:ss'));
     // 控制设备物理返回按键
     if (!IsPC()) {
       let that = this;
@@ -265,7 +265,6 @@ export default {
             this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
             let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
             this.currentTaskList = [];
-            console.log('当前数据',currentTimeData);
             Object.keys(currentTimeData).forEach((item) => { this.currentTaskList.push({
                 taskSite: item,
                 isClockIn: currentTimeData[item][0]['isClockIn'],
@@ -308,11 +307,11 @@ export default {
         let currentTimeData = this.allPatrolTaskDetailsData[this.taskSetNameIndex]['deviceListByTime'][this.devicePatrolDetailsSelectMessage['selectTime'] ? this.devicePatrolDetailsSelectMessage['selectTime'] : this.disposeTime(this.timeList)];
         Object.keys(currentTimeData).forEach((item,index) => { 
             currentTimeData[item].forEach((innerItem,innerIndex) => {
-                console.log('sas1',item,innerItem);
                 // 拼接上传的数据
                 let submitData = {
                     taskId: this.patrolTaskDeviceChecklist.checkTaskId,
                     deviceId: innerItem.deviceId,
+                    startTime: item.startTime,
                     deviceName: innerItem.deviceName,
                     norms: innerItem.norms,
                     structId: innerItem.structId,
@@ -369,6 +368,7 @@ export default {
                     let submitData = {
                         taskId: innerItemB.checkTaskId,
                         deviceId: innerItemB.deviceId,
+                        startTime: itemA.startTime,
                         deviceName: innerItemB.deviceName,
                         norms: innerItemB.norms,
                         structId: innerItemB.structId,
@@ -725,6 +725,7 @@ export default {
                             taskId: this.currentTaskItemMessage['taskContentList'][0]['checkTaskId'],
                             workerId: this.userInfo.id,
                             workerName: this.userInfo.name,
+                            startTime: formatTime('YYYY-MM-DD HH:mm:ss'),
                             taskSite: this.currentTaskItemMessage['taskSite'],
                             deviceList: []
                         };
@@ -819,10 +820,15 @@ export default {
         // 判断之前有没有存储选中的时间信息
         this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
         this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
-        // 变更当前任务打卡状态为已打卡
+        // 变更当前任务打卡状态为已打卡;记录任务第一次打卡时间
         let temporaryDataOne = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
         let temporaryDataTwo = temporaryDataOne[this.taskSetNameIndex]['deviceListByTime'][this.taskSetTime][data.taskSite];
-        temporaryDataTwo.forEach((item) => {item.isClockIn = 1});
+        temporaryDataTwo.forEach((item) => {
+            item.isClockIn = 1;
+            if (!item.startTime) {
+                item.startTime = data.startTime
+            }
+        });
         // 将变更任务打卡状态保存到本地
         let storeIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
         casuallyTemporaryStoragePatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;

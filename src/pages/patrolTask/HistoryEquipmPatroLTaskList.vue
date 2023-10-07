@@ -103,7 +103,7 @@ export default {
       this.initScrollChange()
     });
     // 查询巡检任务详情
-    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'),this.getNowFormatDate(new Date(),'day'))
+    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'),this.currentEndDate)
   },
 
   beforeRouteEnter(to, from, next) {
@@ -232,7 +232,7 @@ export default {
       this.currentDateRange = `${this.formatDate(start)} - ${this.formatDate(end)}`;
       this.currentStartDate = this.formatDate(start).replaceAll('/','-');
       this.currentEndDate = this.formatDate(end).replaceAll('/','-');
-      this.queryPatrolTaskDetailsList()
+      this.queryPatrolTaskDetailsList(this.currentStartDate,this.currentEndDate)
     },
 
     // 任务集列表注册滚动事件
@@ -286,6 +286,7 @@ export default {
     queryPatrolTaskDetailsList (startDate,endDate) {
       this.loadingShow = true;
       this.overlayShow = true;
+      this.backlogEmptyShow = false;
       this.taskSetList = [];
       getPatrolTaskDetailsList({proId : this.userInfo.proIds[0], workerId: this.workerId,state:4,system:9,startDate,endDate})
           .then((res) => {

@@ -44,8 +44,8 @@
               <div class="backlog-task-list" v-for="(item,index) in eventList" :key="index">
                   <div class="backlog-task-top">
                       <div class="backlog-task-top-left">
-                          <span>编号:</span>
-                          <span>{{ item.storeId }}</span>
+                          <!-- <span>编号:</span>
+                          <span>{{ item.storeId }}</span> -->
                       </div>
                       <div class="backlog-task-top-right" @click="deleteEventListEvent(item)">
                         <img :src="deletePng" alt="">
@@ -572,7 +572,11 @@ export default {
                   };
                   .taskset-create-time-type {
                     display: flex;
-                    flex-direction: column
+                    flex-direction: column;
+                    max-height: 70px;
+                    padding-right: 30px;
+                    box-sizing: border-box;
+                    overflow: auto;
                   };
                   .taskset-create-time-other-type {
                     flex-direction: row;

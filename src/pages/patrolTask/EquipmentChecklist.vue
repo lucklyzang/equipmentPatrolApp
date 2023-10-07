@@ -59,7 +59,7 @@
               <van-field
                 v-model="remarkContent"
                 rows="2"
-                maxlength="5000"
+                maxlength="500"
                 show-word-limit
                 type="textarea"
                 placeholder="请输入"
