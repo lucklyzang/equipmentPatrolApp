@@ -29,8 +29,8 @@ export function getDefaultPatrolTaskState() {
         historyPatrolTaskDetails: [], // 历史巡检任务详情信息
         historyPatrolTaskAbnormalRecordDetails: {}, // 历史异常记录详情信息
         historyPatrolTaskDeviceChecklist: [], // 历史巡检任务设备检查单信息
-        patrolTaskAbnormalRecordList: [] // 巡检任务异常记录列表信息
-
+        patrolTaskAbnormalRecordList: [], // 巡检任务异常记录列表信息
+        historyPatrolTaskDateMessage: {} // 历史巡检任务选择的日期信息
     }
 }
 

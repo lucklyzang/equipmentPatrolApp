@@ -72,7 +72,7 @@ export default {
       backlogEmptyShow: false,
       isShowBacklogTaskNoMoreData: false,
       currentDateRange: '',
-      currentStartDate: this.formatDate(new Date()),
+      currentStartDate: this.getNowFormatDate(new Date(),'day'),
       currentEndDate: this.getNowFormatDateNext(new Date(),1),
       minDate: new Date(2010, 0, 1),
       maxDate: new Date(2050, 0, 31),
@@ -101,13 +101,21 @@ export default {
     this.deviceReturn("/home");
     this.$nextTick(()=> {
       this.initScrollChange()
-    });
-    // 查询巡检任务详情
-    this.queryPatrolTaskDetailsList(this.getNowFormatDate(new Date(),'day'),this.currentEndDate)
+    })
   },
 
   beforeRouteEnter(to, from, next) {
     next(vm=>{
+      if (from.path == '/equipmentPatrolDetails') {
+        // 查询巡检任务详情
+        vm.queryPatrolTaskDetailsList(vm.getNowFormatDate(new Date(),'day'),vm.currentEndDate)
+      } else {
+        if (JSON.stringify(vm.historyPatrolTaskDateMessage) != '{}') {
+          vm.queryPatrolTaskDetailsList(vm.historyPatrolTaskDateMessage['startDate'],vm.historyPatrolTaskDateMessage['endDate'])
+        } else {
+          vm.queryPatrolTaskDetailsList(vm.getNowFormatDate(new Date(),'day'),vm.currentEndDate)
+        }
+      }
 	  });
     next() 
   },
@@ -124,7 +132,7 @@ export default {
   watch: {},
 
   computed: {
-    ...mapGetters(["userInfo","patrolTaskListMessage"]),
+    ...mapGetters(["userInfo","patrolTaskListMessage","historyPatrolTaskDateMessage"]),
     proId () {
       return this.userInfo.proIds[0]
     },
@@ -137,7 +145,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["changePatrolTaskListMessage","changeHistoryPatrolTaskDetails"]),
+    ...mapMutations(["changePatrolTaskListMessage","changeHistoryPatrolTaskDetails","changeHistoryPatrolTaskDateMessage"]),
 
     // 顶部导航左边点击事件
     onClickLeft () {
@@ -189,31 +197,6 @@ export default {
         return currentdate
     },
 
-    // 格式化时间
-    getNowFormatDate(currentDate,type) {
-        let currentdate;
-        let strDate;
-        let seperator1 = "-";
-        let month = currentDate.getMonth() + 1;
-        if (type == 'day') {
-            strDate = currentDate.getDate();
-        };
-        if (month >= 1 && month <= 9) {
-            month = "0" + month;
-        };
-        if (type == 'day') {
-            if (strDate >= 0 && strDate <= 9) {
-                strDate = "0" + strDate;
-            }
-        };
-        if (type == 'day') {
-            currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
-        } else {
-            currentdate = currentDate.getFullYear() + seperator1 + month
-        }
-        return currentdate
-    },
-
     //截取日期(去除日期的时分秒)
     substringDate (date) {
       let temp = new Date(date);
@@ -230,8 +213,8 @@ export default {
       const [start, end] = date;
       this.dateQueryRangeShow = false;
       this.currentDateRange = `${this.formatDate(start)} - ${this.formatDate(end)}`;
-      this.currentStartDate = this.formatDate(start).replaceAll('/','-');
-      this.currentEndDate = this.formatDate(end).replaceAll('/','-');
+      this.currentStartDate = this.getNowFormatDate(new Date(this.formatDate(start).replaceAll('/','-')),'day');
+      this.currentEndDate = this.getNowFormatDate(new Date(this.formatDate(end).replaceAll('/','-')),'day');
       this.queryPatrolTaskDetailsList(this.currentStartDate,this.currentEndDate)
     },
 
@@ -279,6 +262,10 @@ export default {
     // 进入历史巡检任务详情事件
     taskDetailsEvent (item) {
       this.changeHistoryPatrolTaskDetails(item);
+      let temporaryHistoryPatrolTaskDateMessage = this.historyPatrolTaskDateMessage;
+      temporaryHistoryPatrolTaskDateMessage['startDate'] = this.currentStartDate;
+      temporaryHistoryPatrolTaskDateMessage['endDate'] = this.currentEndDate;
+      this.changeHistoryPatrolTaskDateMessage(temporaryHistoryPatrolTaskDateMessage);
       this.$router.push({path: '/historyEquipmentPatrolDetails'})
     },
 

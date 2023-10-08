@@ -311,7 +311,7 @@ export default {
                 let submitData = {
                     taskId: this.patrolTaskDeviceChecklist.checkTaskId,
                     deviceId: innerItem.deviceId,
-                    startTime: item.startTime,
+                    startTime: innerItem.startTime,
                     deviceName: innerItem.deviceName,
                     norms: innerItem.norms,
                     structId: innerItem.structId,
@@ -368,7 +368,7 @@ export default {
                     let submitData = {
                         taskId: innerItemB.checkTaskId,
                         deviceId: innerItemB.deviceId,
-                        startTime: itemA.startTime,
+                        startTime: innerItemB.startTime,
                         deviceName: innerItemB.deviceName,
                         norms: innerItemB.norms,
                         structId: innerItemB.structId,
@@ -820,14 +820,20 @@ export default {
         // 判断之前有没有存储选中的时间信息
         this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
         this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
-        // 变更当前任务打卡状态为已打卡;记录任务第一次打卡时间
+        // 变更当前任务打卡状态为已打卡;
         let temporaryDataOne = casuallyTemporaryStoragePatrolTaskListMessage[temporaryIndex]['content'];
         let temporaryDataTwo = temporaryDataOne[this.taskSetNameIndex]['deviceListByTime'][this.taskSetTime][data.taskSite];
+        let temporaryDataThree = temporaryDataOne[this.taskSetNameIndex]['deviceListByTime'][this.taskSetTime];
+        // 记录任务第一次打卡时间
+        Object.keys(temporaryDataThree).forEach((item) => {
+            temporaryDataThree[item].forEach((innerItem) => {
+                if (!innerItem.startTime) {
+                    innerItem.startTime = data.startTime
+                }
+            })
+        });
         temporaryDataTwo.forEach((item) => {
             item.isClockIn = 1;
-            if (!item.startTime) {
-                item.startTime = data.startTime
-            }
         });
         // 将变更任务打卡状态保存到本地
         let storeIndex = casuallyTemporaryStoragePatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});

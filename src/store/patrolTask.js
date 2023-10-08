@@ -50,6 +50,10 @@ export default {
 
         historyPatrolTaskDeviceChecklist: (state) => {
             return state.historyPatrolTaskDeviceChecklist
+        },
+
+        historyPatrolTaskDateMessage: (state) => {
+            return state.historyPatrolTaskDateMessage
         }
 
     },
@@ -108,6 +112,12 @@ export default {
         changePatrolHistoryTaskDeviceChecklist(state, playLoad) {
             state.historyPatrolTaskDeviceChecklist = playLoad
         },
+
+        // 保存历史巡检任务进入任务详情的日期信息
+        changeHistoryPatrolTaskDateMessage(state, playLoad) {
+            state.historyPatrolTaskDateMessage = playLoad
+        },
+
 
         // 保存进入历史异常记录详情页面的信息
         changePatrolHistoryTaskAbnormalRecordDetails(state, playLoad) {
