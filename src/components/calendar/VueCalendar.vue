@@ -112,6 +112,7 @@ li {
     height: 6px;
     border-radius: 50%;
     display: inline-block;
+    z-index: 10;
 }
 
 .wh_top_tag {

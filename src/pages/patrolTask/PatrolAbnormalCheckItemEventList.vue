@@ -477,10 +477,9 @@ export default {
         };
          .patrol-item-box {
             width: 100%;
-            height: 60px;
             position: relative;
             .patrol-item-list {
-                padding: 16px 10px;
+                padding: 10px;
                 box-sizing: border-box;
                 background: #fff;
                 display: flex;

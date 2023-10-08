@@ -436,6 +436,10 @@ export default {
                 this.getNeedTaskSetData();
                 this.judgeCurrentTaskAllCheckIsUpload()
              } else {
+                this.$toast({
+                    type: 'fail',
+                    message: res.data.msg
+                });
                 temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
                 temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
                 this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
@@ -443,6 +447,10 @@ export default {
              }
          })
         .catch((err) => {
+            this.$toast({
+                type: 'fail',
+                message: err
+            });
             temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
             temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
             this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);

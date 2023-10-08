@@ -601,11 +601,12 @@ export default {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                height: 44px;
-                padding: 0 6px;
+                padding: 6px;
                 box-sizing: border-box;
                 border-bottom: 4px solid #f7f7f7;
                 .operation-left {
+                  flex: 1;
+                  word-break: break-all;
                   img {
                     width: 22px;
                     margin-right: 4px;

@@ -48,7 +48,7 @@
 
     <!-- 日期查询范围 -->
     <div class="date-range">
-      <van-calendar v-model="dateQueryRangeShow" color="#3B9DF9" allow-same-day type="range" @confirm="onDateRangeConfirm" :min-date="minDate" :max-date="maxDate"/>
+      <van-calendar v-model="dateQueryRangeShow" lazy-render color="#3B9DF9" allow-same-day type="range" @confirm="onDateRangeConfirm" :min-date="minDate" :max-date="maxDate"/>
     </div>
 
   </div>
@@ -74,8 +74,8 @@ export default {
       currentDateRange: '',
       currentStartDate: this.getNowFormatDate(new Date(),'day'),
       currentEndDate: this.getNowFormatDateNext(new Date(),1),
-      minDate: new Date(2010, 0, 1),
-      maxDate: new Date(2050, 0, 31),
+      minDate: new Date(2015, 0, 1),
+      maxDate: new Date(2030, 0, 31),
       timeTwo: null,
       isLoadDataTime: null,
       taskSetList: [],
