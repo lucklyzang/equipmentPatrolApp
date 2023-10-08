@@ -239,6 +239,7 @@ export default {
     return {
       loadingShow: false,
       quitInfoShow: false,
+      isExpire: false,
       checkItem: '2#',
       number: 'q12',
       checkItemType: '其他',

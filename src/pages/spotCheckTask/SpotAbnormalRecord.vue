@@ -241,6 +241,7 @@ export default {
       currentFindTime: new Date(),
       currentImgUrl: '',
       photoBox: false,
+      isExpire: false,
       imgBoxShow: false,
       imgIndex: '',
       checkResultId: '',

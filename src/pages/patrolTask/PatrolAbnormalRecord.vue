@@ -295,6 +295,7 @@ export default {
     return {
       loadingShow: false,
       msg: null,
+      isExpire: false,
       quitInfoShow: false,
       showFindTime: false,
       problemPicturesList: [],
