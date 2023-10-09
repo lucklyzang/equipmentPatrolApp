@@ -415,13 +415,13 @@ export default {
         this.taskSetTime = this.timeTabIndex == -1 ? this.disposeTime(this.timeList) : this.timeList[this.timeTabIndex];
         this.timeTabIndex = this.timeList.indexOf(this.taskSetTime);
         let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+        let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
         let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)})[0]['content'];
         let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.taskSetName})[0];
         let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.taskSetTime][item];
         let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.taskSetName});
         let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == innerItem.deviceId});
         temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 1;
-        let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
         temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
         this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
         this.getNeedTaskSetData();
@@ -429,17 +429,31 @@ export default {
         .then((res) => {
             if (res && res.data.code == 200) {
                 // 上传成功的设备，将其下的是否修改字段isHaveChanged改为false，防止下次没有修改修改检查结果或备注时，回到该界面或点击任务集和时间点切换后重复上传此设备检查单
+                let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+                let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+                let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)})[0]['content'];
+                let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.taskSetName})[0];
+                let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.taskSetTime][item];
+                let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.taskSetName});
+                let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == innerItem.deviceId});
                 temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 3;
                 temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['isHaveChanged'] = false;
                 temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
                 this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
                 this.getNeedTaskSetData();
-                this.judgeCurrentTaskAllCheckIsUpload()
+                this.judgeCurrentTaskAllCheckIsUpload();
              } else {
                 this.$toast({
                     type: 'fail',
                     message: res.data.msg
                 });
+                let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+                let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+                let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)})[0]['content'];
+                let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.taskSetName})[0];
+                let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.taskSetTime][item];
+                let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.taskSetName});
+                let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == innerItem.deviceId});
                 temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
                 temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
                 this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);

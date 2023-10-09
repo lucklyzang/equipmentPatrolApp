@@ -7,7 +7,7 @@ import { removeAllLocalStorage } from "@/common/js/utils";
 import { Dialog, Toast } from 'vant';
 // 全局注册 
 Vue.use(Dialog);
-// 开发环境： http://blink.blinktech.cn
+// 开发环境：http://blink.blinktech.cn
 // 测试环境：http://show.blinktech.cn
 // 准生产环境：http://ver.blinktech.cn
 // 生产环境：http://blinktech.cn
