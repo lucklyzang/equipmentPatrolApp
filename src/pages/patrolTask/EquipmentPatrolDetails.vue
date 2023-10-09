@@ -465,6 +465,13 @@ export default {
                 type: 'fail',
                 message: err
             });
+            let temporaryPatrolTaskListMessage = _.cloneDeep(this.patrolTaskListMessage);
+            let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)});
+            let temporaryDataOne = temporaryPatrolTaskListMessage.filter((item) => { return item.date == (JSON.stringify(this.devicePatrolDetailsSelectMessage) == '{}' ? this.getNowFormatDate(new Date(),'day') : this.devicePatrolDetailsSelectMessage.showDate)})[0]['content'];
+            let temporaryDataTwo = temporaryDataOne.filter((item) => { return item['configName'] == this.taskSetName})[0];
+            let temporaryDataShree = temporaryDataTwo['deviceListByTime'][this.taskSetTime][item];
+            let temporaryIndexOne = temporaryDataOne.findIndex((item) => { return item['configName'] == this.taskSetName});
+            let temporaryIndexTwo = temporaryDataShree.findIndex((item) => { return item['deviceId'] == innerItem.deviceId});
             temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.taskSetTime][item][temporaryIndexTwo]['deviceUploadState'] = 2;
             temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
             this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
