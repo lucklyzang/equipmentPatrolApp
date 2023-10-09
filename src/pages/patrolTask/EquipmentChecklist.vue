@@ -67,8 +67,8 @@
             </div>
         </div>
     </div>
-    <div class="task-operation-box" @click="btnClickEvent">
-      <div class="task-complete">{{ isAllCheck ? '提 交' : '保 存'}}</div>
+    <div class="task-operation-box">
+      <div class="task-complete" @click="btnClickEvent">{{ isAllCheck ? '提 交' : '保 存'}}</div>
     </div>
     <!-- 退出提示框   -->
     <div class="quit-info-box">
