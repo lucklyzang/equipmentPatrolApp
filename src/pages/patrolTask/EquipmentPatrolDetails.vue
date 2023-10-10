@@ -1204,6 +1204,7 @@ export default {
         };    
         .task-content-box {
             flex: 1;
+            overflow: auto;
             padding: 12px 4px 0px 4px;
             box-sizing: border-box;
             background: #f7f7f7;
@@ -1216,8 +1217,6 @@ export default {
                 transform: translate(-50%,-50%)
             };
             .backlog-task-list-box {
-                overflow: scroll;
-                height: 100%;
                 .backlog-task-list {
                     padding: 0 0 4px 0;
                     box-sizing: border-box;
