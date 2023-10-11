@@ -461,7 +461,7 @@ export default {
 
     // 拍摄点击
     issueVideoClickEvent () {
-      if (this.problemVideosList.length >= 9) {
+      if (this.problemPicturesList.length + this.problemVideosList.length >= 9) {
         this.$toast('至多总共只能上传9张图片或视频!');
         return
       };
@@ -610,10 +610,10 @@ export default {
       this.temporaryFile = file;
       let _this = this;
       let reader = new FileReader();
-      let isLt2M = file.size/1024/1024 < 16;
+      let isLt2M = file.size/1024/1024 < 5;
       if (!isLt2M) {
         this.$dialog.alert({
-          message: '上传图片大小不能超过16MB!',
+          message: '上传图片大小不能超过5MB!',
           closeOnPopstate: true
         }).then(() => {
         });
@@ -645,10 +645,10 @@ export default {
       let file = document.getElementById("demo2").files[0];
       let _this = this;
       let reader = new FileReader();
-      let isLt2M = file.size/1024/1024 < 16;
+      let isLt2M = file.size/1024/1024 < 5;
       if (!isLt2M) {
         _this.$dialog.alert({
-          message: '上传图片大小不能超过16MB!',
+          message: '上传图片大小不能超过5MB!',
           closeOnPopstate: true
         }).then(() => {
         });
@@ -683,7 +683,7 @@ export default {
           message: '上传视频大小不能超过16MB!',
           closeOnPopstate: true
         }).then(() => {
-        })
+        });
         return
       };  
       reader.addEventListener("load", function () {
@@ -711,7 +711,7 @@ export default {
           message: '上传视频大小不能超过16MB!',
           closeOnPopstate: true
         }).then(() => {
-        })
+        });
         return
       };
       reader.addEventListener("load", function () {
@@ -1209,12 +1209,23 @@ export default {
     }
   };
   .img-dislog-box {
-    .van-dialog {
-        .van-dialog__content {
-            >img {
-                width: 100%
-            }
+    /deep/ .van-dialog {
+      top: 50% !important;
+      max-height: 98vh;
+      display: flex;
+      flex-direction: column;
+      .van-dialog__content {
+        flex: 1;
+        overflow: auto;
+        >img {
+          width: 100%;
         }
+      };
+      .van-dialog__footer {
+        .van-dialog__confirm {
+          background: #f2f2f2
+        }
+      }
     }
   };
   .find-time-box {
