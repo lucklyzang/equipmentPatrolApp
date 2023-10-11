@@ -140,7 +140,7 @@ export default {
 
     // 顶部导航左边点击事件
     onClickLeft () {
-      if (!this.isAllCheck) {
+      if (this.judgeIsHasCheck()) {
         this.quitInfoShow = true
       } else {
         this.$router.push({path: '/equipmentPatrolDetails'})
@@ -168,6 +168,8 @@ export default {
 
     // 确定退出
     quitSure () {
+      // 保存备注数据事件
+      this.storeRemarkDataEvent();
       this.$router.push({path: '/equipmentPatrolDetails'})
     },
 
@@ -181,6 +183,15 @@ export default {
       this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach((item) => {
         this.isAllCheck = !item['checkItemClassifyContent'].some((innerItem) => { return innerItem.checkResult == 0})
       })
+    },
+
+    // 判断检查项是否有勾选
+    judgeIsHasCheck () {
+      let flag = false;
+      this.currentPatrolTaskDeviceChecklist['checkItemListGroupByCheckType'].forEach((item) => {
+        flag = item['checkItemClassifyContent'].some((innerItem) => { return innerItem.checkResult != 0})
+      });
+      return flag
     },
 
     // 检查项名称行点击事件
@@ -303,8 +314,7 @@ export default {
       temporaryDataOne[temporaryIndexOne]['deviceListByTime'][this.devicePatrolDetailsSelectMessage.selectTime][this.devicePatrolDetailsSelectMessage.taskSite][temporaryIndexTwo]['remark'] = this.remarkContent;
       let storeIndex = temporaryPatrolTaskListMessage.findIndex((item) => { return item.date == this.devicePatrolDetailsSelectMessage.showDate});
       temporaryPatrolTaskListMessage[storeIndex]['content'] = temporaryDataOne;
-      this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage);
-      this.quitSure()
+      this.changePatrolTaskListMessage(temporaryPatrolTaskListMessage)
     },
 
     // 保存该设备下的检查数据
