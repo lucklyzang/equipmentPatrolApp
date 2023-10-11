@@ -480,7 +480,6 @@ export default {
           .dialog-title {
             padding: 10px 0;
             box-sizing: border-box;
-            text-align: center;
             color: #101010;
             font-size: 16px;
           };
