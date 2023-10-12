@@ -155,7 +155,7 @@ export default {
       this.initScrollChange()
     });
     // 查询设备列表
-    this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,false)
+    this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,false,true)
   },
 
   beforeRouteEnter(to, from, next) {
@@ -195,7 +195,7 @@ export default {
 
     // 搜索事件
     searchEvent () {
-      this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,true)
+      this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,true,true)
     },
 
     // 状态弹框下拉框选值变化事件
@@ -305,7 +305,7 @@ export default {
           } else {
             this.isShowEquipmentStatusNoMoreData = false;
             this.currentPage = this.currentPage + 1;
-            this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,false)
+            this.queryDevicesList(this.currentPage,this.pageSize,this.statusValue,this.nameValue,false,false)
           };
           this.eventTime = 0
         },300)
@@ -333,7 +333,7 @@ export default {
     },
 
     // 获取设备列表
-    queryDevicesList (page,pageSize,status,name='',flag) {
+    queryDevicesList (page,pageSize,status,name='',flag,isInitQuery) {
       this.loadingShow = true;
       this.overlayShow = true;
       this.loadText = '加载中';
@@ -351,9 +351,11 @@ export default {
         if (res && res.data.code == 200) {
           this.equipmentStatusList = res.data.data.list;
           this.totalCount = res.data.data.currentPageCount;
-          let totalPage = Math.ceil(this.totalCount/this.pageSize);
-          if (this.currentPage >= totalPage) {
-            this.isShowEquipmentStatusNoMoreData = true
+          if (isInitQuery) {
+            let totalPage = Math.ceil(this.totalCount/this.pageSize);
+            if (this.currentPage >= totalPage) {
+              this.isShowEquipmentStatusNoMoreData = true
+            }
           };
           this.fullEquipmentStatusList = this.fullEquipmentStatusList.concat(this.equipmentStatusList);
           if (this.fullEquipmentStatusList.length == 0) {
