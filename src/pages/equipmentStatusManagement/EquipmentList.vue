@@ -118,7 +118,7 @@ export default {
       dateQueryRangeShow: false,
       dateShow: false,
       equipmentStatusListEmptyShow: false,
-      isShowEquipmentStatusNoMoreData: true,
+      isShowEquipmentStatusNoMoreData: false,
       minDate: new Date(1990, 0, 1),
       maxDate: new Date(2100, 10, 1),
       currentDate: new Date(),
@@ -351,6 +351,10 @@ export default {
         if (res && res.data.code == 200) {
           this.equipmentStatusList = res.data.data.list;
           this.totalCount = res.data.data.currentPageCount;
+          let totalPage = Math.ceil(this.totalCount/this.pageSize);
+          if (this.currentPage >= totalPage) {
+            this.isShowEquipmentStatusNoMoreData = true
+          };
           this.fullEquipmentStatusList = this.fullEquipmentStatusList.concat(this.equipmentStatusList);
           if (this.fullEquipmentStatusList.length == 0) {
             this.equipmentStatusListEmptyShow = true
