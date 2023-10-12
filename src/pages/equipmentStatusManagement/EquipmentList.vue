@@ -34,7 +34,7 @@
                 <span>{{ registerStateTransition(item.status) }}</span>
               </div>
               <van-empty description="暂无数据" v-show="equipmentStatusListEmptyShow" />
-              <div class="no-more-data" v-show="isShowEquipmentStatusNoMoreData">-没有更多数据了-</div>
+              <div class="no-more-data" v-show="isShowEquipmentStatusNoMoreData && fullEquipmentStatusList.length > 0">-没有更多数据了-</div>
           </div> 
         </div>
     </div>
@@ -80,7 +80,7 @@
       <van-popup v-model="dateShow" position="bottom">
         <van-datetime-picker
            v-model="currentDate"
-            type="date"
+            type="datetime"
             :min-date="minDate"
             :max-date="maxDate"
         >
@@ -223,8 +223,9 @@ export default {
     getNowFormatDate(currentDate) {
       let currentdate;
       let strDate = currentDate.getDate();
-      let seperator1 = "-";
+      let seperator1 = "/";
       let seperator2 = ":";
+      let seperator3 = " ";
       let month = currentDate.getMonth() + 1;
       let hour = currentDate.getHours();
       let minutes = currentDate.getMinutes();
@@ -240,7 +241,7 @@ export default {
       if (strDate >= 0 && strDate <= 9) {
         strDate = "0" + strDate;
       };
-      currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+      currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes
       return currentdate
     },
 
@@ -567,8 +568,8 @@ export default {
             align-items: center;
             justify-content: space-between;
             margin-bottom: 10px;
-            /deep/ .vue-dropdown {
-                width: 30%;
+            .vue-dropdown {
+                width: 31%;
                 height: 30px;
                 border-radius: 6px;
                 border: 1px solid #BBBBBB !important;
@@ -580,7 +581,8 @@ export default {
                 }
             };
             .date-box {
-                width: 55%;
+                flex: 1;
+                margin: 0 12px;
                 height: 30px;
                 display: flex;
                 align-items: center;
