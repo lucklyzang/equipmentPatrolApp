@@ -34,7 +34,7 @@
                 <span>{{ registerStateTransition(item.status) }}</span>
               </div>
               <van-empty description="暂无数据" v-show="equipmentStatusListEmptyShow" />
-              <div class="no-more-data" v-show="isShowEquipmentStatusNoMoreData">没有更多数据了!</div>
+              <div class="no-more-data" v-show="isShowEquipmentStatusNoMoreData">-没有更多数据了-</div>
           </div> 
         </div>
     </div>
@@ -118,7 +118,7 @@ export default {
       dateQueryRangeShow: false,
       dateShow: false,
       equipmentStatusListEmptyShow: false,
-      isShowEquipmentStatusNoMoreData: false,
+      isShowEquipmentStatusNoMoreData: true,
       minDate: new Date(1990, 0, 1),
       maxDate: new Date(2100, 10, 1),
       currentDate: new Date(),
@@ -126,7 +126,7 @@ export default {
       totalCount: '',
       screenDialogShow: false,
       currentPage: 1,
-      pageSize: 10,
+      pageSize: 30,
       nameValue: '',
       isLoadData: true,
       currentListNameIndex: null,
@@ -313,6 +313,7 @@ export default {
 
     // 设备状态转换
     registerStateTransition (num) {
+      if (!num && num != 0) { return };
       let temoraryNum = num.toString();
       switch(temoraryNum) {
           case '1' :
@@ -340,7 +341,6 @@ export default {
         this.fullEquipmentStatusList = []
       };
       this.equipmentStatusListEmptyShow = false;
-      this.isShowEquipmentStatusNoMoreData = false;
       getdevicesList({proId:this.userInfo.proIds[0], system: 9,page, limit:pageSize, name,status
       })
       .then((res) => {
