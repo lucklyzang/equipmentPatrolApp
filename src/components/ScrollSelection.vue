@@ -189,7 +189,7 @@ export default {
   background-color: rgba(0,0,0,.7);
   max-height: 100vh;
   width: 100%;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
@@ -202,7 +202,7 @@ export default {
     border-top-right-radius: 20px;
     padding: 20px 10px;
     box-sizing: border-box;
-    position: absolute;
+    position: fixed;
     bottom: 0;
     background-color: #fff;
     /deep/ .van-empty {
