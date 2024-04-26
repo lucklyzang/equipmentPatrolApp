@@ -296,8 +296,8 @@ export default {
       this.registerState = this.registerStateTransition(this.historyPatrolTaskAbnormalRecordDetails.registerState);
       this.registerType = this.abnormalTypeTransition(this.historyPatrolTaskAbnormalRecordDetails.eventType);;
       this.problemOverview = this.historyPatrolTaskAbnormalRecordDetails.description;
-      this.problemPicturesList = this.historyPatrolTaskAbnormalRecordDetails.images;
-      this.problemVideosList = !this.historyPatrolTaskAbnormalRecordDetails.videos ? [] : this.historyPatrolTaskAbnormalRecordDetails.videos;
+      this.problemPicturesList = this.historyPatrolTaskAbnormalRecordDetails.images.filter((item) => { return item.indexOf('.mp4') == -1 });
+      this.problemVideosList = !this.historyPatrolTaskAbnormalRecordDetails.videos ? this.historyPatrolTaskAbnormalRecordDetails.images.filter((item) => { return item.indexOf('.mp4') != -1 }) : this.historyPatrolTaskAbnormalRecordDetails.videos;
       this.taskDescribe = this.historyPatrolTaskAbnormalRecordDetails.remark
     },
 
