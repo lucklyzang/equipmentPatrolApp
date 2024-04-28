@@ -346,6 +346,21 @@ export default {
         }
     }
   };
+  .date-range {
+   /deep/ .van-calendar {
+     .van-calendar__body {
+       .van-calendar__month {
+         .van-calendar__day {
+           .van-calendar__bottom-info {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+           }
+         }
+       }
+     }
+   }
+  };
   /deep/ .van-loading {
     z-index: 1000000
   };
