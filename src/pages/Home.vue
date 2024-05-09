@@ -80,18 +80,18 @@
                         name: '设备巡检',
                         imgUrl: require("@/common/images/home/task-list.png")
                     },
-                    {
-                        name: '设备点检',
-                        imgUrl: require("@/common/images/home/event-registration.png")
-                    },
+                    // {
+                    //     name: '设备点检',
+                    //     imgUrl: require("@/common/images/home/event-registration.png")
+                    // },
                     {
                         name: '设备管理',
                         imgUrl: require("@/common/images/home/workforce-management.png")
-                    },
-                    {
-                        name: '调度管理',
-                        imgUrl: require("@/common/images/home/guest-book.png")
                     }
+                    // {
+                    //     name: '调度管理',
+                    //     imgUrl: require("@/common/images/home/guest-book.png")
+                    // }
                 ],
                 defaultPersonPng: require("@/common/images/home/default-person.png"),
                 statusBackgroundPng: require("@/common/images/home/status-background.png")
